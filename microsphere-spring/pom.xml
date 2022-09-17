@@ -4,23 +4,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>io.github.microsphere-projects</groupId>
-        <artifactId>microsphere-spring-parent</artifactId>
+        <artifactId>microsphere-spring-projects</artifactId>
         <version>${revision}</version>
-        <relativePath>../microsphere-spring-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.microsphere-projects</groupId>
-    <artifactId>microsphere-spring-dependencies</artifactId>
+    <artifactId>microsphere-spring</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
-    <name>Microsphere Spring Project :: Dependencies</name>
-    <description>Microsphere Spring Dependencies</description>
+    <name>Microsphere Spring Projects :: Spring</name>
+    <description>Microsphere Spring</description>
+
+    <modules>
+        <module>microsphere-spring-parent</module>
+        <module>microsphere-spring-dependencies</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
 
         </dependencies>
     </dependencyManagement>
+
 </project>

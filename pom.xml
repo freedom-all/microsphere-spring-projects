@@ -10,16 +10,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.microsphere-projects</groupId>
-    <artifactId>microsphere-spring</artifactId>
+    <artifactId>microsphere-spring-projects</artifactId>
     <version>${revision}</version>
-    <modules>
-        <module>microsphere-spring-parent</module>
-        <module>microsphere-spring-dependencies</module>
-    </modules>
     <packaging>pom</packaging>
 
-    <name>Microsphere Spring Project</name>
-    <description>Microsphere Spring Project</description>
+    <name>Microsphere Spring Projects</name>
+    <description>Microsphere Spring Projects</description>
 
     <scm>
         <url>https://github.com/microsphere-projects/microsphere-spring</url>
@@ -42,8 +38,17 @@
         </developer>
     </developers>
 
+
+    <modules>
+        <module>microsphere-spring</module>
+        <module>microsphere-spring-boot</module>
+        <module>microsphere-spring-cloud</module>
+    </modules>
+
     <properties>
         <revision>0.0.1-SNAPSHOT</revision>
+        <spring-boot.version>2.6.11</spring-boot.version>
+        <spring-cloud.version>3.1.4</spring-cloud.version>
     </properties>
-    
+
 </project>

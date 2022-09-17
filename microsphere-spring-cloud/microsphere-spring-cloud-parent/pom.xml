@@ -4,23 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>io.github.microsphere-projects</groupId>
-        <artifactId>microsphere-spring</artifactId>
+        <artifactId>microsphere-spring-cloud</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.microsphere-projects</groupId>
-    <artifactId>microsphere-spring-parent</artifactId>
+    <artifactId>microsphere-spring-cloud-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
-    <name>Microsphere Spring Project :: Parent</name>
-    <description>Microsphere Spring Parent</description>
+    <name>Microsphere Spring Projects :: Spring Cloud :: Parent</name>
+    <description>Microsphere Spring Cloud Parent</description>
 
     <properties>
-        <spring-boot.version>2.6.11</spring-boot.version>
-        <spring-cloud.version>3.1.4</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -39,6 +37,15 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-build-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Microsphere Spring Boot Dependencies -->
+            <dependency>
+                <groupId>io.github.microsphere-projects</groupId>
+                <artifactId>microsphere-spring-boot-dependencies</artifactId>
+                <version>${revision}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
