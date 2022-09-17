@@ -12,10 +12,35 @@
     <groupId>io.github.microsphere-projects</groupId>
     <artifactId>microsphere-spring</artifactId>
     <version>${revision}</version>
+    <modules>
+        <module>microsphere-spring-parent</module>
+        <module>microsphere-spring-dependencies</module>
+    </modules>
     <packaging>pom</packaging>
 
     <name>Microsphere Spring Project</name>
     <description>Microsphere Spring Project</description>
+
+    <scm>
+        <url>https://github.com/microsphere-projects/microsphere-spring</url>
+        <connection>scm:git:git://github.com/microsphere-projects/microsphere-spring.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/microsphere-projects/microsphere-spring.git
+        </developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>mercyblitz</id>
+            <name>Mercy Ma</name>
+            <email>mercyblitz@gmail.com</email>
+            <organization>Microsphere</organization>
+            <roles>
+                <role>lead</role>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <properties>
         <revision>0.0.1-SNAPSHOT</revision>
