@@ -22,6 +22,8 @@
         <module>microsphere-spring-parent</module>
         <module>microsphere-spring-dependencies</module>
         <module>microsphere-spring-test</module>
+        <module>microsphere-spring-redis</module>
+        <module>microsphere-spring-webmvc</module>
     </modules>
 
 </project>
