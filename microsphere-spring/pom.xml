@@ -21,12 +21,7 @@
     <modules>
         <module>microsphere-spring-parent</module>
         <module>microsphere-spring-dependencies</module>
+        <module>microsphere-spring-test</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-
-        </dependencies>
-    </dependencyManagement>
 
 </project>
