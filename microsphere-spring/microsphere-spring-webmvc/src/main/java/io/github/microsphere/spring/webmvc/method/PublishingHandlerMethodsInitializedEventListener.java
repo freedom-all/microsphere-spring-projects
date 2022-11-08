@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 发布 {@link HandlerMethodsInitializedEvent} 事件监听器
+ * Publishing {@link HandlerMethodsInitializedEvent} Event Listener
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
