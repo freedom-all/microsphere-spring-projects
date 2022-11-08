@@ -12,7 +12,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import java.lang.reflect.Method;
 
 /**
- * {@link HandlerMethodArgumentResolver} 包装器
+ * {@link HandlerMethodArgumentResolver} Wrapper
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
