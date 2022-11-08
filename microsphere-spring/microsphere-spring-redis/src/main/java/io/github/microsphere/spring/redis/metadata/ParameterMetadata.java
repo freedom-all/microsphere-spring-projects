@@ -5,7 +5,7 @@ import org.springframework.data.redis.connection.RedisCommands;
 import java.util.Objects;
 
 /**
- * {@link RedisCommands Redis 命令} 方法参数元信息
+ * {@link RedisCommands Redis command} Method parameter meta information
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
