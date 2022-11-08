@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 
 /**
- * 注解方法 {@link HandlerInterceptor} 抽象实现
+ * The annotation method {@link HandlerInterceptor} abstract implementation
  *
- * @param <A> 注解类型
+ * @param <A> Annotation type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
