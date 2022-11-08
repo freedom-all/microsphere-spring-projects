@@ -7,7 +7,7 @@ import org.springframework.data.redis.serializer.SerializationException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@link Expiration} {@link RedisSerializer} 实现
+ * {@link Expiration} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -61,14 +61,14 @@ public class ExpirationSerializer extends AbstractSerializer<Expiration> {
         int timeUnitBytesLength = this.timeUnitBytesLength;
         int bytesLength = this.getBytesLength();
 
-        // expirationTime 数组
+        // ExpirationTime array
         byte[] expirationTimeBytes = new byte[expirationTimeBytesLength];
         int i = 0;
         for (; i < expirationTimeBytesLength; i++) {
             expirationTimeBytes[i] = bytes[i];
         }
 
-        // timeUnit 数组
+        // TimeUnit array
         byte[] timeUnitBytes = new byte[timeUnitBytesLength];
         for (int j = 0; j < timeUnitBytesLength && i < bytesLength; j++, i++) {
             timeUnitBytes[j] = bytes[i];
