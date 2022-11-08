@@ -1,8 +1,8 @@
 package io.github.microsphere.spring.webmvc.util;
 
+import io.github.microsphere.spring.webmvc.method.support.HandlerMethodArgumentResolverWrapper;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.i18n.LocaleContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -49,7 +49,7 @@ import static org.springframework.web.context.ContextLoader.CONTEXT_INITIALIZER_
 import static org.springframework.web.context.ContextLoader.GLOBAL_INITIALIZER_CLASSES_PARAM;
 
 /**
- * Spring Web MVC 静态工具类
+ * Spring Web MVC Utilities Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -106,12 +106,13 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取当前 {@link HttpServletRequest} 对象
+     * Gets the current {@link HttpServletRequest} object
      * <p>
-     * 默认情况，{@link HttpServletRequest} 是在 {@link RequestContextFilter} 初始化，从 Servlet HTTP 请求线程 {@link ThreadLocal} 中获取
-     * {@link HttpServletRequest} 是从 {@link InheritableThreadLocal} 中获取，能够在子线程中获取。
+     * By default, {@link HttpServletRequest} is initialized in {@link RequestContextFilter}, {@link HttpServletRequest}
+     * from the Servlet HTTP request thread {@link ThreadLocal} is obtained from {@link InheritableThreadLocal} and
+     * can be obtained in the child thread.
      *
-     * @return 返回当前 {@link HttpServletRequest} 对象，获取不到返回<code>null</code>
+     * @return <code>null<code> returns the current {@link HttpServletRequest} object.
      */
     public static HttpServletRequest getHttpServletRequest() throws IllegalStateException {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
@@ -143,25 +144,25 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取当前 Servlet Request 请求关联的 {@link WebApplicationContext}
+     * Gets the {@link WebApplicationContext} associated with the current Servlet Request request
      *
-     * @return 当前 Servlet Request 请求关联的 {@link WebApplicationContext}
-     * @throws IllegalStateException 如果在非 Web 场景下，将抛出异常
+     * @return Current Servlet Request associated with {@link WebApplicationContext}
+     * @throws IllegalStateException In a non-Web scenario, an exception is thrown
      */
     public static WebApplicationContext getWebApplicationContext() throws IllegalStateException {
         HttpServletRequest request = getHttpServletRequest();
         if (request == null) {
-            throw new IllegalStateException("请在 Servlet Web 应用中使用!");
+            throw new IllegalStateException("Use it in your Servlet Web application!");
         }
         ServletContext servletContext = request.getServletContext();
         return WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
     }
 
     /**
-     * 设置 {@link HandlerMethod} 中的 {@link RequestBody @RequestBody} 方法参数存放到 {@link ServletRequest} 上下文
+     * Set the {@link RequestBody @RequestBody} method parameter in {@link HandlerMethod} to the {@link ServletRequest} context
      *
      * @param method              Handler {@link Method}
-     * @param requestBodyArgument {@link RequestBody @RequestBody} 方法参数
+     * @param requestBodyArgument {@link RequestBody @RequestBody} The method parameters
      */
     public static void setHandlerMethodRequestBodyArgument(Method method, Object requestBodyArgument) {
         setHandlerMethodRequestBodyArgument(getHttpServletRequest(), method, requestBodyArgument);
@@ -175,11 +176,11 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 设置 {@link HandlerMethod} 中的 {@link RequestBody @RequestBody} 方法参数存放到 {@link ServletRequest} 上下文
+     * Set the {@link RequestBody @RequestBody} method parameter in {@link HandlerMethod} to the {@link ServletRequest} context
      *
      * @param request             {@link ServletRequest}
      * @param method              Handler {@link Method}
-     * @param requestBodyArgument {@link RequestBody @RequestBody} 方法参数
+     * @param requestBodyArgument {@link RequestBody @RequestBody} The method parameters
      */
     public static void setHandlerMethodRequestBodyArgument(ServletRequest request, Method method, Object requestBodyArgument) {
         String attributeName = getHandlerMethodRequestBodyArgumentAttributeName(method);
@@ -189,24 +190,24 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 从 {@link ServletRequest} 上下文获取 {@link HandlerMethod} 中的 {@link RequestBody @RequestBody} 方法参数
+     * Gets the {@link RequestBody @RequestBody} method parameter from the {@link ServletRequest} context
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
-     * @param <T>           {@link RequestBody @RequestBody} 方法参数类型
-     * @return {@link RequestBody @RequestBody} 方法参数如果存在的话，否则，<code>null</code>
+     * @param <T>           {@link RequestBody @RequestBody} Method parameter Types
+     * @return {@link RequestBody @RequestBody} Method parameters if present, otherwise，<code>null</code>
      */
     public static <T> T getHandlerMethodRequestBodyArgument(ServletRequest request, HandlerMethod handlerMethod) {
         return getHandlerMethodRequestBodyArgument(request, handlerMethod.getMethod());
     }
 
     /**
-     * 从 {@link ServletRequest} 上下文获取 {@link HandlerMethod} 中的 {@link RequestBody @RequestBody} 方法参数
+     * Gets the {@link RequestBody @RequestBody} method parameter from the {@link ServletRequest} context
      *
      * @param request {@link ServletRequest}
      * @param method  Handler {@link Method}
-     * @param <T>     {@link RequestBody @RequestBody} 方法参数类型
-     * @return {@link RequestBody @RequestBody} 方法参数如果存在的话，否则，<code>null</code>
+     * @param <T>     {@link RequestBody @RequestBody} Method parameter Types
+     * @return {@link RequestBody @RequestBody} method parameter if present, otherwise <code>null<code>
      */
     public static <T> T getHandlerMethodRequestBodyArgument(ServletRequest request, Method method) {
         String attributeName = getHandlerMethodRequestBodyArgumentAttributeName(method);
@@ -226,22 +227,24 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法参数
+     * Gets the {@link HandlerMethod} method parameter
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
-     * @return non-null，如果返回数组中的元素均为 null，说明方法没有参数或未经过 {@link HandlerMethodArgumentResolverWrapper} 处理
+     * @return non-null，If return all of the elements in an array is null, the method has no parameters or
+     * without {@link HandlerMethodArgumentResolverWrapper}
      */
     public static Object[] getHandlerMethodArguments(ServletRequest request, HandlerMethod handlerMethod) {
         return getHandlerMethodArguments(request, handlerMethod.getMethod());
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法参数
+     * Gets the {@link HandlerMethod} method parameter
      *
      * @param request {@link ServletRequest}
      * @param method  {@link Method}
-     * @return non-null，如果返回数组中的元素均为 null，说明方法没有参数或未经过 {@link HandlerMethodArgumentResolverWrapper} 处理
+     * @return non-null，If return all of the elements in an array is null, the method has no parameters or without 
+     * {@link HandlerMethodArgumentResolverWrapper}
      */
     public static Object[] getHandlerMethodArguments(ServletRequest request, Method method) {
         String attributeName = getHandlerMethodArgumentsAttributeName(method);
@@ -254,22 +257,23 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法参数
+     * Gets the {@link HandlerMethod} method parameter
      *
      * @param method {@link Method}
-     * @return non-null，如果返回数组中的元素均为 null，说明方法没有参数或未经过 {@link HandlerMethodArgumentResolverWrapper} 处理
+     * @return non-null，If return all of the elements in an array is null, the method has no parameters or 
+     * without {@link HandlerMethodArgumentResolverWrapper}
      */
     public static Object[] getHandlerMethodArguments(Method method) {
         return getHandlerMethodArguments(getHttpServletRequest(), method);
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法返回值
+     * Gets the value returned by the {@link HandlerMethod} method
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
-     * @param <T>           方法返回值类型
-     * @return {@link HandlerMethod} 方法返回值
+     * @param <T>           Method return value type
+     * @return {@link HandlerMethod} Method return value
      */
     public static <T> T getHandlerMethodReturnValue(ServletRequest request, HandlerMethod handlerMethod) {
         Method method = handlerMethod.getMethod();
@@ -277,12 +281,12 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法返回值
+     * Gets the value returned by the {@link HandlerMethod} method
      *
      * @param request {@link ServletRequest}
      * @param method  {@link Method}
-     * @param <T>     方法返回值类型
-     * @return {@link HandlerMethod} 方法返回值
+     * @param <T>     Method return value type
+     * @return {@link HandlerMethod} Method return value
      */
     public static <T> T getHandlerMethodReturnValue(ServletRequest request, Method method) {
         String attributeName = getHandlerMethodReturnValueAttributeName(method);
@@ -290,11 +294,11 @@ public abstract class WebMvcUtils {
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法返回值
+     * Gets the value returned by the {@link HandlerMethod} method
      *
      * @param method {@link Method}
-     * @param <T>    方法返回值类型
-     * @return {@link HandlerMethod} 方法返回值
+     * @param <T>    Method return value type
+     * @return {@link HandlerMethod} Method return value
      */
     public static <T> T getHandlerMethodReturnValue(Method method) {
         HttpServletRequest request = getHttpServletRequest();
