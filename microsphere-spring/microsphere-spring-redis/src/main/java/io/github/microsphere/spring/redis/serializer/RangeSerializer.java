@@ -11,7 +11,7 @@ import static io.github.microsphere.spring.redis.serializer.Serializers.defaultS
 
 
 /**
- * {@link RedisZSetCommands.Range} {@link RedisSerializer} 实现
+ * {@link RedisZSetCommands.Range} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
