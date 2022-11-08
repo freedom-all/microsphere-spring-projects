@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * {@link HandlerMethod} {@link HandlerInterceptor} 抽象实现
+ * {@link HandlerMethod} {@link HandlerInterceptor} abstract implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class MethodHandlerInterceptor implements HandlerInterceptor {
 
     /**
-     * 当前 {@link HandlerInterceptor} 是否为代理对象
+     * Whether the current {@link HandlerInterceptor} is a delegate object
      */
     private final boolean delegate;
 
@@ -80,26 +80,26 @@ public abstract class MethodHandlerInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * 当前 {@link HandlerInterceptor} 是否为代理示例
+     * Whether the current {@link HandlerInterceptor} is a delegate instance
      *
-     * @return 如果是，<code>true</code>，否则为 <code>false</code>
+     * @return If yes, <code>true<code>, otherwise <code>false<code>
      */
     public boolean isDelegate() {
         return delegate;
     }
 
     /**
-     * 当前处理方法是否为代理 {@link HandlerMethod}
+     * Whether the current handler is delegate {@link HandlerMethod}
      *
      * @param handlerMethod {@link HandlerMethod}
-     * @return <code>true</code> 如果代理 {@link HandlerInterceptor}，默认 <code>false</code>
+     * @return <code>true<code> If the proxy {@link HandlerInterceptor}, default <code>false<code>
      */
     public boolean isDelegate(HandlerMethod handlerMethod) {
         return false;
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法参数
+     * Gets the {@link HandlerMethod} method parameter
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
@@ -110,24 +110,24 @@ public abstract class MethodHandlerInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * 获取 {@link HandlerMethod} 方法返回值
+     * Gets the value returned by the {@link HandlerMethod} method
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
-     * @param <T>           方法返回值类型
-     * @return {@link HandlerMethod} 方法返回值
+     * @param <T>           Method return value type
+     * @return {@link HandlerMethod} Method return value
      */
     protected <T> T getHandlerMethodReturnValue(ServletRequest request, HandlerMethod handlerMethod) {
         return WebMvcUtils.getHandlerMethodReturnValue(request, handlerMethod);
     }
 
     /**
-     * 从 {@link ServletRequest} 上下文获取 {@link HandlerMethod} 中的 {@link RequestBody @RequestBody} 方法参数
+     * Gets the {@link RequestBody @RequestBody} method parameter from the {@link ServletRequest} context
      *
      * @param request       {@link ServletRequest}
      * @param handlerMethod {@link HandlerMethod}
-     * @param <T>           {@link RequestBody @RequestBody} 方法参数类型
-     * @return {@link RequestBody @RequestBody} 方法参数如果存在的话，否则，<code>null</code>
+     * @param <T>           {@link RequestBody @RequestBody} Method parameter Types
+     * @return {@link RequestBody @RequestBody} Method argument if present, otherwise <code>null<code>
      */
     protected <T> T getHandlerMethodRequestBodyArgument(ServletRequest request, HandlerMethod handlerMethod) {
         return WebMvcUtils.getHandlerMethodRequestBodyArgument(request, handlerMethod);
