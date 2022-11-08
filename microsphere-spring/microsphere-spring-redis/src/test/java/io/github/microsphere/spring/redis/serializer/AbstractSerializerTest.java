@@ -8,9 +8,9 @@ import java.util.function.Supplier;
 import static org.junit.Assert.assertEquals;
 
 /**
- * 抽象 {@link RedisSerializer} 测试
+ * Abstract {@link RedisSerializer} Test
  *
- * @param <T> 序列化类型
+ * @param <T> Serialization type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
