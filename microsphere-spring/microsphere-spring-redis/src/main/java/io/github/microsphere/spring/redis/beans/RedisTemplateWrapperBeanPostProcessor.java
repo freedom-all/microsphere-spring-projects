@@ -18,7 +18,7 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_BEAN_NAME;
 
 /**
- * {@link BeanPostProcessor} 实现 Wrapper {@link RedisTemplate} 和 {@link StringRedisTemplate}
+ * {@link BeanPostProcessor} implements Wrapper {@link RedisTemplate} and {@link StringRedisTemplate}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see RedisTemplateWrapper
@@ -53,7 +53,7 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor 
                 redisTemplateWrapper.setBeanName(beanName);
                 return redisTemplateWrapper;
             }
-            // TODO 支持更多的自定义 RedisTemplate 类型
+            // TODO Support for more custom RedisTemplate types
         }
         return bean;
     }
@@ -63,11 +63,11 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor 
 
         List<String> additionalRedisTemplateBeanNames = redisConfiguration.getAdditionalRedisTemplateBeanNames(environment);
         Set<String> redisTemplateBeanNames = new HashSet<>(additionalRedisTemplateBeanNames.size() + 2);
-        // 添加默认 RedisTemplate Bean 名称
-        // 匹配 RedisAutoConfiguration 或 RedisServiceAutoConfiguration 中的 RedisTemplate 以及 StringRedisTemplate
+        // Add the default RedisTemplate Bean name
+        // Matches the RedisTemplate and StringRedisTemplate in RedisAutoConfiguration
         redisTemplateBeanNames.add(REDIS_TEMPLATE_BEAN_NAME);
         redisTemplateBeanNames.add(STRING_REDIS_TEMPLATE_BEAN_NAME);
-        // 应用自定义配置
+        // Apply the custom configuration
         redisTemplateBeanNames.addAll(additionalRedisTemplateBeanNames);
         return Collections.unmodifiableSet(redisTemplateBeanNames);
 
