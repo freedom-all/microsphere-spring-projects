@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
- * {@link RedisConnection} 拦截器
+ * {@link RedisConnection} interceptor
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -15,26 +15,26 @@ import java.util.Optional;
 public interface RedisConnectionInterceptor {
 
     /**
-     * 拦截 {@link RedisConnection} 方法执行前
+     * intercept {@link RedisConnection} method before execution
      *
-     * @param redisTemplateBeanName {@link RedisTemplate} Bean 名称
-     * @param redisConnection       {@link RedisConnection} 对象
-     * @param method                {@link RedisConnection} 被执行 {@link Method}
-     * @param args                  {@link RedisConnection} 被执行 {@link Method}参数
-     * @throws Throwable 当方法实现执行异常时
+     * @param redisTemplateBeanName {@link RedisTemplate} Bean Name
+     * @param redisConnection       {@link RedisConnection}
+     * @param method                {@link RedisConnection} executing {@link Method}
+     * @param args                  {@link RedisConnection} executing {@link Method} arguments
+     * @throws Throwable When method implementations execute exceptions
      */
     void beforeExecute(String redisTemplateBeanName, RedisConnection redisConnection, Method method, Object[] args) throws Throwable;
 
     /**
-     * 拦截 {@link RedisConnection} 方法执行后
+     * intercept {@link RedisConnection} method after execution
      *
-     * @param redisTemplateBeanName {@link RedisTemplate} Bean 名称
-     * @param redisConnection       {@link RedisConnection} 对象
-     * @param method                {@link RedisConnection} 被执行 {@link Method}
-     * @param args                  {@link RedisConnection} 被执行 {@link Method}参数
-     * @param result                {@link RedisConnection} 执行结果（可选）
-     * @param failure               {@link Throwable} 异常信息（可选）
-     * @throws Throwable 当方法实现执行异常时
+     * @param redisTemplateBeanName {@link RedisTemplate} Bean Name
+     * @param redisConnection       {@link RedisConnection}
+     * @param method                {@link RedisConnection} executing {@link Method}
+     * @param args                  {@link RedisConnection} executing {@link Method} arguments
+     * @param result                The Optional of {@link RedisConnection} execution result
+     * @param failure               The Optional of {@link Throwable} Throwable
+     * @throws Throwable When method implementations execute exceptions
      */
     void afterExecute(String redisTemplateBeanName, RedisConnection redisConnection, Method method, Object[] args,
                       Optional<Object> result, Optional<Throwable> failure) throws Throwable;
