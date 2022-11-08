@@ -5,7 +5,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@link TimeUnit} {@link EnumSerializer} 测试
+ * {@link TimeUnit} {@link EnumSerializer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
