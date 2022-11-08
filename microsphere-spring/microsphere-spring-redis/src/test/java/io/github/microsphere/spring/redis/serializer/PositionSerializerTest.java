@@ -4,7 +4,7 @@ import org.springframework.data.redis.connection.RedisListCommands;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
- * {@link RedisListCommands.Position} {@link EnumSerializer} 测试
+ * {@link RedisListCommands.Position} {@link EnumSerializer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
