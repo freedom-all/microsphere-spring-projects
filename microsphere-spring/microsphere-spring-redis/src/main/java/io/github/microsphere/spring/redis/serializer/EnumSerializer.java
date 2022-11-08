@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
- * {@link Enum 枚举} {@link RedisSerializer} 实现
+ * {@link Enum} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -62,7 +62,7 @@ public class EnumSerializer<E extends Enum> implements RedisSerializer<E> {
 
     @Override
     public byte[] serialize(Enum e) throws SerializationException {
-        // 兼容 null 情况
+        // null compatible case
         if (e == null) {
             return null;
         }
@@ -75,7 +75,7 @@ public class EnumSerializer<E extends Enum> implements RedisSerializer<E> {
         byte[] bytes = new byte[bytesLength];
 
         switch (bytesLength) {
-            case BYTE_BYTES_LENGTH: // 绝大多数场景匹配
+            case BYTE_BYTES_LENGTH: // Most scenarios match
                 bytes[0] = (byte) ordinal;
                 break;
             case SHORT_BYTES_LENGTH:
@@ -90,7 +90,7 @@ public class EnumSerializer<E extends Enum> implements RedisSerializer<E> {
 
     @Override
     public E deserialize(byte[] bytes) throws SerializationException {
-        // 兼容 null 情况
+        // null compatible case
         if (bytes == null) {
             return null;
         }
@@ -100,7 +100,7 @@ public class EnumSerializer<E extends Enum> implements RedisSerializer<E> {
 
         int ordinal = 0;
         switch (bytesLength) {
-            case BYTE_BYTES_LENGTH: // 绝大多数场景匹配
+            case BYTE_BYTES_LENGTH: // Most scenarios match
                 ordinal = bytes[0];
                 break;
             case SHORT_BYTES_LENGTH:
