@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
- * 存储 {@link HandlerMethod} {@link RequestBody} 参数 {@link RequestBodyAdvice} 实现
+ * Store the {@link HandlerMethod} {@link RequestBody} parameter {@link RequestBodyAdvice} implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
