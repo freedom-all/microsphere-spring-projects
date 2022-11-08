@@ -3,7 +3,7 @@ package io.github.microsphere.spring.redis.metadata;
 import org.springframework.data.redis.connection.RedisCommands;
 
 /**
- * {@link RedisCommands Redis 命令} 方法参数封装对象
+ * {@link RedisCommands Redis 命令} Method parameters encapsulate the object
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
