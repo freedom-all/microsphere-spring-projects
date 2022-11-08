@@ -9,7 +9,7 @@ import java.util.List;
 import static io.github.microsphere.spring.redis.serializer.Serializers.defaultSerialize;
 
 /**
- * {@link RedisZSetCommands.Weights} {@link RedisSerializer} 实现
+ * {@link RedisZSetCommands.Weights} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
