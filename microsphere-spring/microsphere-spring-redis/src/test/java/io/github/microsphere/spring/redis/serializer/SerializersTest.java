@@ -14,7 +14,7 @@ import static io.github.microsphere.spring.redis.serializer.Serializers.*;
 import static org.junit.Assert.*;
 
 /**
- * {@link Serializers} 测试
+ * {@link Serializers} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
