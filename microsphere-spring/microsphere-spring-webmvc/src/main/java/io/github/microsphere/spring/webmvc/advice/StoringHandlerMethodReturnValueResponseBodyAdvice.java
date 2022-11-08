@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
 /**
- * 存储 {@link HandlerMethod} 返回值 {@link ResponseBodyAdviceAdapter} 实现
+ * Store {@ link HandlerMethod} return value {@ link ResponseBodyAdviceAdapter}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
