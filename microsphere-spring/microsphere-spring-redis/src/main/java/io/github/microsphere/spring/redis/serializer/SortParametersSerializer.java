@@ -11,7 +11,7 @@ import java.util.Map;
 import static io.github.microsphere.spring.redis.serializer.Serializers.defaultSerialize;
 
 /**
- * {@link SortParameters} {@link RedisSerializer} 实现
+ * {@link SortParameters} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see DefaultSortParameters
