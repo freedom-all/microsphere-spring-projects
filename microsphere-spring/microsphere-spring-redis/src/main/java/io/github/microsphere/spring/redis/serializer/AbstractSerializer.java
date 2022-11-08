@@ -5,9 +5,9 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
 /**
- * 抽象 {@link RedisSerializer} 实现
+ * Abstract {@link RedisSerializer} Class
  *
- * @param <T> 被序列化/反序列化类型
+ * @param <T> Serialized/Deserialized type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
@@ -40,7 +40,7 @@ public abstract class AbstractSerializer<T> implements RedisSerializer<T> {
 
     @Override
     public final byte[] serialize(T t) throws SerializationException {
-        // 兼容 null 情况
+        // null compatible case
         if (t == null) {
             return null;
         }
@@ -50,12 +50,12 @@ public abstract class AbstractSerializer<T> implements RedisSerializer<T> {
 
     @Override
     public final T deserialize(byte[] bytes) throws SerializationException {
-        // 兼容 null 情况
+        // null compatible case
         if (bytes == null) {
             return null;
         }
 
-        // 兼容 字节数组固定 情况
+        // Compatible byte array fixed case
         if (bytesLength != UNBOUND_BYTES_LENGTH && bytes.length != getBytesLength()) {
             return null;
         }
