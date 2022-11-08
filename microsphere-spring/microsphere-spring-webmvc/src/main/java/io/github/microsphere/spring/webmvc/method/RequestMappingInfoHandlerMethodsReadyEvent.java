@@ -10,7 +10,7 @@ import java.util.Map;
 import static java.util.Collections.unmodifiableMap;
 
 /**
- * {@link RequestMappingInfo} {@link HandlerMethod} 准备事件
+ * {@link RequestMappingInfo} {@link HandlerMethod} Ready Event
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
