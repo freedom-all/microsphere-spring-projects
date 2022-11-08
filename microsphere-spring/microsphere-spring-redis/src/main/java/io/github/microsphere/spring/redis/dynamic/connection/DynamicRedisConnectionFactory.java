@@ -23,7 +23,7 @@ import java.util.Map;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
- * 动态 {@link RedisConnectionFactory} 实现
+ * Dynamic {@link RedisConnectionFactory} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -32,7 +32,7 @@ public class DynamicRedisConnectionFactory implements RedisConnectionFactory, Sm
         ApplicationContextAware, BeanNameAware {
 
     /**
-     * 默认 {@link RedisConnectionFactory} Bean 名称
+     * Default {@link RedisConnectionFactory} Bean name
      */
     public static final String DEFAULT_REDIS_CONNECTION_FACTORY_BEAN_NAME = "redisConnectionFactory";
 
@@ -108,12 +108,12 @@ public class DynamicRedisConnectionFactory implements RedisConnectionFactory, Sm
         String targetBeanName = getTargetBeanName();
         if (targetBeanName == null) {
             RedisConnectionFactory defaultRedisConnectionFactory = getDefaultRedisConnectionFactory();
-            logger.debug("当前目标 Bean Name 未设置或在多线程环境执行，使用默认 RedisConnectionFactory Bean[name: '{}']", defaultRedisConnectionFactoryBeanName);
+            logger.debug("Current target Bean Name is not set or is executed in a multi-threaded environment, using the default RedisConnectionFactory Bean[name: '{}']", defaultRedisConnectionFactoryBeanName);
             return defaultRedisConnectionFactory;
         }
-        logger.debug("开始切换目标 RedisConnectionFactory Bean[name : '{}']", targetBeanName);
+        logger.debug("Start toggle destination RedisConnectionFactory Bean[name: '{}']", targetBeanName);
         RedisConnectionFactory targetRedisConnectionFactory = getRedisConnectionFactory(targetBeanName);
-        logger.debug("成功切换目标 RedisConnectionFactory Bean[name : '{}']", targetBeanName);
+        logger.debug("RedisConnectionFactory Bean[name: '{}']", targetBeanName);
         return targetRedisConnectionFactory;
     }
 
@@ -140,38 +140,41 @@ public class DynamicRedisConnectionFactory implements RedisConnectionFactory, Sm
 
     private RedisConnectionFactory resolveDefaultRedisConnectionFactory() {
         String beanName = defaultRedisConnectionFactoryBeanName;
-        Assert.isTrue(hasText(beanName), "默认 RedisConnectionFactory Bean Name 不能未空");
+        Assert.isTrue(hasText(beanName), "The default RedisConnectionFactory Bean Name cannot be left blank");
         return getRedisConnectionFactory(beanName);
     }
 
     private Map<String, RedisConnectionFactory> resolveRedisConnectionFactories() {
         Map<String, RedisConnectionFactory> redisConnectionFactories = new HashMap<>(context.getBeansOfType(RedisConnectionFactory.class));
-        // 移除当前 Bean
+        // Remove the current Bean
         redisConnectionFactories.remove(beanName);
-        Assert.notEmpty(redisConnectionFactories, "RedisConnectionFactory Beans 不存在");
+        Assert.notEmpty(redisConnectionFactories, "RedisConnectionFactory Beans do not exist");
         return Collections.unmodifiableMap(redisConnectionFactories);
     }
 
     /**
-     * 切换目标 {@link RedisConnectionFactory}
-     * 请仔细阅读以下提示：
+     * Switch the target {@link RedisConnectionFactory}
+     * Please read the following tips carefully:
      * <ul>
-     *     <li>当该方法调用后，请主动调用 {@link #clearTarget()} 方法，清除标记状态，特别在非 Web 请求线程场景中，以免内存泄漏分享（尽管框架会在 HTTP 请求结束时清除）</li>
-     *     <li>当该方法调用如果在自定义线程池场景时，请注意复制当前 ThreadLocal 缓存的 <code>redisConnectionFactoryBeanName</code> 到目标线程中</li>
-     *     <li>当 <code>redisConnectionFactoryBeanName</code> 所指向的 Bean 在当前应用上下文不存在时，会抛出异常</li>
+     *     <li>When this method is called, actively call the {@link #clearTarget()} method to clear the tag state,
+     *     especially in non-Web request threading scenarios, to avoid memory leakage sharing (although the framework does clear it at the end of the HTTP request).</li>
+     *     <li>When the method invocation, if in a custom thread pool scene, please pay attention to copy
+     *     the current < code > ThreadLocal cache redisConnectionFactoryBeanName < code > to the target thread</li>
+     *     <li>When a < code > redisConnectionFactoryBeanName < code > points to Bean in the current application context does not exist,
+     *     will throw an exception</li>
      * </ul>
      *
-     * @param redisConnectionFactoryBeanName 目标 {@link RedisConnectionFactory} Bean 名称
+     * @param redisConnectionFactoryBeanName Target {@link RedisConnectionFactory} Bean name
      */
     public static void switchTarget(String redisConnectionFactoryBeanName) {
         beanNameHolder.set(redisConnectionFactoryBeanName);
-        logger.debug("切换目标 RedisConnectionFactory Bean Name : '{}'", redisConnectionFactoryBeanName);
+        logger.debug("Switch target RedisConnectionFactory Bean Name: '{}'", redisConnectionFactoryBeanName);
     }
 
     public static void clearTarget() {
         String targetBeanName = getTargetBeanName();
         beanNameHolder.remove();
-        logger.debug("清除目标 RedisConnectionFactory Bean Name : '{}'", targetBeanName);
+        logger.debug("Clear target RedisConnectionFactory Bean Name: '{}'", targetBeanName);
     }
 
     protected static String getTargetBeanName() {
