@@ -7,7 +7,7 @@ import org.springframework.web.method.HandlerMethod;
 import java.lang.reflect.Method;
 
 /**
- * {@link HandlerMethod} 参数已处理事件
+ * {@link HandlerMethod} Arguments Resolved Event
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
