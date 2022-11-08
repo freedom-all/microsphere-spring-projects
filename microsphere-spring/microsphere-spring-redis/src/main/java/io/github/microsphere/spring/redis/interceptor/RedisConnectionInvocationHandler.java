@@ -67,15 +67,15 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
 
         List<ParameterMetadata> parameterMetadataList = getParameterMetadataList(method);
 
-        if (parameterMetadataList != null) { // 当前方法为复制 Redis 命令方法
-            // 初始化方法参数数据
+        if (parameterMetadataList != null) { // The current method is to copy the Redis command
+            // Initializes the method parameter data
             ParametersHolder.init(parameterMetadataList, args);
-            // 执行Redis 命令方法方法
+            // Invoke the Redis command method
             result = doInvoke(method, args);
-            // 发布 Redis 命令方法事件
+            // Publishes the Redis command method event
             publishRedisCommandEvent(method, args);
         } else {
-            // 执行 Redis 命令方法方法
+            // Invoke the Redis command method
             result = doInvoke(method, args);
         }
 
@@ -113,7 +113,7 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
                 try {
                     interceptor.beforeExecute(redisTemplateBeanName, rawRedisConnection, method, args);
                 } catch (Throwable e) {
-                    logger.error("{}.beforeExecute 方法执行失败 , RedisTemplate[bean name : '{}'] , method : '{}'",
+                    logger.error("beforeExecute method fails to execute, RedisTemplate[bean name: '{}'], method: '{}'",
                             interceptor.getClass().getName(), redisTemplateBeanName, method, e);
                 }
             }
@@ -126,7 +126,7 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
                 try {
                     interceptor.afterExecute(redisTemplateBeanName, rawRedisConnection, method, args, ofNullable(result), ofNullable(failure));
                 } catch (Throwable e) {
-                    logger.error("{}.afterExecute 方法执行失败 , RedisTemplate[bean name : '{}'] , method : '{}'",
+                    logger.error("afterExecute method failed to execute, RedisTemplate[bean name: '{}'], method: '{}'",
                             interceptor.getClass().getName(), redisTemplateBeanName, method, e);
                 }
             }
@@ -136,7 +136,7 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
     private void publishRedisCommandEvent(Method method, Object[] args) {
         RedisCommandEvent redisCommandEvent = createRedisCommandEvent(method, args);
         if (redisCommandEvent != null) {
-            // 事件处理允许抛出异常
+            // Event handling allows exceptions to be thrown
             context.publishEvent(redisCommandEvent);
         }
     }
@@ -148,7 +148,7 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
             redisCommandEvent = new RedisCommandEvent(method, parameters, sourceFrom, applicationName);
             redisCommandEvent.setBeanName(redisTemplateBeanName);
         } catch (Throwable e) {
-            logger.error("Redis Sync 创建命令方法事件失败，方法：{}", method, e);
+            logger.error("Redis Sync failed to create a command method event.", method, e);
         }
         return redisCommandEvent;
     }
