@@ -1,4 +1,4 @@
-package io.github.microsphere.spring.webmvc.util;
+package io.github.microsphere.spring.web.servlet.util;
 
 import org.springframework.util.ClassUtils;
 
