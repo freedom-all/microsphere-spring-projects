@@ -7,7 +7,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import java.util.StringJoiner;
 
 /**
- * {@link RedisCommands Redis 命令} 工具类
+ * {@link RedisCommands Redis Command} Utilities Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -64,7 +64,7 @@ public abstract class RedisCommandsUtils {
             case REDIS_SERVER_COMMANDS:
                 return redisConnection.serverCommands();
             case REDIS_STREAM_COMMANDS:
-                // TODO 需要升级 Redis Spring Data 版本
+                // TODO The Redis Spring Data version needs to be upgraded
                 // return redisConnection.streamCommands();
             default:
                 throw new UnsupportedOperationException(interfaceName);
