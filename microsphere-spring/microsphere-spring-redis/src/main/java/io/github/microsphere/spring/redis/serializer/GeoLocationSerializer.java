@@ -11,7 +11,7 @@ import java.util.Map;
 import static io.github.microsphere.spring.redis.serializer.Serializers.defaultSerialize;
 
 /**
- * {@link RedisGeoCommands.GeoLocation} {@link RedisSerializer} 实现
+ * {@link RedisGeoCommands.GeoLocation} {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -31,7 +31,7 @@ public class GeoLocationSerializer extends AbstractSerializer<RedisGeoCommands.G
         Object name = geoLocation.getName();
         Point point = geoLocation.getPoint();
         Map<String, Object> data = new HashMap<>(2);
-        // nameBytes 可能会失败
+        // nameBytes may fail
         byte[] nameBytes = defaultSerialize(name);
         byte[] pointBytes = pointSerializer.serialize(point);
 
