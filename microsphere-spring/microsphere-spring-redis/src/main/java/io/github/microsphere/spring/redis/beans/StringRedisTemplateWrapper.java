@@ -13,7 +13,7 @@ import org.springframework.lang.Nullable;
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
 
 /**
- * {@link StringRedisTemplate} Wrapper 类
+ * {@link StringRedisTemplate} Wrapper class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -35,11 +35,11 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements B
     }
 
     private void initSettings(StringRedisTemplate stringRedisTemplate) {
-        // 设置连接
+        // Set up the connection
         setConnectionFactory(stringRedisTemplate.getConnectionFactory());
         setExposeConnection(stringRedisTemplate.isExposeConnection());
 
-        // 设置 RedisSerializers
+        // Set the RedisSerializers
         setEnableDefaultSerializer(stringRedisTemplate.isEnableDefaultSerializer());
         setDefaultSerializer(stringRedisTemplate.getDefaultSerializer());
         setKeySerializer(stringRedisTemplate.getKeySerializer());
@@ -61,9 +61,9 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements B
     @Override
     protected <T> T postProcessResult(@Nullable T result, RedisConnection conn, boolean existingConnection) {
         if (isEnabled()) {
-            // 清除方法参数数据
+            // Clear method parameter data
             ParametersHolder.clear();
-            logger.debug("方法参数元数据已清除");
+            logger.debug("Method parameter metadata has been cleared");
         }
         return result;
     }
