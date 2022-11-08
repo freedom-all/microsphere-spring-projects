@@ -7,17 +7,29 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.geo.Point;
-import org.springframework.data.redis.connection.*;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisListCommands;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.connection.ReturnType;
+import org.springframework.data.redis.connection.SortParameters;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@link RedisSerializer} 工具类，主要用于 Redis 命令方法参数类型序列化和反序列化
+ * {@link RedisSerializer} Utilities class, mainly used for Redis command method parameter type
+ * serialization and deserialization
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -33,8 +45,8 @@ public abstract class Serializers {
     static final StringRedisSerializer stringSerializer = StringRedisSerializer.UTF_8;
 
     /**
-     * 泛型参数化 {@link RedisSerializer}
-     * Key 为类型的全名称，Value 为 {@link RedisSerializer} 实现
+     * Generic parameterized {@link RedisSerializer}
+     * Key is the full name of the type, and Value is implemented as {@link RedisSerializer}
      */
     static final Map<String, RedisSerializer<?>> typedSerializers = new HashMap<>(32);
 
@@ -51,11 +63,11 @@ public abstract class Serializers {
         RedisSerializer<?> serializer = typedSerializers.get(typeName);
 
         if (serializer == null) {
-            logger.debug("未找到类型 {} 的 RedisSerializer 实现类，将使用默认 RedisSerializer 实现类：{}", typeName, defaultSerializer.getClass().getName());
+            logger.debug("RedisSerializer implementation class of type {} not found, default RedisSerializer implementation class will be used: {}", typeName, defaultSerializer.getClass().getName());
             serializer = defaultSerializer;
             typedSerializers.put(typeName, serializer);
         } else {
-            logger.trace("找到类型 {} 的 RedisSerializer 实现类：{}", typeName, serializer.getClass().getName());
+            logger.trace("Find the RedisSerializer implementation class of type {} : {}", typeName, serializer.getClass().getName());
         }
 
         return serializer;
@@ -85,7 +97,7 @@ public abstract class Serializers {
     public static Object deserialize(byte[] bytes, String parameterType) {
         RedisSerializer<?> serializer = getSerializer(parameterType);
         if (serializer == null) {
-            logger.error("无法将字节流反序列化为目标类型 {} 的对象", parameterType);
+            logger.error("Unable to deserialize the byte stream to an object of target type {}", parameterType);
             return null;
         }
         Object object = serializer.deserialize(bytes);
@@ -97,145 +109,145 @@ public abstract class Serializers {
         if (type.isInstance(object)) {
             return type.cast(object);
         } else {
-            logger.error("无法将字节流反序列化为目标类型 {} 的对象", type.getName());
+            logger.error("Unable to deserialize the byte stream to an object of target type {}", type.getName());
             return null;
         }
     }
 
     /**
-     * 初始化内建类型 Serializers
+     * Initializes built-in Serializers
      */
     private static void initializeBuiltinSerializers() {
 
-        // 初始化简单类型 Serializers
+        // Initializes the simple type Serializers
         initializeSimpleSerializers();
 
-        // 初始化数组类型 Serializers
+        // Initializes the array type Serializers
         initializeArrayTypeSerializers();
 
-        // 初始化集合类型 Serializers
+        // Initializes the collection type Serializers
         initializeCollectionTypeSerializers();
 
-        // 初始化枚举类型 Serializers
+        // Initializes the enumeration type Serializers
         initializeEnumerationSerializers();
 
-        // 初始化 Spring Data Redis 类型 Serializers
+        // Initializes the Spring Data Redis type Serializers
         initializeSpringDataRedisSerializers();
     }
 
     /**
-     * 初始化简单类型 Serializers
+     * Initializes the simple type Serializers
      */
     private static void initializeSimpleSerializers() {
 
-        // boolean 或 Boolean 类型
+        // boolean or Boolean type 
         initializeSerializer(boolean.class, BooleanSerializer.INSTANCE);
         initializeSerializer(Boolean.class, BooleanSerializer.INSTANCE);
 
-        // int 或 Integer 类型
+        // int or Integer type 
         initializeSerializer(int.class, IntegerSerializer.INSTANCE);
         initializeSerializer(Integer.class, IntegerSerializer.INSTANCE);
 
-        // long 或 Long 类型
+        // long or Long type 
         initializeSerializer(long.class, LongSerializer.INSTANCE);
         initializeSerializer(Long.class, LongSerializer.INSTANCE);
 
-        // double 或 Double 类型
+        // double or Double type 
         initializeSerializer(double.class, DoubleSerializer.INSTANCE);
         initializeSerializer(Double.class, DoubleSerializer.INSTANCE);
 
-        // String 类型
+        // String type 
         initializeSerializer(String.class, stringSerializer);
     }
 
     /**
-     * 初始化集合类型 Serializers
+     * Initializes collection type Serializers
      */
     private static void initializeCollectionTypeSerializers() {
 
-        // Iterable 类型
+        // Iterable type 
         initializeSerializer(Iterable.class, defaultSerializer);
 
-        // Iterator 类型
+        // Iterator type 
         initializeSerializer(Iterator.class, defaultSerializer);
 
-        // Collection 类型
+        // Collection type 
         initializeSerializer(Collection.class, defaultSerializer);
 
-        // List 类型
+        // List type 
         initializeSerializer(List.class, defaultSerializer);
 
-        // Set 类型
+        // Set type 
         initializeSerializer(Set.class, defaultSerializer);
 
-        // Map 类型
+        // Map type 
         initializeSerializer(Map.class, defaultSerializer);
 
-        // Queue 类型
+        // Queue type 
         initializeSerializer(Queue.class, defaultSerializer);
     }
 
     /**
-     * 初始化数组类型 Serializers
+     * Initializes Array type Serializers
      */
     private static void initializeArrayTypeSerializers() {
 
-        // byte[] 类型
+        // byte[] type 
         //initializeSerializer(byte[].class, ByteArraySerializer.INSTANCE);
         initializeSerializer(byte[].class, defaultSerializer);
 
-        // int[] 类型
+        // int[] type 
         initializeSerializer(int[].class, defaultSerializer);
 
-        // byte[][] 类型
+        // byte[][] type 
         initializeSerializer(byte[][].class, defaultSerializer);
     }
 
     /**
-     * 初始化枚举类型 Serializers
+     * Initializes Enumeration type Serializers
      */
     private static void initializeEnumerationSerializers() {
         initializeSerializer(TimeUnit.class, new EnumSerializer(TimeUnit.class));
     }
 
     /**
-     * 初始化 Spring Data Redis 类型 Serializers
+     * Initializes Spring Data Redis type Serializers
      */
     private static void initializeSpringDataRedisSerializers() {
 
-        // org.springframework.data.redis.core.types.Expiration 类型
+        // org.springframework.data.redis.core.types.Expiration type 
         initializeSerializer(Expiration.class, ExpirationSerializer.INSTANCE);
 
-        // org.springframework.data.redis.connection.SortParameters 类型
+        // org.springframework.data.redis.connection.SortParameters type 
         initializeSerializer(SortParameters.class, SortParametersSerializer.INSTANCE);
 
-        // org.springframework.data.redis.connection.RedisListCommands.Position 类型
+        // org.springframework.data.redis.connection.RedisListCommands.Position type 
         initializeSerializer(RedisListCommands.Position.class, new EnumSerializer(RedisListCommands.Position.class));
 
-        // org.springframework.data.redis.connection.RedisStringCommands.SetOption 类型
+        // org.springframework.data.redis.connection.RedisStringCommands.SetOption type 
         initializeSerializer(RedisStringCommands.SetOption.class, new EnumSerializer(RedisStringCommands.SetOption.class));
 
-        // org.springframework.data.redis.connection.RedisZSetCommands.Range 类型
+        // org.springframework.data.redis.connection.RedisZSetCommands.Range type 
         initializeSerializer(RedisZSetCommands.Range.class, RangeSerializer.INSTANCE);
 
         // org.springframework.data.redis.connection.RedisZSetCommands.Aggregate
         initializeSerializer(RedisZSetCommands.Aggregate.class, new EnumSerializer(RedisZSetCommands.Aggregate.class));
 
-        // org.springframework.data.redis.connection.RedisZSetCommands.Weights 类型
+        // org.springframework.data.redis.connection.RedisZSetCommands.Weights type 
         initializeSerializer(RedisZSetCommands.Weights.class, WeightsSerializer.INSTANCE);
 
-        // org.springframework.data.redis.connection.ReturnType 类型
+        // org.springframework.data.redis.connection.ReturnType type 
         initializeSerializer(ReturnType.class, new EnumSerializer(ReturnType.class));
 
-        // org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation 类型
+        // org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation type 
         initializeSerializer(RedisGeoCommands.GeoLocation.class, GeoLocationSerializer.INSTANCE);
 
-        // org.springframework.data.geo.Point 类型
+        // org.springframework.data.geo.Point type 
         initializeSerializer(Point.class, PointSerializer.INSTANCE);
     }
 
     /**
-     * 初始化泛型参数 Serializers
+     * Initializes Parameterized Serializers
      */
     private static void initializeParameterizedSerializers() {
         List<RedisSerializer> serializers = loadSerializers();
@@ -257,7 +269,7 @@ public abstract class Serializers {
         if (parameterizedType != null) {
             initializeSerializer(parameterizedType, serializer);
         } else {
-            logger.warn("RedisSerializer 实现类：{} 未能找到参数类型", serializer.getClass());
+            logger.warn("RedisSerializer implementation class: {} could not find parameter type", serializer.getClass());
         }
     }
 
@@ -267,7 +279,7 @@ public abstract class Serializers {
 
     static void initializeSerializer(Class<?> type, RedisSerializer serializer) {
         String typeName = type.getName();
-        logger.debug("初始化类型[{}]的 RedisSerializer 实现类：{} , ", typeName, serializer.getClass());
+        logger.debug("Initializes the RedisSerializer of type [{}] The implementation class: {}", typeName, serializer.getClass());
         typedSerializers.put(typeName, serializer);
     }
 
