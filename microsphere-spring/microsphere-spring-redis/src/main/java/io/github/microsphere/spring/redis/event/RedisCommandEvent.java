@@ -3,7 +3,20 @@ package io.github.microsphere.spring.redis.event;
 import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.data.redis.connection.*;
+import org.springframework.data.redis.connection.RedisCommands;
+import org.springframework.data.redis.connection.RedisConnectionCommands;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisHashCommands;
+import org.springframework.data.redis.connection.RedisHyperLogLogCommands;
+import org.springframework.data.redis.connection.RedisKeyCommands;
+import org.springframework.data.redis.connection.RedisListCommands;
+import org.springframework.data.redis.connection.RedisPubSubCommands;
+import org.springframework.data.redis.connection.RedisScriptingCommands;
+import org.springframework.data.redis.connection.RedisServerCommands;
+import org.springframework.data.redis.connection.RedisSetCommands;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.RedisTxCommands;
+import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ClassUtils;
@@ -16,8 +29,8 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
 
 /**
- * {@link RedisCommands Redis 命令} 事件
- * 当前支持的命令：
+ * {@link RedisCommands Redis command} event
+ * The supported commands：
  * <ul>
  *     <li>RedisStringCommands</li>
  *     <li>RedisHashCommands</li>
@@ -50,44 +63,44 @@ public class RedisCommandEvent extends ApplicationEvent {
 
 
     /**
-     * 命令接口简单名称，比如：
+     * Command interface simple name, such as：
      * RedisStringCommands
      * RedisHashCommands
      */
     private String interfaceName;
 
     /**
-     * 命令接口方法名称，比如：set 方法
+     * Command interface method name, for example, set method
      */
     private String methodName;
 
     /**
-     * 方法参数类型列表，比如：[java.lang.String,java.lang.String]
+     * Method parameter type list, such as: [Java. Lang. String, Java. Lang. String]
      */
     private String[] parameterTypes;
 
     /**
-     * 方法参数对象列表
+     * List of method parameter objects
      */
     private byte[][] parameters;
 
     /**
-     * 事件来源
+     * Event source
      */
     private byte sourceFrom;
 
     /**
-     * 事件来源应用名
+     * Event source Application name
      */
     private String sourceApplication;
 
     /**
-     * 业务域（非序列化字段，由消费端初始化）
+     * Business domain (non-serialized field, initialized by the consumer)
      */
     private transient String domain;
 
     /**
-     * RedisTemplate Bean 名称（非序列化字段，由消费端初始化）
+     * RedisTemplate Bean name (non-serialized field, initialized by the consumer)
      */
     private transient String beanName;
 
@@ -149,38 +162,38 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * 事件是否源于 {@link RedisTemplate}
+     * Does the event originate from {@link RedisTemplate}
      *
-     * @return 如果是，返回 <code>true</code>，否则，返回 <code>false</code>
+     * @return If yes, return <code>true<code>, otherwise, return <code>false<code>
      */
     public boolean isSourceFromRedisTemplate() {
         return this.sourceFrom == REDIS_TEMPLATE_SOURCE;
     }
 
     /**
-     * 事件是否源于 {@link StringRedisTemplate}
+     * Does the event originate from {@link StringRedisTemplate}
      *
-     * @return 如果是，返回 <code>true</code>，否则，返回 <code>false</code>
+     * @return If yes, return <code>true<code>, otherwise, return <code>false<code>
      */
     public boolean isSourceFromStringRedisTemplate() {
         return this.sourceFrom == STRING_REDIS_TEMPLATE_SOURCE;
     }
 
     /**
-     * 获取指定索引得参数类型（String 类型表示）
+     * Gets the parameter type (String) of the specified index.
      *
-     * @param parameterIndex 参数数组下标
-     * @return 参数类型（String 类型表示）
+     * @param parameterIndex Parameter array index
+     * @return Parameter type (String)
      */
     public String getParameterType(int parameterIndex) {
         return parameterTypes[parameterIndex];
     }
 
     /**
-     * 获取指定索引得参数类型
+     * Gets the parameter type of the specified index
      *
-     * @param parameterIndex 参数数组下标
-     * @return 参数类型
+     * @param parameterIndex Parameter array index
+     * @return The parameter type
      */
     public Class<?> getParameterClass(int parameterIndex) {
         String parameterType = getParameterType(parameterIndex);
@@ -188,9 +201,9 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * 获取所有参数类型
+     * Gets all parameter types
      *
-     * @return 所有参数类型
+     * @return All parameter Types
      */
     public Class<?>[] getParameterClasses() {
         int parameterCount = getParameterCount();
@@ -202,7 +215,7 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * 获取方法参数列表（对象类型，非 byte[]）
+     * Gets a list of method parameters (object type, not byte[])
      *
      * @return non-null
      */
@@ -228,14 +241,14 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * @return 事件来源
+     * @return Event source
      */
     public byte getSourceFrom() {
         return sourceFrom;
     }
 
     /**
-     * @return 事件来源应用名
+     * @return Event source Application name
      */
     public String getSourceApplication() {
         return sourceApplication;
@@ -246,21 +259,21 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * @return 业务域（非序列化字段，由消费端初始化）
+     * @return Business domain (non-serialized field, initialized by the consumer)
      */
     public String getDomain() {
         return domain;
     }
 
     /**
-     * @return RedisTemplate Bean 名称
+     * @return RedisTemplate Bean name
      */
     public String getBeanName() {
         return beanName;
     }
 
     /**
-     * @param beanName RedisTemplate Bean 名称
+     * @param beanName RedisTemplate Bean name
      */
     public void setBeanName(String beanName) {
         this.beanName = beanName;
