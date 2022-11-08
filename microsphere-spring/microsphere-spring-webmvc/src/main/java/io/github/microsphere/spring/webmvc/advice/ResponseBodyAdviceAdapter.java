@@ -8,9 +8,9 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /**
- * {@link ResponseBodyAdvice} Adapter 实现
+ * {@link ResponseBodyAdvice} Adapter Class
  *
- * @param <T> HTTP 响应内容实体类型
+ * @param <T> HTTP Response content entity type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
