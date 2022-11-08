@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 发布 {@link HandlerMethod} 事件监听器
+ * Publishing {@link HandlerMethod} Event Listener
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see HandlerMethodsInitializedEvent
@@ -59,7 +59,7 @@ public class PublishingHandlerMethodsEventListener implements ApplicationListene
 
         applicationContext.publishEvent(new HandlerMethodsInitializedEvent(applicationContext, handlerMethods));
         applicationContext.publishEvent(new RequestMappingInfoHandlerMethodsReadyEvent(applicationContext, requestMappingInfoHandlerMethods));
-        logger.info("当前应用上下文[id : '{}'] 已发送 HandlerMethod 准备事件");
+        logger.info("The current application context [id: '{}'] has sent the HandlerMethod events");
     }
 
     @Override
