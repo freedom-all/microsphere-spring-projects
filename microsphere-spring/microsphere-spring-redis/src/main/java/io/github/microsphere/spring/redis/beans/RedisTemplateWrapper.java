@@ -17,10 +17,10 @@ import java.lang.reflect.Proxy;
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_SOURCE;
 
 /**
- * {@link RedisTemplate} Wrapper 类，兼容 {@link RedisTemplate}
+ * {@link RedisTemplate} Wrapper class, compatible with {@link RedisTemplate}
  *
- * @param <K> Redis Key 类型
- * @param <V> Redis Value 类型
+ * @param <K> Redis Key type
+ * @param <V> Redis Value type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
@@ -43,11 +43,11 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
     }
 
     private void initSettings(RedisTemplate<K, V> redisTemplate) {
-        // 设置连接
+        // Set the connection
         setConnectionFactory(redisTemplate.getConnectionFactory());
         setExposeConnection(redisTemplate.isExposeConnection());
 
-        // 设置 RedisSerializers
+        // Set the RedisSerializers
         setEnableDefaultSerializer(redisTemplate.isEnableDefaultSerializer());
         setDefaultSerializer(redisTemplate.getDefaultSerializer());
         setKeySerializer(redisTemplate.getKeySerializer());
@@ -69,9 +69,9 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
     @Override
     protected <T> T postProcessResult(@Nullable T result, RedisConnection conn, boolean existingConnection) {
         if (isEnabled()) {
-            // 清除方法参数数据
+            // Clear method parameter data
             ParametersHolder.clear();
-            logger.debug("方法参数元数据已清除");
+            logger.debug("Method parameter metadata has been cleared");
         }
         return result;
     }
