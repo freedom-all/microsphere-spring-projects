@@ -18,9 +18,6 @@
     <name>Microsphere Spring Projects :: Spring Boot :: Parent</name>
     <description>Microsphere Spring Boot Parent</description>
 
-    <properties>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <!-- Spring Boot Dependencies -->

@@ -21,6 +21,7 @@
     <modules>
         <module>microsphere-spring-boot-parent</module>
         <module>microsphere-spring-boot-dependencies</module>
+        <module>microsphere-spring-boot-starter</module>
     </modules>
 
     <dependencyManagement>
