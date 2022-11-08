@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
- * {@link RequestBodyAdvice} Adapter 实现
+ * {@link RequestBodyAdvice} Adapter Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
