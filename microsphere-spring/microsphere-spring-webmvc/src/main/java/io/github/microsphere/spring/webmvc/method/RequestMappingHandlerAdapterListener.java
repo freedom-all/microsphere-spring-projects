@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * {@link RequestMappingHandlerAdapter} 定制  {@link ApplicationListener}
+ * {@link RequestMappingHandlerAdapter} {@link ApplicationListener}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -37,7 +37,7 @@ public class RequestMappingHandlerAdapterListener implements ApplicationListener
         ApplicationContext applicationContext = event.getApplicationContext();
 
         if (!matches(applicationContext)) {
-            logger.info("当前事件 ApplicationContext[id: {}] 与关联 ApplicationContext[id: {}] 不匹配，忽略处理！",
+            logger.info("The current event ApplicationContext[id: {}] does not match the associated ApplicationContext[id: {}], ignore processing!",
                     applicationContext.getId(), this.applicationContext.getId());
             return;
         }
@@ -56,7 +56,7 @@ public class RequestMappingHandlerAdapterListener implements ApplicationListener
         List<HandlerMethodArgumentResolver> argumentResolvers = requestMappingHandlerAdapter.getArgumentResolvers();
 
         if (CollectionUtils.isEmpty(argumentResolvers)) {
-            logger.warn("RequestMappingHandlerAdapter[class : {}] 未关联 HandlerMethodArgumentResolver！",
+            logger.warn("RequestMappingHandlerAdapter [class: {}] not associated HandlerMethodArgumentResolver!",
                     requestMappingHandlerAdapter.getClass().getName());
             return;
         }
@@ -68,7 +68,7 @@ public class RequestMappingHandlerAdapterListener implements ApplicationListener
                                                     List<HandlerMethodArgumentResolver> argumentResolvers) {
         int size = argumentResolvers.size();
 
-        logger.info("RequestMappingHandlerAdapter[class : {} ] 关联 {} 个 HandlerMethodArgumentResolver！",
+        logger.info("RequestMappingHandlerAdapter associated/class: {} {} a HandlerMethodArgumentResolver!",
                 requestMappingHandlerAdapter.getClass().getName(), size);
 
         List<HandlerMethodArgumentResolver> wrappedArgumentResolvers = new ArrayList<>(argumentResolvers.size());
