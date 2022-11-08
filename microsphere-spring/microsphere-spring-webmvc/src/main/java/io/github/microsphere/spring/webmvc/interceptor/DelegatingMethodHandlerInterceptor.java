@@ -25,7 +25,7 @@ import static java.util.Collections.emptyList;
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
- * {@link RequestMapping} 委培 {@link HandlerMethod} {@link HandlerInterceptor}
+ * Delegating {@link RequestMapping}  {@link HandlerMethod} {@link HandlerInterceptor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see MethodHandlerInterceptor
@@ -86,7 +86,7 @@ public class DelegatingMethodHandlerInterceptor extends MethodHandlerInterceptor
         Collection<MethodHandlerInterceptor> methodHandlerInterceptors = getBeans(MethodHandlerInterceptor.class);
         List<MethodHandlerInterceptor> delegates = new LinkedList<>();
         for (MethodHandlerInterceptor methodHandlerInterceptor : methodHandlerInterceptors) {
-            // 过滤 Delegate 实例
+            // Filter Delegate Instance
             if (methodHandlerInterceptor.isDelegate()) {
                 delegates.add(methodHandlerInterceptor);
             }
