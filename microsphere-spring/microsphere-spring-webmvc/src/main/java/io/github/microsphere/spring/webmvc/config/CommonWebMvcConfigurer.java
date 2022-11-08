@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 /**
- * 通用 {@link WebMvcConfigurer Spring WebMVC 配置}
+ * General {@link WebMvcConfigurer Spring WebMVC configuration}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -28,7 +28,7 @@ public class CommonWebMvcConfigurer implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         methodHandlerInterceptors.forEach(interceptor -> {
-            // 非代理 MethodHandlerInterceptor 实例均被注册
+            // Non-Delegate MethodHandlerInterceptor instances are registered
             if (!interceptor.isDelegate()) {
                 registry.addInterceptor(interceptor);
             }
