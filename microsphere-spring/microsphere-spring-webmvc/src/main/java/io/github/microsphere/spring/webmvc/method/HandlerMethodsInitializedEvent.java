@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * 所有{@link HandlerMethod} 已初始化事件
+ * {@link HandlerMethod} Initialized Event
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see RequestMappingInfoHandlerMethodsReadyEvent
@@ -33,7 +33,7 @@ public class HandlerMethodsInitializedEvent extends ApplicationEvent {
     }
 
     /**
-     * @return 不可变集合
+     * @return the unmodifiable Set
      */
     public Set<HandlerMethod> getHandlerMethods() {
         return handlerMethods;
