@@ -4,7 +4,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
 /**
- * Java {@code boolean} 或 {@link Boolean} 类型 {@link RedisSerializer} 实现
+ * Java {@code boolean} or {@link Boolean} type {@link RedisSerializer} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
