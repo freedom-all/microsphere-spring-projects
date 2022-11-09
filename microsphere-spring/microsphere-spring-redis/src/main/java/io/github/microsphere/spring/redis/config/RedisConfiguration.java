@@ -27,7 +27,7 @@ public class RedisConfiguration {
     /**
      * {@link RedisConfiguration} Bean Name
      */
-    public static final String BEAN_NAME = "redisSyncConfiguration";
+    public static final String BEAN_NAME = "redisConfiguration";
 
     public static final String PROPERTY_NAME_PREFIX = "microsphere.redis.";
 

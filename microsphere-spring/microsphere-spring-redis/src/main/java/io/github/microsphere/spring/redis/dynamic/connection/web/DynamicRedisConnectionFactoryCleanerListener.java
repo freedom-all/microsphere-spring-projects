@@ -7,7 +7,7 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.annotation.WebListener;
 
 /**
- * {@link DynamicRedisConnectionFactory} 状态清除器
+ * {@link DynamicRedisConnectionFactory} State cleaner
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
