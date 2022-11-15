@@ -10,8 +10,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.embedded.RedisServer;
 
 /**
- * Redis 测试配置类
- * 配置组件列表：
+ * Redis test configuration class configures the component list：
  * <ul>
  *     <li>{@link RedisTemplate RedisTemplate&lt;Object,Object&gt;}</li>
  *     <li>{@link StringRedisTemplate}</li>

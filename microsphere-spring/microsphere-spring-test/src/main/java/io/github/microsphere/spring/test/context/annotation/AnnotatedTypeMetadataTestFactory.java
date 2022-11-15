@@ -9,7 +9,7 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Method;
 
 /**
- * {@link AnnotatedTypeMetadata} 测试工厂
+ * {@link AnnotatedTypeMetadata} Test Factory
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0

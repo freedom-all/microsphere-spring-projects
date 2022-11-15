@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * 类 {@link ImportBeanDefinitionRegistrar} 实现
+ * Class {@link ImportBeanDefinitionRegistrar}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0

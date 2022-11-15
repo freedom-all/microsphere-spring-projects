@@ -4,10 +4,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 激活 Kafka 测试
+ * Enable Kafka Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see EmbeddedKafka

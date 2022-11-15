@@ -5,11 +5,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import redis.embedded.RedisServer;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 激活 Redis 测试
- * 激活组件列表：
+ * Enable Redis Test configures the component list:
  * <ul>
  *     <li>{@link RedisTemplate RedisTemplate&lt;Object,Object&gt;}</li>
  *     <li>{@link StringRedisTemplate}</li>

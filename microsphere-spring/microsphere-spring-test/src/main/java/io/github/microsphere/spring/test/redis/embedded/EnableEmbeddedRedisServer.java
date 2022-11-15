@@ -2,10 +2,15 @@ package io.github.microsphere.spring.test.redis.embedded;
 
 import org.springframework.context.annotation.Import;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 激活嵌入式 Redis 服务器
+ * Enable the embedded Redis server
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see redis.embedded.RedisServer

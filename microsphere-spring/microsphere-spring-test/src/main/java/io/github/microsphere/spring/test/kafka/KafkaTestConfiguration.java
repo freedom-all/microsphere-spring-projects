@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 /**
- * Kafka Test 配置
+ * Kafka Test configuration
  *
- * @param <K> Key 类型
- * @param <V> Value 类型
+ * @param <K> Key type
+ * @param <V> Value type
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */

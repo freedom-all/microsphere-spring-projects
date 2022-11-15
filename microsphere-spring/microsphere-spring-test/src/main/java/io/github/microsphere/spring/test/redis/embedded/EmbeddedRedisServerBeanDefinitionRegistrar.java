@@ -19,7 +19,7 @@ import java.lang.annotation.Annotation;
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 
 /**
- * 嵌入式 Redis 服务器 {@link ImportBeanDefinitionRegistrar} 实现
+ * Embedded Redis server {@link ImportBeanDefinitionRegistrar}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see EnableEmbeddedRedisServer
@@ -40,7 +40,7 @@ class EmbeddedRedisServerBeanDefinitionRegistrar implements ImportBeanDefinition
         beanDefinitionBuilder.setDestroyMethodName("stop");
 
         String beanName = attributes.getString("name");
-        registry.registerBeanDefinition(beanName,beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
     }
 
     RedisServer resolveRedisServer(AnnotationAttributes attributes) {

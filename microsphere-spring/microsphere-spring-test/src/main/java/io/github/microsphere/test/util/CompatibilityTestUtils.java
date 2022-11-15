@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * 兼容性测试工具
+ * Compatibility test tool
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -30,16 +30,16 @@ public class CompatibilityTestUtils {
         int modifiers = field.getModifiers();
         return Modifier.isStatic(modifiers) &&
                 Modifier.isPublic(modifiers) &&
-                !field.getType().equals(Logger.class) // 排除日志对象
+                !field.getType().equals(Logger.class) // Excluding log objects
                 ;
     };
 
     /**
-     * 测试方法兼容性
+     * Test method compatibility
      *
-     * @param originalClass 原定义类
-     * @param testedClass   被测试类
-     * @param methodFilter  方法过滤器
+     * @param originalClass Original defined class
+     * @param testedClass   Class under test
+     * @param methodFilter  Method filter
      */
     public static void testCompatibilityOnMethods(Class<?> originalClass, Class<?> testedClass, Predicate<Method> methodFilter) {
         ReflectionUtils.doWithMethods(originalClass, method -> {
@@ -47,28 +47,28 @@ public class CompatibilityTestUtils {
             Class<?> returnType = method.getReturnType();
             Class<?>[] parameterTypes = method.getParameterTypes();
             Method targetMethod = ReflectionUtils.findMethod(testedClass, methodName, parameterTypes);
-            assertNotNull(String.format("方法[名称：%s，参数：%s] 没有在目标类[%s]中定义！", methodName, Arrays.asList(parameterTypes), testedClass.getName()), targetMethod);
-            assertTrue(String.format("原方法[名称：%s，参数：%s]的返回类型无法被目标方法[%s]兼容！", methodName, Arrays.asList(parameterTypes), method),
+            assertNotNull(String.format("Method [Name: %s, parameter: %s] is not defined in target class [%s]!", methodName, Arrays.asList(parameterTypes), testedClass.getName()), targetMethod);
+            assertTrue(String.format("The return type of the original method [Name: %s, parameter: %s] is not compatible with the target method [%s]!", methodName, Arrays.asList(parameterTypes), method),
                     targetMethod.getReturnType().isAssignableFrom(returnType));
         }, method -> methodFilter == null ? true : methodFilter.test(method));
     }
 
     /**
-     * 测试字段兼容性
+     * Testing field Compatibility
      *
-     * @param originalClass 原定义类
-     * @param testedClass   被测试类
+     * @param originalClass Original defined class
+     * @param testedClass   Class under test
      */
     public static void testCompatibilityOnFields(Class<?> originalClass, Class<?> testedClass) {
         testCompatibilityOnFields(originalClass, testedClass, null);
     }
 
     /**
-     * 测试字段兼容性
+     * Testing field Compatibility
      *
-     * @param originalClass 原定义类
-     * @param testedClass   被测试类
-     * @param fieldFilter   字段过滤器
+     * @param originalClass Original defined class
+     * @param testedClass   Class under test
+     * @param fieldFilter   Field filter
      */
     public static void testCompatibilityOnFields(Class<?> originalClass, Class<?> testedClass, Predicate<Field> fieldFilter) {
         List<String> errorMessages = new LinkedList<>();
@@ -77,7 +77,7 @@ public class CompatibilityTestUtils {
             Class<?> fieldType = field.getType();
             Field targetField = ReflectionUtils.findField(testedClass, fieldName, fieldType);
             if (targetField == null) {
-                errorMessages.add(String.format("字段[名称：%s，类型：%s] 没有在目标类[%s]中定义！",
+                errorMessages.add(String.format("Field [Name: %s, Type: %s] not defined in target class [%s]!",
                         fieldName, fieldType.getName(), testedClass.getName()));
                 return;
             }
@@ -87,8 +87,6 @@ public class CompatibilityTestUtils {
                 Object fieldValue = field.get(null);
                 Object targetValue = targetField.get(null);
                 if (!Objects.equals(fieldValue, targetValue)) {
-//                    errorMessages.add(String.format("原 Class[类型：%s]的静态字段[名称：%s，类型：%s]的内容：%s，不同于目标静态字段的内容：%s！",
-//                            originalClass.getName(), fieldName, fieldType.getName(), fieldValue, targetValue));
                     errorMessages.add(originalClass.getName() + " , " + fieldName + " = " + fieldValue);
                 }
             }

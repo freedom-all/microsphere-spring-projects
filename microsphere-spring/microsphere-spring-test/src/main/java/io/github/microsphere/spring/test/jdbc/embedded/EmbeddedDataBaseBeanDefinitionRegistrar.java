@@ -19,7 +19,7 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ge
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 
 /**
- * 嵌入式数据库 {@link ImportBeanDefinitionRegistrar}
+ * Embedded database {@link ImportBeanDefinitionRegistrar}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -31,7 +31,7 @@ class EmbeddedDataBaseBeanDefinitionRegistrar implements ImportBeanDefinitionReg
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         AnnotationAttributes attributes = fromMap(metadata.getAnnotationAttributes(ANNOTATION_TYPE.getName()));
-        registerBeanDefinitions(attributes,registry);
+        registerBeanDefinitions(attributes, registry);
     }
 
     void registerBeanDefinitions(AnnotationAttributes attributes, BeanDefinitionRegistry registry) {
