@@ -52,7 +52,7 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements B
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return RedisTemplateWrapper.newProxyRedisConnection(connection, context, redisConfiguration, beanName, STRING_REDIS_TEMPLATE_SOURCE);
+            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisConfiguration, beanName, STRING_REDIS_TEMPLATE_SOURCE);
         }
         return connection;
     }

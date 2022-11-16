@@ -1,7 +1,7 @@
 package io.github.microsphere.spring.redis.beans;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
-import io.github.microsphere.spring.redis.interceptor.RedisConnectionInvocationHandler;
+import io.github.microsphere.spring.redis.connection.RedisConnectionInvocationHandler;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return newProxyRedisConnection(connection, context, redisConfiguration, beanName, REDIS_TEMPLATE_SOURCE);
+            return newProxyRedisConnection(connection, redisConfiguration, beanName, REDIS_TEMPLATE_SOURCE);
         }
         return connection;
     }
@@ -80,18 +80,19 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
         return redisConfiguration.isEnabled();
     }
 
-    protected static RedisConnection newProxyRedisConnection(RedisConnection connection, ApplicationContext context,
+    protected static RedisConnection newProxyRedisConnection(RedisConnection connection,
                                                              RedisConfiguration redisConfiguration,
                                                              String redisTemplateBeanName, byte sourceFrom) {
+        ApplicationContext context = redisConfiguration.getContext();
         ClassLoader classLoader = context.getClassLoader();
-        InvocationHandler invocationHandler = newInvocationHandler(connection, context, redisConfiguration, redisTemplateBeanName, sourceFrom);
+        InvocationHandler invocationHandler = newInvocationHandler(connection, redisConfiguration, redisTemplateBeanName, sourceFrom);
         return (RedisConnection) Proxy.newProxyInstance(classLoader, REDIS_CONNECTION_TYPES, invocationHandler);
     }
 
-    private static InvocationHandler newInvocationHandler(RedisConnection connection, ApplicationContext context,
+    private static InvocationHandler newInvocationHandler(RedisConnection connection,
                                                           RedisConfiguration redisConfiguration,
                                                           String redisTemplateBeanName, byte sourceFrom) {
-        return new RedisConnectionInvocationHandler(connection, context, redisConfiguration, redisTemplateBeanName, sourceFrom);
+        return new RedisConnectionInvocationHandler(connection, redisConfiguration, redisTemplateBeanName, sourceFrom);
     }
 
     @Override

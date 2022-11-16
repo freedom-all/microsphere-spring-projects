@@ -33,7 +33,7 @@ public class ParametersHolder {
                 getOrCreateParameter(metadataMap, parameterValue, parameterMetadata);
             }
         } catch (Throwable e) {
-            logger.error("Redis Sync failed to initialize Redis command method parameter {}!", parameterMetadataList, e);
+            logger.error("Redis failed to initialize Redis command method parameter {}!", parameterMetadataList, e);
         }
     }
 

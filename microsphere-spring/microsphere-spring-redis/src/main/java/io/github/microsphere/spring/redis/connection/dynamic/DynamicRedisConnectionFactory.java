@@ -1,4 +1,4 @@
-package io.github.microsphere.spring.redis.dynamic.connection;
+package io.github.microsphere.spring.redis.connection.dynamic;
 
 import io.github.microsphere.commons.text.FormatUtils;
 import org.slf4j.Logger;

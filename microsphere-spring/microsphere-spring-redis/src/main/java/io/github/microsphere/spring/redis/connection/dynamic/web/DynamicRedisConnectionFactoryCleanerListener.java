@@ -1,6 +1,6 @@
-package io.github.microsphere.spring.redis.dynamic.connection.web;
+package io.github.microsphere.spring.redis.connection.dynamic.web;
 
-import io.github.microsphere.spring.redis.dynamic.connection.DynamicRedisConnectionFactory;
+import io.github.microsphere.spring.redis.connection.dynamic.DynamicRedisConnectionFactory;
 
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;

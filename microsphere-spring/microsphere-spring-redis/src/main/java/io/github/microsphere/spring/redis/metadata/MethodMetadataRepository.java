@@ -40,7 +40,7 @@ import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildCo
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Redis Sync Method Metadata Repository
+ * Redis Method Metadata Repository
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
@@ -86,16 +86,16 @@ public class MethodMetadataRepository {
         String[] parameterTypes = event.getParameterTypes();
         Method method = getReplicatedCommandMethod(interfaceNme, methodName, parameterTypes);
         if (method == null) {
-            logger.warn("Redis Sync event publishers and consumers have different apis. Please update consumer microsphere-spring-redis artifacts in time!");
-            logger.debug("Redis Sync copy command methods will use Java reflection to find (interface :{}, method name :{}, parameter list :{})...", interfaceNme, methodName, Arrays.toString(parameterTypes));
+            logger.warn("Redis event publishers and consumers have different apis. Please update consumer microsphere-spring-redis artifacts in time!");
+            logger.debug("Redis copy command methods will use Java reflection to find (interface :{}, method name :{}, parameter list :{})...", interfaceNme, methodName, Arrays.toString(parameterTypes));
             Class<?> interfaceClass = getRedisCommandsInterfaceClass(interfaceNme);
             if (interfaceClass == null) {
-                logger.warn("The current Redis Sync consumer cannot find Redis command interface: {}. Please confirm whether the spring-data artifacts API is compatible.", interfaceNme);
+                logger.warn("The current Redis consumer cannot find Redis command interface: {}. Please confirm whether the spring-data artifacts API is compatible.", interfaceNme);
                 return null;
             }
             method = ReflectionUtils.findMethod(interfaceClass, methodName, event.getParameterClasses());
             if (method == null) {
-                logger.warn("Current Redis Sync consumer Redis command interface (class name: {}) in the method ({}), copy command method search end!",
+                logger.warn("Current Redis consumer Redis command interface (class name: {}) in the method ({}), copy command method search end!",
                         interfaceNme, buildCommandMethodId(interfaceNme, methodName, parameterTypes));
                 return null;
             }

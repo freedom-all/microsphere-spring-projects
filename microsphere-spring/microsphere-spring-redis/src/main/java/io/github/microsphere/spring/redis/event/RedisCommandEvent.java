@@ -61,7 +61,6 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     private static final ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
 
-
     /**
      * Command interface simple name, such as：
      * RedisStringCommands
@@ -95,19 +94,9 @@ public class RedisCommandEvent extends ApplicationEvent {
     private String sourceApplication;
 
     /**
-     * Business domain (non-serialized field, initialized by the consumer)
+     * Source Bean name (non-serialized field, initialized by the consumer)
      */
-    private transient String domain;
-
-    /**
-     * RedisTemplate Bean name (non-serialized field, initialized by the consumer)
-     */
-    private transient String beanName;
-
-    /**
-     * key
-     */
-    private transient String key;
+    private transient String sourceBeanName;
 
     public RedisCommandEvent() {
         super("this");
@@ -159,6 +148,10 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     public byte[][] getParameters() {
         return parameters;
+    }
+
+    public byte[] getParameter(int parameterIndex) {
+        return parameters[parameterIndex];
     }
 
     /**
@@ -254,38 +247,18 @@ public class RedisCommandEvent extends ApplicationEvent {
         return sourceApplication;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
+    /**
+     * @return Source Bean name
+     */
+    public String getSourceBeanName() {
+        return sourceBeanName;
     }
 
     /**
-     * @return Business domain (non-serialized field, initialized by the consumer)
+     * @param sourceBeanName Source Bean name
      */
-    public String getDomain() {
-        return domain;
-    }
-
-    /**
-     * @return RedisTemplate Bean name
-     */
-    public String getBeanName() {
-        return beanName;
-    }
-
-    /**
-     * @param beanName RedisTemplate Bean name
-     */
-    public void setBeanName(String beanName) {
-        this.beanName = beanName;
-    }
-
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
+    public void setSourceBeanName(String sourceBeanName) {
+        this.sourceBeanName = sourceBeanName;
     }
 
     @Override
@@ -313,15 +286,13 @@ public class RedisCommandEvent extends ApplicationEvent {
         final StringBuilder sb = new StringBuilder("RedisCommandEvent{");
         sb.append("interfaceName='").append(getInterfaceName()).append('\'');
         sb.append(", methodName='").append(getMethodName()).append('\'');
-        sb.append(", key='").append(getKey()).append('\'');
         sb.append(", parameterTypes=").append(Arrays.toString(getParameterTypes()));
         sb.append(", parameterCount=").append(getParameterCount());
         sb.append(", rawParameters=").append(Arrays.toString(getParameters()));
         sb.append(", objectParameters=").append(Arrays.toString(getObjectParameters()));
         sb.append(", sourceFrom=").append(getSourceFrom());
         sb.append(", sourceApplication='").append(getSourceApplication()).append('\'');
-        sb.append(", redisTemplate beanName='").append(getBeanName()).append('\'');
-        sb.append(", domain=").append(getDomain());
+        sb.append(", redisTemplate beanName='").append(getSourceBeanName()).append('\'');
         sb.append('}');
         return sb.toString();
     }

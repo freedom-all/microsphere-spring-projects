@@ -1,25 +1,24 @@
-package io.github.microsphere.spring.redis.interceptor;
+package io.github.microsphere.spring.redis.connection;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.interceptor.RedisCommandsInterceptor;
+import io.github.microsphere.spring.redis.interceptor.RedisConnectionInterceptor;
+import io.github.microsphere.spring.redis.interceptor.RedisMethodInterceptor;
 import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.data.redis.connection.RedisConnection;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getParameterMetadataList;
-import static java.util.Optional.ofNullable;
-import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
+import static io.github.microsphere.spring.util.BeanUtils.getSortedBeans;
 
 /**
  * {@link InvocationHandler} {@link RedisConnection}
@@ -43,21 +42,28 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
 
     private final byte sourceFrom;
 
+    private final List<RedisCommandsInterceptor> redisCommandsInterceptors;
+
     private final List<RedisConnectionInterceptor> redisConnectionInterceptors;
 
+    private final int redisCommandsInterceptorsSize;
+    private final int redisConnectionInterceptorsSize;
+    private final boolean hasRedisCommandsInterceptors;
     private final boolean hasRedisConnectionInterceptors;
 
-    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, ApplicationContext context,
-                                            RedisConfiguration redisConfiguration,
-                                            String redisTemplateBeanName, byte sourceFrom) {
+    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisConfiguration redisConfiguration, String redisTemplateBeanName, byte sourceFrom) {
         this.rawRedisConnection = rawRedisConnection;
-        this.context = context;
         this.redisConfiguration = redisConfiguration;
+        this.context = redisConfiguration.getContext();
         this.applicationName = redisConfiguration.getApplicationName();
         this.redisTemplateBeanName = redisTemplateBeanName;
         this.sourceFrom = sourceFrom;
+        this.redisCommandsInterceptors = getRedisCommandInterceptors(context);
         this.redisConnectionInterceptors = getRedisConnectionInterceptors(context);
-        this.hasRedisConnectionInterceptors = !redisConnectionInterceptors.isEmpty();
+        this.redisCommandsInterceptorsSize = redisCommandsInterceptors.size();
+        this.redisConnectionInterceptorsSize = redisConnectionInterceptors.size();
+        this.hasRedisCommandsInterceptors = redisCommandsInterceptorsSize > 0;
+        this.hasRedisConnectionInterceptors = redisConnectionInterceptorsSize > 0;
     }
 
     @Override
@@ -82,11 +88,12 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
         return result;
     }
 
+    private List<RedisCommandsInterceptor> getRedisCommandInterceptors(ApplicationContext context) {
+        return getSortedBeans(context, RedisCommandsInterceptor.class);
+    }
+
     private List<RedisConnectionInterceptor> getRedisConnectionInterceptors(ApplicationContext context) {
-        Map<String, RedisConnectionInterceptor> beansMap = beansOfTypeIncludingAncestors(context, RedisConnectionInterceptor.class, true, false);
-        List<RedisConnectionInterceptor> redisConnectionInterceptors = new ArrayList<>(beansMap.values());
-        AnnotationAwareOrderComparator.sort(redisConnectionInterceptors);
-        return redisConnectionInterceptors;
+        return getSortedBeans(context, RedisConnectionInterceptor.class);
     }
 
     private Object doInvoke(Method method, Object[] args) throws Throwable {
@@ -108,26 +115,35 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
     }
 
     private void beforeExecute(Method method, Object[] args) {
-        if (hasRedisConnectionInterceptors) {
-            for (RedisConnectionInterceptor interceptor : redisConnectionInterceptors) {
+        beforeExecute(redisCommandsInterceptors, redisCommandsInterceptorsSize, hasRedisCommandsInterceptors, method, args);
+        beforeExecute(redisConnectionInterceptors, redisConnectionInterceptorsSize, hasRedisConnectionInterceptors, method, args);
+    }
+
+    private void beforeExecute(List<? extends RedisMethodInterceptor> redisMethodInterceptors, int size, boolean exists, Method method, Object[] args) {
+        if (exists) {
+            for (int i = 0; i < size; i++) {
+                RedisMethodInterceptor interceptor = redisMethodInterceptors.get(i);
                 try {
-                    interceptor.beforeExecute(redisTemplateBeanName, rawRedisConnection, method, args);
+                    interceptor.beforeExecute(rawRedisConnection, method, args, redisTemplateBeanName);
                 } catch (Throwable e) {
-                    logger.error("beforeExecute method fails to execute, RedisTemplate[bean name: '{}'], method: '{}'",
-                            interceptor.getClass().getName(), redisTemplateBeanName, method, e);
+                    logger.error("beforeExecute method fails to execute, RedisTemplate[bean name: '{}'], method: '{}'", interceptor.getClass().getName(), redisTemplateBeanName, method, e);
                 }
             }
         }
     }
 
     private void afterExecute(Method method, Object[] args, Object result, Throwable failure) {
-        if (hasRedisConnectionInterceptors) {
-            for (RedisConnectionInterceptor interceptor : redisConnectionInterceptors) {
+        afterExecute(redisConnectionInterceptors, redisCommandsInterceptorsSize, hasRedisConnectionInterceptors, method, args, result, failure);
+    }
+
+    private void afterExecute(List<? extends RedisMethodInterceptor> redisMethodInterceptors, int size, boolean exists, Method method, Object[] args, Object result, Throwable failure) {
+        if (exists) {
+            for (int i = 0; i < size; i++) {
+                RedisMethodInterceptor interceptor = redisMethodInterceptors.get(i);
                 try {
-                    interceptor.afterExecute(redisTemplateBeanName, rawRedisConnection, method, args, ofNullable(result), ofNullable(failure));
+                    interceptor.afterExecute(rawRedisConnection, method, args, result, failure, redisTemplateBeanName);
                 } catch (Throwable e) {
-                    logger.error("afterExecute method failed to execute, RedisTemplate[bean name: '{}'], method: '{}'",
-                            interceptor.getClass().getName(), redisTemplateBeanName, method, e);
+                    logger.error("beforeExecute method fails to execute, RedisTemplate[bean name: '{}'], method: '{}'", interceptor.getClass().getName(), redisTemplateBeanName, method, e);
                 }
             }
         }
@@ -146,9 +162,9 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
         try {
             Parameter[] parameters = ParametersHolder.bulkGet(args);
             redisCommandEvent = new RedisCommandEvent(method, parameters, sourceFrom, applicationName);
-            redisCommandEvent.setBeanName(redisTemplateBeanName);
+            redisCommandEvent.setSourceBeanName(redisTemplateBeanName);
         } catch (Throwable e) {
-            logger.error("Redis Sync failed to create a command method event.", method, e);
+            logger.error("Redis failed to create a command method event.", method, e);
         }
         return redisCommandEvent;
     }

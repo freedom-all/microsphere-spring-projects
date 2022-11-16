@@ -27,16 +27,30 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Microsphere Commons -->
+        <!-- Microsphere Commons Core -->
         <dependency>
             <groupId>io.github.microsphere-projects</groupId>
             <artifactId>microsphere-commons-core</artifactId>
+        </dependency>
+
+        <!-- Microshpere Context -->
+        <dependency>
+            <groupId>io.github.microsphere-projects</groupId>
+            <artifactId>microsphere-spring-context</artifactId>
+            <version>${revision}</version>
         </dependency>
 
         <!-- Redis -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Byte Buddy-->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
             <optional>true</optional>
         </dependency>
 
