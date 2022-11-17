@@ -42,14 +42,17 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
 
     private final byte sourceFrom;
 
-    private final List<RedisCommandsInterceptor> redisCommandsInterceptors;
-
     private final List<RedisConnectionInterceptor> redisConnectionInterceptors;
 
-    private final int redisCommandsInterceptorsSize;
+    private final List<RedisCommandsInterceptor> redisCommandsInterceptors;
+
     private final int redisConnectionInterceptorsSize;
-    private final boolean hasRedisCommandsInterceptors;
+
+    private final int redisCommandsInterceptorsSize;
+
     private final boolean hasRedisConnectionInterceptors;
+
+    private final boolean hasRedisCommandsInterceptors;
 
     public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisConfiguration redisConfiguration, String redisTemplateBeanName, byte sourceFrom) {
         this.rawRedisConnection = rawRedisConnection;
@@ -115,8 +118,8 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
     }
 
     private void beforeExecute(Method method, Object[] args) {
-        beforeExecute(redisCommandsInterceptors, redisCommandsInterceptorsSize, hasRedisCommandsInterceptors, method, args);
         beforeExecute(redisConnectionInterceptors, redisConnectionInterceptorsSize, hasRedisConnectionInterceptors, method, args);
+        beforeExecute(redisCommandsInterceptors, redisCommandsInterceptorsSize, hasRedisCommandsInterceptors, method, args);
     }
 
     private void beforeExecute(List<? extends RedisMethodInterceptor> redisMethodInterceptors, int size, boolean exists, Method method, Object[] args) {

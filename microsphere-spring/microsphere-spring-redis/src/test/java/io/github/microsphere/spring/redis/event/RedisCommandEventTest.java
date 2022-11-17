@@ -18,6 +18,7 @@ package io.github.microsphere.spring.redis.event;
 
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.interceptor.LoggingRedisCommandsInterceptor;
 import io.github.microsphere.spring.redis.interceptor.LoggingRedisConnectionInterceptor;
 import io.github.microsphere.spring.test.redis.EnableRedisTest;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,7 @@ import static org.junit.Assert.assertEquals;
         RedisConfiguration.class,
         RedisTemplateWrapperBeanPostProcessor.class,
         LoggingRedisConnectionInterceptor.class,
+        LoggingRedisCommandsInterceptor.class,
         RedisCommandEventTest.class
 })
 @TestPropertySource(properties = {
