@@ -40,9 +40,9 @@ public abstract class Serializers {
 
     private static final ClassLoader classLoader = Serializers.class.getClassLoader();
 
-    static final JdkSerializationRedisSerializer defaultSerializer = new JdkSerializationRedisSerializer();
+    public static final JdkSerializationRedisSerializer defaultSerializer = new JdkSerializationRedisSerializer();
 
-    static final StringRedisSerializer stringSerializer = StringRedisSerializer.UTF_8;
+    public static final StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
     /**
      * Generic parameterized {@link RedisSerializer}
@@ -193,8 +193,7 @@ public abstract class Serializers {
     private static void initializeArrayTypeSerializers() {
 
         // byte[] type 
-        //initializeSerializer(byte[].class, ByteArraySerializer.INSTANCE);
-        initializeSerializer(byte[].class, defaultSerializer);
+        initializeSerializer(byte[].class, ByteArraySerializer.INSTANCE);
 
         // int[] type 
         initializeSerializer(int[].class, defaultSerializer);

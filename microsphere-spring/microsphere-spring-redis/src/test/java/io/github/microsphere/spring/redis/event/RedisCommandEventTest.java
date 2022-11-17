@@ -73,7 +73,7 @@ public class RedisCommandEventTest {
             RedisSerializer keySerializer = redisTemplate.getKeySerializer();
             RedisSerializer valueSerializer = redisTemplate.getValueSerializer();
             Object key = keySerializer.deserialize(event.getParameter(0));
-            Object value = keySerializer.deserialize(event.getParameter(1));
+            Object value = valueSerializer.deserialize(event.getParameter(1));
             data.put(key, value);
         });
 
