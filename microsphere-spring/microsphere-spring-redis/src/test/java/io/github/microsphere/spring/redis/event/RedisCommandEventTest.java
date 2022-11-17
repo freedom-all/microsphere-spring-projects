@@ -36,6 +36,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_SOURCE;
+import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -77,6 +80,13 @@ public class RedisCommandEventTest {
             Object key = keySerializer.deserialize(event.getParameter(0));
             Object value = valueSerializer.deserialize(event.getParameter(1));
             data.put(key, value);
+
+            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getInterfaceName());
+            assertEquals("set", event.getMethodName());
+            assertArrayEquals(new String[]{"[B", "[B"}, event.getParameterTypes());
+            assertEquals("default", event.getSourceApplication());
+            assertEquals("stringRedisTemplate", event.getSourceBeanName());
+            assertEquals(STRING_REDIS_TEMPLATE_SOURCE, event.getSourceFrom());
         });
 
         redisTemplate.opsForValue().set("Key-1", "Value-1");
