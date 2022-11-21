@@ -1,21 +1,23 @@
 package io.github.microsphere.spring.redis.beans;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.util.BeanUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_BEAN_NAME;
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_BEAN_NAME;
+import static io.github.microsphere.spring.redis.config.RedisConfiguration.PROPERTY_NAME_PREFIX;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * {@link BeanPostProcessor} implements Wrapper {@link RedisTemplate} and {@link StringRedisTemplate}
@@ -26,50 +28,95 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRIN
  * @see BeanPostProcessor
  * @since 1.0.0
  */
-public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor {
+public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, EnvironmentAware {
 
-    private final ApplicationContext context;
+    public static final String BEAN_NAME = "redisTemplateWrapperBeanPostProcessor";
+
+    /**
+     * {@link RedisTemplate} Bean Name
+     */
+    public static final String REDIS_TEMPLATE_BEAN_NAME = "redisTemplate";
+
+    /**
+     * {@link StringRedisTemplate} Bean Name
+     */
+    public static final String STRING_REDIS_TEMPLATE_BEAN_NAME = "stringRedisTemplate";
+
+    /**
+     * Wrapped {@link RedisTemplate} list of Bean names
+     */
+    public static final String WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "wrapped-redis-templates";
+
+    /**
+     * The default wrapped bean names of {@link RedisTemplate}:
+     * <ul>
+     *     <li>{@link #REDIS_TEMPLATE_BEAN_NAME "redisTemplate"}</li>
+     *     <li>{@link #STRING_REDIS_TEMPLATE_BEAN_NAME "stringRedisTemplate"}</li>
+     * </ul>
+     *
+     * @see #REDIS_TEMPLATE_BEAN_NAME
+     * @see #STRING_REDIS_TEMPLATE_BEAN_NAME
+     */
+    public static final List<String> DEFAULT_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES = unmodifiableList(asList(REDIS_TEMPLATE_BEAN_NAME, STRING_REDIS_TEMPLATE_BEAN_NAME));
+
+    /**
+     * The all wrapped bean names of {@link RedisTemplate}: "*"
+     */
+    public static final List<String> ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES = unmodifiableList(asList("*"));
+
+    private ConfigurableListableBeanFactory beanFactory;
 
     private final RedisConfiguration redisConfiguration;
 
-    private final Set<String> redisTemplateBeanNames;
+    private List<String> wrappedRedisTemplateBeanNames;
 
-    public RedisTemplateWrapperBeanPostProcessor(ApplicationContext context, RedisConfiguration redisConfiguration) {
-        this.context = context;
+    public RedisTemplateWrapperBeanPostProcessor(RedisConfiguration redisConfiguration) {
         this.redisConfiguration = redisConfiguration;
-        this.redisTemplateBeanNames = initRedisTemplateBeanNames(context);
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (redisTemplateBeanNames.contains(beanName)) {
+        if (wrappedRedisTemplateBeanNames.contains(beanName)) {
             Class<?> beanClass = AopUtils.getTargetClass(bean);
             if (StringRedisTemplate.class.equals(beanClass)) {
-                StringRedisTemplateWrapper stringRedisTemplateWrapper = new StringRedisTemplateWrapper((StringRedisTemplate) bean, context);
-                stringRedisTemplateWrapper.setBeanName(beanName);
-                return stringRedisTemplateWrapper;
+                return new StringRedisTemplateWrapper(beanName, (StringRedisTemplate) bean, redisConfiguration);
             } else if (RedisTemplate.class.equals(beanClass)) {
-                RedisTemplateWrapper redisTemplateWrapper = new RedisTemplateWrapper((RedisTemplate) bean, context);
-                redisTemplateWrapper.setBeanName(beanName);
-                return redisTemplateWrapper;
+                return new RedisTemplateWrapper(beanName, (RedisTemplate) bean, redisConfiguration);
             }
             // TODO Support for more custom RedisTemplate types
         }
         return bean;
     }
 
-    private Set<String> initRedisTemplateBeanNames(ApplicationContext context) {
-        Environment environment = context.getEnvironment();
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+    }
 
-        List<String> additionalRedisTemplateBeanNames = redisConfiguration.getAdditionalRedisTemplateBeanNames(environment);
-        Set<String> redisTemplateBeanNames = new HashSet<>(additionalRedisTemplateBeanNames.size() + 2);
-        // Add the default RedisTemplate Bean name
-        // Matches the RedisTemplate and StringRedisTemplate in RedisAutoConfiguration
-        redisTemplateBeanNames.add(REDIS_TEMPLATE_BEAN_NAME);
-        redisTemplateBeanNames.add(STRING_REDIS_TEMPLATE_BEAN_NAME);
-        // Apply the custom configuration
-        redisTemplateBeanNames.addAll(additionalRedisTemplateBeanNames);
-        return Collections.unmodifiableSet(redisTemplateBeanNames);
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.wrappedRedisTemplateBeanNames = resolveWrappedRedisTemplateBeanNames(environment);
+    }
 
+    /**
+     * Resolve the wrapped {@link RedisTemplate} Bean Name list, the default value is from {@link #DEFAULT_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES}
+     *
+     * @param environment {@link Environment}
+     * @return If no configuration is found, {@link #DEFAULT_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES} is returned
+     */
+    private List<String> resolveWrappedRedisTemplateBeanNames(Environment environment) {
+        List<String> wrappedRedisTemplateBeanNames = environment.getProperty(WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME, List.class);
+        if (wrappedRedisTemplateBeanNames == null) {
+            return DEFAULT_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES;
+        } else if (ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES.equals(wrappedRedisTemplateBeanNames)) {
+            return resolveAllRestTemplateBeanNames();
+        }else {
+            return unmodifiableList(wrappedRedisTemplateBeanNames);
+        }
+    }
+
+    private List<String> resolveAllRestTemplateBeanNames() {
+        String[] redisTemplateBeanNames = BeanUtils.getBeanNames(beanFactory, RedisTemplate.class);
+        return unmodifiableList(asList(redisTemplateBeanNames));
     }
 }

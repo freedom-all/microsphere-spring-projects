@@ -14,32 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.microsphere.spring.redis.interceptor;
+package io.github.microsphere.spring.redis.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.RedisConnection;
-
-import java.lang.reflect.Method;
-import java.util.Optional;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * Logging
+ * The constants of Redis
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class LoggingRedisConnectionInterceptor implements RedisConnectionInterceptor {
+public interface RedisConstants {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisConnectionInterceptor.class);
+    /**
+     * {@link RedisTemplate} Source identification
+     */
+    byte REDIS_TEMPLATE_SOURCE = 1;
 
-    @Override
-    public void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName) {
-        logger.info("beforeExecute");
-    }
+    /**
+     * {@link StringRedisTemplate} source identification
+     */
+    byte STRING_REDIS_TEMPLATE_SOURCE = 2;
 
-    @Override
-    public void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> sourceBeanName) throws Throwable {
-        logger.info("afterExecute");
-    }
+    /**
+     * The custom {@link RedisTemplate} source identification
+     * TODO: customization is not supported {@link RedisTemplate}
+     */
+    byte CUSTOMIZED_REDIS_TEMPLATE_SOURCE = 3;
+
 }

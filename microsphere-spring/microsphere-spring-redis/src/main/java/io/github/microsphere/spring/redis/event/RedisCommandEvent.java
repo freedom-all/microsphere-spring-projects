@@ -17,16 +17,12 @@ import org.springframework.data.redis.connection.RedisSetCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.RedisTxCommands;
 import org.springframework.data.redis.connection.RedisZSetCommands;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_SOURCE;
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
 
 /**
  * {@link RedisCommands Redis command} event
@@ -84,11 +80,6 @@ public class RedisCommandEvent extends ApplicationEvent {
     private byte[][] parameters;
 
     /**
-     * Event source
-     */
-    private byte sourceFrom;
-
-    /**
      * Event source Application name
      */
     private String sourceApplication;
@@ -99,14 +90,17 @@ public class RedisCommandEvent extends ApplicationEvent {
     private transient String sourceBeanName;
 
     public RedisCommandEvent() {
-        super("this");
+        this("this");
     }
 
-    public RedisCommandEvent(Method method, Parameter[] parameters, byte sourceFrom, String sourceApplication) {
-        super(method);
+    public RedisCommandEvent(Object source) {
+        super(source);
+    }
+
+    public RedisCommandEvent(Method method, Parameter[] parameters, String sourceApplication) {
+        this(method);
         this.interfaceName = resolveInterfaceName(method);
         this.methodName = method.getName();
-        this.sourceFrom = sourceFrom;
         this.sourceApplication = sourceApplication;
         init(parameters);
     }
@@ -152,24 +146,6 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     public byte[] getParameter(int parameterIndex) {
         return parameters[parameterIndex];
-    }
-
-    /**
-     * Does the event originate from {@link RedisTemplate}
-     *
-     * @return If yes, return <code>true<code>, otherwise, return <code>false<code>
-     */
-    public boolean isSourceFromRedisTemplate() {
-        return this.sourceFrom == REDIS_TEMPLATE_SOURCE;
-    }
-
-    /**
-     * Does the event originate from {@link StringRedisTemplate}
-     *
-     * @return If yes, return <code>true<code>, otherwise, return <code>false<code>
-     */
-    public boolean isSourceFromStringRedisTemplate() {
-        return this.sourceFrom == STRING_REDIS_TEMPLATE_SOURCE;
     }
 
     /**
@@ -234,13 +210,6 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
-     * @return Event source
-     */
-    public byte getSourceFrom() {
-        return sourceFrom;
-    }
-
-    /**
      * @return Event source Application name
      */
     public String getSourceApplication() {
@@ -266,8 +235,7 @@ public class RedisCommandEvent extends ApplicationEvent {
         if (this == o) return true;
         if (!(o instanceof RedisCommandEvent)) return false;
         RedisCommandEvent that = (RedisCommandEvent) o;
-        return sourceFrom == that.sourceFrom &&
-                Objects.equals(interfaceName, that.interfaceName) &&
+        return Objects.equals(interfaceName, that.interfaceName) &&
                 Objects.equals(methodName, that.methodName) &&
                 Arrays.deepEquals(parameterTypes, that.parameterTypes) &&
                 Arrays.deepEquals(parameters, that.parameters);
@@ -275,7 +243,7 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(interfaceName, methodName, sourceFrom);
+        int result = Objects.hash(interfaceName, methodName);
         result = 31 * result + Arrays.deepHashCode(parameterTypes);
         result = 31 * result + Arrays.deepHashCode(parameters);
         return result;
@@ -290,9 +258,8 @@ public class RedisCommandEvent extends ApplicationEvent {
         sb.append(", parameterCount=").append(getParameterCount());
         sb.append(", rawParameters=").append(Arrays.toString(getParameters()));
         sb.append(", objectParameters=").append(Arrays.toString(getObjectParameters()));
-        sb.append(", sourceFrom=").append(getSourceFrom());
         sb.append(", sourceApplication='").append(getSourceApplication()).append('\'');
-        sb.append(", redisTemplate beanName='").append(getSourceBeanName()).append('\'');
+        sb.append(", sourceBeanName='").append(getSourceBeanName()).append('\'');
         sb.append('}');
         return sb.toString();
     }

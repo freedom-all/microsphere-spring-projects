@@ -19,7 +19,6 @@ package io.github.microsphere.spring.redis.interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisCommands;
-import org.springframework.data.redis.connection.RedisConnection;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -30,12 +29,12 @@ import java.util.Optional;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class LoggingRedisCommandsInterceptor implements RedisCommandsInterceptor {
+public class LoggingRedisCommandInterceptor implements RedisCommandInterceptor {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisCommandsInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisCommandInterceptor.class);
 
     @Override
-    public void beforeExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> redisTemplateBeanName) {
+    public void beforeExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> sourceBeanName) {
         logger.info("beforeExecute");
     }
 

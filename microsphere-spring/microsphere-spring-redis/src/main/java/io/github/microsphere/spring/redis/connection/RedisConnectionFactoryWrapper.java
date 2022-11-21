@@ -16,30 +16,46 @@
  */
 package io.github.microsphere.spring.redis.connection;
 
+import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisClusterConnection;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConnection;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+
 /**
- * Decorating {@link RedisConnectionFactory}
+ * {@link RedisConnectionFactory} Wrapper
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see RedisConnectionFactory
  * @since 1.0.0
  */
-public class DecoratingRedisConnectionFactory implements RedisConnectionFactory {
+public class RedisConnectionFactoryWrapper implements RedisConnectionFactory {
 
+    private static final Class[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
+
+    private final String beanName;
     private final RedisConnectionFactory delegate;
 
-    public DecoratingRedisConnectionFactory(RedisConnectionFactory delegate) {
+    private final RedisConfiguration redisConfiguration;
+
+    public RedisConnectionFactoryWrapper(String beanName, RedisConnectionFactory delegate, RedisConfiguration redisConfiguration) {
+        this.beanName = beanName;
         this.delegate = delegate;
+        this.redisConfiguration = redisConfiguration;
     }
 
     @Override
     public RedisConnection getConnection() {
-        return delegate.getConnection();
+        RedisConnection connection = delegate.getConnection();
+        if (isEnabled()) {
+            return newProxyRedisConnection(connection, redisConfiguration, beanName);
+        }
+        return connection;
     }
 
     @Override
@@ -60,5 +76,20 @@ public class DecoratingRedisConnectionFactory implements RedisConnectionFactory 
     @Override
     public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
         return delegate.translateExceptionIfPossible(ex);
+    }
+
+    public boolean isEnabled() {
+        return redisConfiguration.isEnabled();
+    }
+
+    public static RedisConnection newProxyRedisConnection(RedisConnection connection, RedisConfiguration redisConfiguration, String sourceBeanName) {
+        ApplicationContext context = redisConfiguration.getContext();
+        ClassLoader classLoader = context.getClassLoader();
+        InvocationHandler invocationHandler = newInvocationHandler(connection, redisConfiguration, sourceBeanName);
+        return (RedisConnection) Proxy.newProxyInstance(classLoader, REDIS_CONNECTION_TYPES, invocationHandler);
+    }
+
+    private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisConfiguration redisConfiguration, String sourceBeanName) {
+        return new RedisConnectionInvocationHandler(connection, redisConfiguration, sourceBeanName);
     }
 }

@@ -16,9 +16,8 @@
  */
 package io.github.microsphere.spring.redis.event;
 
-import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
-import io.github.microsphere.spring.redis.interceptor.LoggingRedisCommandsInterceptor;
+import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptor;
+import io.github.microsphere.spring.redis.interceptor.LoggingRedisCommandInterceptor;
 import io.github.microsphere.spring.redis.interceptor.LoggingRedisConnectionInterceptor;
 import io.github.microsphere.spring.test.redis.EnableRedisTest;
 import org.junit.jupiter.api.Test;
@@ -36,8 +35,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_SOURCE;
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -49,15 +46,14 @@ import static org.junit.Assert.assertEquals;
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        RedisConfiguration.class,
-        RedisTemplateWrapperBeanPostProcessor.class,
         LoggingRedisConnectionInterceptor.class,
-        LoggingRedisCommandsInterceptor.class,
+        LoggingRedisCommandInterceptor.class,
         RedisCommandEventTest.class
 })
 @TestPropertySource(properties = {
         "microsphere.redis.enabled=true"
 })
+@EnableRedisInterceptor
 @EnableRedisTest
 public class RedisCommandEventTest {
 
@@ -77,16 +73,15 @@ public class RedisCommandEventTest {
         context.addApplicationListener((ApplicationListener<RedisCommandEvent>) event -> {
             RedisSerializer keySerializer = redisTemplate.getKeySerializer();
             RedisSerializer valueSerializer = redisTemplate.getValueSerializer();
-            Object key = keySerializer.deserialize(event.getParameter(0));
-            Object value = valueSerializer.deserialize(event.getParameter(1));
+            Object key = keySerializer.deserialize((byte[]) event.getObjectParameter(0));
+            Object value = valueSerializer.deserialize((byte[]) event.getObjectParameter(1));
             data.put(key, value);
 
             assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getInterfaceName());
             assertEquals("set", event.getMethodName());
             assertArrayEquals(new String[]{"[B", "[B"}, event.getParameterTypes());
             assertEquals("default", event.getSourceApplication());
-            assertEquals("stringRedisTemplate", event.getSourceBeanName());
-            assertEquals(STRING_REDIS_TEMPLATE_SOURCE, event.getSourceFrom());
+            assertEquals("redisConnectionFactory", event.getSourceBeanName());
         });
 
         redisTemplate.opsForValue().set("Key-1", "Value-1");

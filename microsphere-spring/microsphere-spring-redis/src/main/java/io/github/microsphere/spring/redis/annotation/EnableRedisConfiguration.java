@@ -14,32 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.microsphere.spring.redis.interceptor;
+package io.github.microsphere.spring.redis.annotation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.RedisConnection;
+import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import org.springframework.context.annotation.Import;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Logging
+ * Enable {@link RedisConfiguration}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class LoggingRedisConnectionInterceptor implements RedisConnectionInterceptor {
-
-    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisConnectionInterceptor.class);
-
-    @Override
-    public void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName) {
-        logger.info("beforeExecute");
-    }
-
-    @Override
-    public void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> sourceBeanName) throws Throwable {
-        logger.info("afterExecute");
-    }
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Import(RedisConfiguration.class)
+public @interface EnableRedisConfiguration {
 }

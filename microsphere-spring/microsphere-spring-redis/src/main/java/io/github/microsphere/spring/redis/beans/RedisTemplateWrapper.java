@@ -5,7 +5,6 @@ import io.github.microsphere.spring.redis.connection.RedisConnectionInvocationHa
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,8 +12,6 @@ import org.springframework.lang.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS_TEMPLATE_SOURCE;
 
 /**
  * {@link RedisTemplate} Wrapper class, compatible with {@link RedisTemplate}
@@ -24,21 +21,19 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.REDIS
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements BeanNameAware {
+public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
 
     private static final Class[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ApplicationContext context;
+    private final String beanName;
 
     private final RedisConfiguration redisConfiguration;
 
-    private String beanName;
-
-    public RedisTemplateWrapper(RedisTemplate<K, V> redisTemplate, ApplicationContext context) {
-        this.context = context;
-        this.redisConfiguration = RedisConfiguration.get(context);
+    public RedisTemplateWrapper(String beanName, RedisTemplate<K, V> redisTemplate, RedisConfiguration redisConfiguration) {
+        this.beanName = beanName;
+        this.redisConfiguration = redisConfiguration;
         initSettings(redisTemplate);
     }
 
@@ -60,7 +55,7 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return newProxyRedisConnection(connection, redisConfiguration, beanName, REDIS_TEMPLATE_SOURCE);
+            return newProxyRedisConnection(connection, redisConfiguration, beanName);
         }
         return connection;
     }
@@ -80,23 +75,22 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements B
         return redisConfiguration.isEnabled();
     }
 
-    protected static RedisConnection newProxyRedisConnection(RedisConnection connection,
-                                                             RedisConfiguration redisConfiguration,
-                                                             String redisTemplateBeanName, byte sourceFrom) {
+    protected static RedisConnection newProxyRedisConnection(RedisConnection connection, RedisConfiguration redisConfiguration, String sourceBeanName) {
         ApplicationContext context = redisConfiguration.getContext();
         ClassLoader classLoader = context.getClassLoader();
-        InvocationHandler invocationHandler = newInvocationHandler(connection, redisConfiguration, redisTemplateBeanName, sourceFrom);
+        InvocationHandler invocationHandler = newInvocationHandler(connection, redisConfiguration, sourceBeanName);
         return (RedisConnection) Proxy.newProxyInstance(classLoader, REDIS_CONNECTION_TYPES, invocationHandler);
     }
 
-    private static InvocationHandler newInvocationHandler(RedisConnection connection,
-                                                          RedisConfiguration redisConfiguration,
-                                                          String redisTemplateBeanName, byte sourceFrom) {
-        return new RedisConnectionInvocationHandler(connection, redisConfiguration, redisTemplateBeanName, sourceFrom);
+    private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisConfiguration redisConfiguration, String redisTemplateBeanName) {
+        return new RedisConnectionInvocationHandler(connection, redisConfiguration, redisTemplateBeanName);
     }
 
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
+    public String getBeanName() {
+        return beanName;
+    }
+
+    public RedisConfiguration getRedisConfiguration() {
+        return redisConfiguration;
     }
 }

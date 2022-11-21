@@ -4,13 +4,10 @@ import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRING_REDIS_TEMPLATE_SOURCE;
 
 /**
  * {@link StringRedisTemplate} Wrapper class
@@ -18,19 +15,17 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.STRIN
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class StringRedisTemplateWrapper extends StringRedisTemplate implements BeanNameAware {
+public class StringRedisTemplateWrapper extends StringRedisTemplate {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ApplicationContext context;
+    private final String beanName;
 
     private final RedisConfiguration redisConfiguration;
 
-    private String beanName;
-
-    public StringRedisTemplateWrapper(StringRedisTemplate stringRedisTemplate, ApplicationContext context) {
-        this.context = context;
-        this.redisConfiguration = RedisConfiguration.get(context);
+    public StringRedisTemplateWrapper(String beanName, StringRedisTemplate stringRedisTemplate, RedisConfiguration redisConfiguration) {
+        this.beanName = beanName;
+        this.redisConfiguration = redisConfiguration;
         initSettings(stringRedisTemplate);
     }
 
@@ -52,7 +47,7 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements B
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisConfiguration, beanName, STRING_REDIS_TEMPLATE_SOURCE);
+            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisConfiguration, beanName);
         }
         return connection;
     }
@@ -72,8 +67,4 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements B
         return redisConfiguration.isEnabled();
     }
 
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
 }
