@@ -2,11 +2,13 @@ package io.github.microsphere.spring.test.redis;
 
 import io.github.microsphere.spring.test.redis.embedded.EnableEmbeddedRedisServer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.embedded.Redis;
 import redis.embedded.RedisServer;
 
 /**
@@ -24,7 +26,7 @@ import redis.embedded.RedisServer;
 class RedisTestConfiguration {
 
     @Bean
-    public RedisTemplate<Object, Object> redisTemplate(LettuceConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
@@ -36,7 +38,7 @@ class RedisTestConfiguration {
     }
 
     @Bean
-    public StringRedisTemplate stringRedisTemplate(LettuceConnectionFactory redisConnectionFactory) {
+    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         StringRedisTemplate redisTemplate = new StringRedisTemplate();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
