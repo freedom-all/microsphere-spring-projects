@@ -37,6 +37,12 @@ public class RedisConfiguration {
 
     public static final boolean DEFAULT_ENABLED = Boolean.getBoolean(ENABLED_PROPERTY_NAME);
 
+    public static final String COMMAND_EVENT_PROPERTY_NAME_PREFIX = PROPERTY_NAME_PREFIX + "command-event.";
+
+    public static final String COMMAND_EVENT_EXPOSED_PROPERTY_NAME = COMMAND_EVENT_PROPERTY_NAME_PREFIX + "exposed";
+
+    public static final boolean DEFAULT_COMMAND_EVENT_EXPOSED = true;
+
     public static final String FAIL_FAST_ENABLED_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "fail-fast";
 
     public static final boolean FAIL_FAST_ENABLED = Boolean.getBoolean(System.getProperty(FAIL_FAST_ENABLED_PROPERTY_NAME, "true"));
@@ -78,6 +84,17 @@ public class RedisConfiguration {
 
     protected static boolean getEnabled(Environment environment) {
         return environment.getProperty(ENABLED_PROPERTY_NAME, boolean.class, DEFAULT_ENABLED);
+    }
+
+    public static boolean isCommandEventExposed(ApplicationContext context) {
+        return isCommandEventExposed(context.getEnvironment());
+    }
+
+    public static boolean isCommandEventExposed(Environment environment) {
+        String name = COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
+        boolean exposed = environment.getProperty(name, boolean.class, DEFAULT_COMMAND_EVENT_EXPOSED);
+        logger.debug("Microsphere Redis Command Event is {}exposed, if {}, please configure the Spring property [{} = {}]", exposed ? "" : "not ", exposed ? "Disabled" : "Exposed", name, !exposed);
+        return exposed;
     }
 
     protected String resolveApplicationName(Environment environment) {

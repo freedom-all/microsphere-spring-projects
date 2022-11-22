@@ -19,17 +19,25 @@ package io.github.microsphere.spring.redis.annotation;
 import io.github.microsphere.spring.redis.beans.RedisConnectionFactoryWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommendInterceptor;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import io.github.microsphere.spring.redis.metadata.MethodMetadataRepository;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.ObjectUtils;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
-import static io.github.microsphere.spring.util.AnnotationUtils.getAttribute;
-import static io.github.microsphere.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
+import static org.springframework.util.StringUtils.commaDelimitedListToSet;
+import static org.springframework.util.StringUtils.hasText;
+import static org.springframework.util.StringUtils.trimWhitespace;
+
 
 /**
  * Redis Interceptor {@link ImportBeanDefinitionRegistrar}
@@ -38,34 +46,69 @@ import static io.github.microsphere.spring.util.BeanRegistrar.registerInfrastruc
  * @see EnableRedisInterceptor
  * @since 1.0.0
  */
-public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    private BeanDefinitionRegistry registry;
+
+    private ConfigurableEnvironment environment;
 
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        this.registry = registry;
+
         Map<String, Object> attributes = importingClassMetadata.getAnnotationAttributes(EnableRedisInterceptor.class.getName());
-        boolean redisTemplateWrapper = getAttribute(attributes, "redisTemplateWrapper");
+        String[] wrapRedisTemplates = (String[]) attributes.get("wrapRedisTemplates");
 
-        if (redisTemplateWrapper) {
-            registerRedisTemplateWrapperBeanPostProcessor(registry);
+        if (ObjectUtils.isEmpty(wrapRedisTemplates)) {
+            registerRedisConnectionFactoryWrapperBeanPostProcessor();
         } else {
-            registerRedisConnectionFactoryWrapperBeanPostProcessor(registry);
+            registerRedisTemplateWrapperBeanPostProcessor(wrapRedisTemplates);
         }
 
-        boolean exposeCommandEvent = getAttribute(attributes, "exposeCommandEvent");
+        boolean exposeCommandEvent = (boolean) attributes.get("exposeCommandEvent");
         if (exposeCommandEvent) {
-            registerEventPublishingRedisCommendInterceptor(registry);
+            MethodMetadataRepository.init();
+            registerEventPublishingRedisCommendInterceptor();
         }
-
     }
 
-    private void registerRedisTemplateWrapperBeanPostProcessor(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class);
+    private void registerRedisTemplateWrapperBeanPostProcessor(String[] wrapRedisTemplates) {
+        Set<String> wrappedRedisTemplateBeanNames = new LinkedHashSet<>();
+        for (String wrapRedisTemplate : wrapRedisTemplates) {
+            String wrappedRedisTemplateBeanName = environment.resolveRequiredPlaceholders(wrapRedisTemplate);
+            Set<String> beanNames = commaDelimitedListToSet(wrappedRedisTemplateBeanName);
+            for (String beanName : beanNames) {
+                wrappedRedisTemplateBeanName = trimWhitespace(beanName);
+                if (hasText(wrappedRedisTemplateBeanName)) {
+                    wrappedRedisTemplateBeanNames.add(wrappedRedisTemplateBeanName);
+                }
+            }
+        }
+        if (!wrappedRedisTemplateBeanNames.isEmpty()) {
+            registerBeanDefinition(RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class, wrappedRedisTemplateBeanNames);
+        }
     }
 
-    private void registerRedisConnectionFactoryWrapperBeanPostProcessor(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, RedisConnectionFactoryWrapperBeanPostProcessor.BEAN_NAME, RedisConnectionFactoryWrapperBeanPostProcessor.class);
+    private void registerRedisConnectionFactoryWrapperBeanPostProcessor() {
+        registerBeanDefinition(RedisConnectionFactoryWrapperBeanPostProcessor.BEAN_NAME, RedisConnectionFactoryWrapperBeanPostProcessor.class);
     }
 
-    private void registerEventPublishingRedisCommendInterceptor(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, EventPublishingRedisCommendInterceptor.BEAN_NAME, EventPublishingRedisCommendInterceptor.class);
+    private void registerEventPublishingRedisCommendInterceptor() {
+        registerBeanDefinition(EventPublishingRedisCommendInterceptor.BEAN_NAME, EventPublishingRedisCommendInterceptor.class);
     }
+
+    private void registerBeanDefinition(String beanName, Class<?> beanClass, Object... constructorArgs) {
+        if (!registry.containsBeanDefinition(beanName)) {
+            BeanDefinitionBuilder beanDefinitionBuilder = genericBeanDefinition(beanClass);
+            for (Object constructorArg : constructorArgs) {
+                beanDefinitionBuilder.addConstructorArgValue(constructorArg);
+            }
+            registry.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
+        }
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = (ConfigurableEnvironment) environment;
+    }
+
 }

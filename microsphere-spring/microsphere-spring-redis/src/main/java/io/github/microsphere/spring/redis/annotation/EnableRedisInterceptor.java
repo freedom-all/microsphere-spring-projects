@@ -17,9 +17,11 @@
 package io.github.microsphere.spring.redis.annotation;
 
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapper;
+import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.StringRedisTemplateWrapper;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -31,6 +33,7 @@ import java.lang.annotation.Target;
  * Enable Redis Interceptor
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see RedisInterceptorBeanDefinitionRegistrar
  * @since 1.0.0
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
@@ -41,11 +44,19 @@ import java.lang.annotation.Target;
 public @interface EnableRedisInterceptor {
 
     /**
-     * Is used {@link RedisTemplateWrapper}/{@link StringRedisTemplateWrapper} to intercept Redis operations or not
+     * The bean names of {@link RedisTemplateWrapper} or {@link StringRedisTemplateWrapper} that will be wrapped
+     * for interception. The default value is empty.
+     * <p>
+     * Each attribute value can be :
+     * <ul>
+     *     <li>the string presenting bean name</li>
+     *     <li>the Spring property placeholder, like : {@link RedisTemplateWrapperBeanPostProcessor#WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME "microsphere.redis.wrapped-redis-templates"}</li>
+     *     <li>{@link RedisTemplateWrapperBeanPostProcessor#ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES "*"} indicates all {@link RedisTemplate} beans</li>
+     *  </ul>
      *
-     * @return if used, return <code>true</code>, otherwise <code>false</code>
+     * @return If the value is empty, it indicates no  {@link RedisTemplateWrapper} or {@link StringRedisTemplateWrapper} being wrapped.
      */
-    boolean redisTemplateWrapper() default false;
+    String[] wrapRedisTemplates() default {};
 
     /**
      * Expose {@link RedisCommandEvent} or not

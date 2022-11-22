@@ -50,6 +50,8 @@ public class MethodMetadataRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodMetadataRepository.class);
 
+    private static volatile boolean initialized = false;
+
     /**
      * Interface Class name and {@link Class} object cache (reduces class loading performance cost)
      */
@@ -69,8 +71,19 @@ public class MethodMetadataRepository {
     static final Map<String, Method> replicatedCommandMethodsCache = new HashMap<>();
 
     static {
+        init();
+    }
+
+    /**
+     * Initialize Method Metadata
+     */
+    public static void init() {
+        if (initialized) {
+            return;
+        }
         initRedisCommandsInterfaces();
         initInterceptedCommandMethods();
+        initialized = true;
     }
 
     public static boolean isInterceptedCommandMethod(Method method) {
@@ -96,8 +109,7 @@ public class MethodMetadataRepository {
             }
             method = ReflectionUtils.findMethod(interfaceClass, methodName, event.getParameterClasses());
             if (method == null) {
-                logger.warn("Current Redis consumer Redis command interface (class name: {}) in the method ({}), command method search end!",
-                        interfaceNme, buildCommandMethodId(interfaceNme, methodName, parameterTypes));
+                logger.warn("Current Redis consumer Redis command interface (class name: {}) in the method ({}), command method search end!", interfaceNme, buildCommandMethodId(interfaceNme, methodName, parameterTypes));
                 return null;
             }
         }
