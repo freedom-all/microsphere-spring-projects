@@ -1,13 +1,17 @@
 package io.github.microsphere.spring.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,6 +28,10 @@ import static java.util.Collections.unmodifiableMap;
  * @since 2017.01.19
  */
 public abstract class PropertySourcesUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(PropertySourcesUtils.class);
+
+    public static final String DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME = "defaultProperties";
 
     /**
      * Get Sub {@link Properties}
@@ -126,8 +134,7 @@ public abstract class PropertySourcesUtils {
      * @since 1.0.10
      */
     public static String[] getPropertyNames(PropertySource propertySource) {
-        String[] propertyNames = propertySource instanceof EnumerablePropertySource ?
-                ((EnumerablePropertySource) propertySource).getPropertyNames() : null;
+        String[] propertyNames = propertySource instanceof EnumerablePropertySource ? ((EnumerablePropertySource) propertySource).getPropertyNames() : null;
 
         if (propertyNames == null) {
             propertyNames = EMPTY_STRING_ARRAY;
@@ -135,4 +142,52 @@ public abstract class PropertySourcesUtils {
 
         return propertyNames;
     }
+
+    public static void addDefaultProperties(ConfigurableEnvironment environment, String key, Object value, Object... others) {
+        Map<String, Object> defaultProperties = getDefaultProperties(environment);
+        defaultProperties.put(key, value);
+        int length = others.length;
+        for (int i = 0; i < length; ) {
+            String k = String.valueOf(others[i++]);
+            Object v = others[i++];
+            defaultProperties.put(k, v);
+        }
+    }
+
+    public static Map<String, Object> getDefaultProperties(ConfigurableEnvironment environment) {
+        return getDefaultProperties(environment, true);
+    }
+
+    public static Map<String, Object> getDefaultProperties(ConfigurableEnvironment environment, boolean createIfAbsent) {
+        Map<String, Object> defaultProperties = null;
+        MapPropertySource defaultPropertiesPropertySource = getDefaultPropertiesPropertySource(environment, createIfAbsent);
+        if (defaultPropertiesPropertySource != null) {
+            defaultProperties = defaultPropertiesPropertySource.getSource();
+            logger.debug("The 'defaultProperties' property was obtained successfully, and the current content is: {}", defaultProperties);
+        }
+        return defaultProperties;
+    }
+
+    public static MapPropertySource getDefaultPropertiesPropertySource(ConfigurableEnvironment environment) {
+        return getDefaultPropertiesPropertySource(environment, true);
+    }
+
+    public static MapPropertySource getDefaultPropertiesPropertySource(ConfigurableEnvironment environment, boolean createIfAbsent) {
+        MutablePropertySources propertySources = environment.getPropertySources();
+        final String name = DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME;
+        PropertySource propertySource = propertySources.get(name);
+        MapPropertySource defaultPropertiesPropertySource = null;
+        if (propertySource == null && createIfAbsent) {
+            logger.warn("The 'defaultProperties' property will create an MapPropertySource[name:{}] by default", name);
+            defaultPropertiesPropertySource = new MapPropertySource(name, new HashMap<>());
+            propertySources.addLast(defaultPropertiesPropertySource);
+        } else if (propertySource instanceof MapPropertySource) {
+            logger.debug("The 'defaultProperties' property was initialized");
+            defaultPropertiesPropertySource = (MapPropertySource) propertySource;
+        } else {
+            logger.warn("'defaultProperties' PropertySource[name: {}] is not an MapPropertySource instance; it is actually: {}", name, propertySource.getClass().getName());
+        }
+        return defaultPropertiesPropertySource;
+    }
 }
+

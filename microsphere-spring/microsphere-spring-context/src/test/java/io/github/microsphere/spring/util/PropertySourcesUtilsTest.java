@@ -5,11 +5,16 @@ import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
+import org.springframework.mock.env.MockEnvironment;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.microsphere.spring.util.PropertySourcesUtils.DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME;
+import static io.github.microsphere.spring.util.PropertySourcesUtils.addDefaultProperties;
+import static io.github.microsphere.spring.util.PropertySourcesUtils.getDefaultProperties;
+import static io.github.microsphere.spring.util.PropertySourcesUtils.getDefaultPropertiesPropertySource;
 import static io.github.microsphere.spring.util.PropertySourcesUtils.getSubProperties;
 import static org.junit.Assert.assertEquals;
 
@@ -71,6 +76,24 @@ public class PropertySourcesUtilsTest {
 
         assertEquals(Collections.emptyMap(), result);
 
+    }
+
+    @Test
+    public void testDefaultProperties() {
+        MockEnvironment environment = new MockEnvironment();
+        addDefaultProperties(environment, "key-1", "value-1", "key-2", "value-2");
+
+        assertEquals("value-1", environment.getProperty("key-1"));
+        assertEquals("value-2", environment.getProperty("key-2"));
+
+        MapPropertySource mapPropertySource = getDefaultPropertiesPropertySource(environment, false);
+        assertEquals(DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME, mapPropertySource.getName());
+        assertEquals("defaultProperties", mapPropertySource.getName());
+
+        Map<String, Object> defaultProperties = getDefaultProperties(environment, false);
+        assertEquals(2, defaultProperties.size());
+        assertEquals("value-1", defaultProperties.get("key-1"));
+        assertEquals("value-2", defaultProperties.get("key-2"));
     }
 
 }
