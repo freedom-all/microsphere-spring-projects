@@ -1,6 +1,5 @@
 package io.github.microsphere.spring.boot.env;
 
-import io.github.microsphere.spring.boot.util.SpringApplicationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -11,8 +10,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -20,13 +17,15 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static io.github.microsphere.spring.boot.util.SpringApplicationUtils.getDefaultPropertiesResources;
+import static io.github.microsphere.spring.boot.util.SpringApplicationUtils.getResourceLoader;
+import static io.github.microsphere.spring.util.PropertySourcesUtils.getDefaultProperties;
 import static org.springframework.core.io.support.SpringFactoriesLoader.loadFactories;
 
 /**
@@ -39,8 +38,6 @@ import static org.springframework.core.io.support.SpringFactoriesLoader.loadFact
  * @since 1.0.0
  */
 public class DefaultPropertiesApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
-
-    public static final String DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME = "defaultProperties";
 
     public static final int DEFAULT_ORDER = LoggingApplicationListener.LOWEST_PRECEDENCE - 1;
 
@@ -63,18 +60,8 @@ public class DefaultPropertiesApplicationListener implements ApplicationListener
         }
     }
 
-    Map<String, Object> getDefaultProperties(ConfigurableEnvironment environment) {
-        Map<String, Object> defaultProperties = null;
-        MapPropertySource defaultPropertiesPropertySource = getOrCreateDefaultPropertiesPropertySource(environment);
-        if (defaultPropertiesPropertySource != null) {
-            defaultProperties = defaultPropertiesPropertySource.getSource();
-            logger.debug("The 'defaultProperties' property was obtained successfully, and the current content is: {}", defaultProperties);
-        }
-        return defaultProperties;
-    }
-
     private void postProcessDefaultProperties(SpringApplication springApplication, Map<String, Object> defaultProperties) {
-        ResourceLoader resourceLoader = SpringApplicationUtils.getResourceLoader(springApplication);
+        ResourceLoader resourceLoader = getResourceLoader(springApplication);
         ClassLoader classLoader = resourceLoader.getClassLoader();
         List<PropertySourceLoader> propertySourceLoaders = loadFactories(PropertySourceLoader.class, classLoader);
         List<DefaultPropertiesPostProcessor> defaultPropertiesPostProcessors = loadFactories(DefaultPropertiesPostProcessor.class, classLoader);
@@ -83,14 +70,14 @@ public class DefaultPropertiesApplicationListener implements ApplicationListener
             postProcessDefaultProperties(defaultPropertiesPostProcessor, propertySourceLoaders, resourceLoader, defaultProperties);
         }
 
-        // Compatible SpringApplicationUtilsgetDefaultPropertiesResources way
+        // Compatible SpringApplicationUtils#getDefaultPropertiesResources way
         loadDefaultPropertiesResources(propertySourceLoaders, resourceLoader, defaultProperties);
     }
 
     private void loadDefaultPropertiesResources(List<PropertySourceLoader> propertySourceLoaders,
                                                 ResourceLoader resourceLoader,
                                                 Map<String, Object> defaultProperties) {
-        Set<String> defaultPropertiesResources = SpringApplicationUtils.getDefaultPropertiesResources();
+        Set<String> defaultPropertiesResources = getDefaultPropertiesResources();
         logger.debug("Start loading from SpringApplicationUtils. GetDefaultPropertiesResources () 'defaultProperties resources: {}", defaultPropertiesResources);
         loadDefaultProperties(defaultPropertiesResources, propertySourceLoaders, resourceLoader, defaultProperties);
     }
@@ -106,7 +93,7 @@ public class DefaultPropertiesApplicationListener implements ApplicationListener
         logger.debug("DefaultPropertiesPostProcessor '{}' start processing 'defaultProperties: {}", processorClassName, defaultPropertiesResources);
         defaultPropertiesPostProcessor.initializeResources(defaultPropertiesResources);
 
-        // 记载 "defaultProperties"
+        // load "defaultProperties"
         loadDefaultProperties(defaultPropertiesResources, propertySourceLoaders, resourceLoader, defaultProperties);
 
         defaultPropertiesPostProcessor.postProcess(defaultProperties);
@@ -195,27 +182,8 @@ public class DefaultPropertiesApplicationListener implements ApplicationListener
         return extension;
     }
 
-    private MapPropertySource getOrCreateDefaultPropertiesPropertySource(ConfigurableEnvironment environment) {
-        MutablePropertySources propertySources = environment.getPropertySources();
-        final String name = DEFAULT_PROPERTIES_PROPERTY_SOURCE_NAME;
-        PropertySource propertySource = propertySources.get(name);
-        MapPropertySource defaultPropertiesPropertySource = null;
-        if (propertySource == null) {
-            logger.warn("SpringApplication does not initialize the 'defaultProperties' property, and will create an MapPropertySource[name:{}] by default", name);
-            defaultPropertiesPropertySource = new MapPropertySource(name, new HashMap<>());
-            propertySources.addLast(defaultPropertiesPropertySource);
-        } else if (propertySource instanceof MapPropertySource) {
-            logger.debug("SpringApplication initializes the 'defaultProperties' property");
-            defaultPropertiesPropertySource = (MapPropertySource) propertySource;
-        } else {
-            logger.warn("'defaultProperties' PropertySource[name: {}] is not an MapPropertySource instance; it is actually: {}", name,
-                    propertySource.getClass().getName());
-        }
-        return defaultPropertiesPropertySource;
-    }
-
     private void logDefaultProperties(SpringApplication springApplication, Map<String, Object> defaultProperties) {
-        logger.debug("SpringApplication[sources:{}]的defaultProperties:", springApplication.getSources());
+        logger.debug("SpringApplication[sources:{}] defaultProperties:", springApplication.getSources());
         defaultProperties.forEach((key, value) -> {
             logger.debug("'{}' = {}", key, value);
         });
