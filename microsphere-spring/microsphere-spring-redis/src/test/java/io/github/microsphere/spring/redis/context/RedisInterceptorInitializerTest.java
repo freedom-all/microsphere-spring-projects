@@ -14,11 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.microsphere.spring.redis;
+package io.github.microsphere.spring.redis.context;
+
+import io.github.microsphere.spring.redis.AbstractRedisTest;
+import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptorTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 /**
+ * {@link RedisInterceptorInitializer} Test
+ *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
  */
-public class RedisTestConfiguration {
+@ContextConfiguration(
+        classes = EnableRedisInterceptorTest.class,
+        initializers = RedisInterceptorInitializer.class
+)
+@TestPropertySource(properties = {
+        "microsphere.redis.enabled=true",
+        "microsphere.redis.wrapped-rest-templates=redisTemplate,stringRedisTemplate",
+})
+public class RedisInterceptorInitializerTest extends AbstractRedisTest {
+
 }

@@ -3,9 +3,13 @@ package io.github.microsphere.spring.redis.context;
 import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.context.annotation.AnnotationConfigRegistry;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor.WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME;
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.isCommandEventExposed;
@@ -26,18 +30,26 @@ public class RedisInterceptorInitializer implements ApplicationContextInitialize
     @Override
     public void initialize(ConfigurableApplicationContext context) {
         if (supports(context)) {
-            AnnotationConfigRegistry registry = (AnnotationConfigRegistry) context;
-            if (isCommandEventExposed(context)) {
-                registry.register(Config.class);
-            } else {
-                registry.register(NoExposingCommandEventConfig.class);
-            }
+            registerConfiguration(context);
+        }
+    }
+
+    private void registerConfiguration(ConfigurableApplicationContext context) {
+        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+        ConfigurableEnvironment environment = context.getEnvironment();
+        AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(registry, environment);
+        if (isCommandEventExposed(context)) {
+            reader.register(Config.class);
+        } else {
+            reader.register(NoExposingCommandEventConfig.class);
         }
     }
 
     private boolean supports(ConfigurableApplicationContext context) {
-        if (!(context instanceof AnnotationConfigRegistry)) {
-            logger.warn("The application context [id: {}, class: {}] is not a {} type", context.getId(), context.getClass(), AnnotationConfigRegistry.class);
+        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+        if (!(beanFactory instanceof BeanDefinitionRegistry)) {
+            logger.warn("The application context [id: {}, class: {}]'s BeanFactory[class : {}] is not a {} type", context.getId(), context.getClass(), beanFactory.getClass(), AnnotationConfigRegistry.class);
             return false;
         }
         if (!isEnabled(context)) {
@@ -48,13 +60,9 @@ public class RedisInterceptorInitializer implements ApplicationContextInitialize
 
     @EnableRedisInterceptor(wrapRedisTemplates = DEFAULT_WRAP_REDIS_TEMPLATE_PLACEHOLDER)
     private static class Config {
-
     }
 
-    @EnableRedisInterceptor(
-            wrapRedisTemplates = DEFAULT_WRAP_REDIS_TEMPLATE_PLACEHOLDER,
-            exposeCommandEvent = false
-    )
+    @EnableRedisInterceptor(wrapRedisTemplates = DEFAULT_WRAP_REDIS_TEMPLATE_PLACEHOLDER, exposeCommandEvent = false)
     private static class NoExposingCommandEventConfig {
     }
 

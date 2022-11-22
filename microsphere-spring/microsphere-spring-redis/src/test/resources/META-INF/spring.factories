@@ -1,1 +1,2 @@
-org.springframework.context.ApplicationContextInitializer=io.github.microsphere.spring.redis.context.RedisInterceptorInitializer
+org.springframework.context.ApplicationContextInitializer=\
+io.github.microsphere.spring.redis.context.RedisInterceptorInitializer
