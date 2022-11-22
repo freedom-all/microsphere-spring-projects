@@ -20,6 +20,8 @@ import io.github.microsphere.spring.redis.beans.RedisConnectionFactoryWrapperBea
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommendInterceptor;
 import io.github.microsphere.spring.redis.metadata.MethodMetadataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
@@ -29,6 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +50,8 @@ import static org.springframework.util.StringUtils.trimWhitespace;
  * @since 1.0.0
  */
 public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(RedisInterceptorBeanDefinitionRegistrar.class);
 
     private BeanDefinitionRegistry registry;
 
@@ -103,6 +108,8 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
                 beanDefinitionBuilder.addConstructorArgValue(constructorArg);
             }
             registry.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
+            logger.debug("Redis Interceptor Component[name : '{}' , class : {} , args : {}] registered",
+                    beanName, beanClass, Arrays.asList(constructorArgs));
         }
     }
 

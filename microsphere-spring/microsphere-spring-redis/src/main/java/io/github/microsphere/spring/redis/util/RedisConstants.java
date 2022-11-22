@@ -16,8 +16,11 @@
  */
 package io.github.microsphere.spring.redis.util;
 
+import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+
+import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor.WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME;
 
 /**
  * The constants of Redis
@@ -42,5 +45,17 @@ public interface RedisConstants {
      * TODO: customization is not supported {@link RedisTemplate}
      */
     byte CUSTOMIZED_REDIS_TEMPLATE_SOURCE = 3;
+
+    /**
+     * The prefix of Redis Interceptors' property name
+     */
+    String INTERCEPTOR_PROPERTY_NAME_PREFIX = RedisConfiguration.PROPERTY_NAME_PREFIX + "interceptor.";
+
+    String INTERCEPTOR_ENABLED_PROPERTY_NAME = INTERCEPTOR_PROPERTY_NAME_PREFIX + "enabled";
+
+    boolean DEFAULT_INTERCEPTOR_ENABLED = true;
+
+    String DEFAULT_WRAP_REDIS_TEMPLATE_PLACEHOLDER = "${" + WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME + ":}";
+
 
 }

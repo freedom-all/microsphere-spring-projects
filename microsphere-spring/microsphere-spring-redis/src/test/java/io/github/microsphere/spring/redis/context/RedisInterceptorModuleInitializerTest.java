@@ -17,24 +17,23 @@
 package io.github.microsphere.spring.redis.context;
 
 import io.github.microsphere.spring.redis.AbstractRedisTest;
-import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptorTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * {@link RedisInterceptorInitializer} Test
+ * {@link RedisInterceptorModuleInitializer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
 @ContextConfiguration(
-        classes = EnableRedisInterceptorTest.class,
-        initializers = RedisInterceptorInitializer.class
+        classes = RedisInterceptorModuleInitializerTest.class,
+        initializers = RedisInitializer.class
 )
 @TestPropertySource(properties = {
         "microsphere.redis.enabled=true",
-        "microsphere.redis.wrapped-rest-templates=redisTemplate,stringRedisTemplate",
+        "microsphere.redis.wrapped-redis-templates=redisTemplate,stringRedisTemplate",
 })
-public class RedisInterceptorInitializerTest extends AbstractRedisTest {
+public class RedisInterceptorModuleInitializerTest extends AbstractRedisTest {
 
 }

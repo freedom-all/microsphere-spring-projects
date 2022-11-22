@@ -40,9 +40,6 @@ import static org.junit.Assert.assertEquals;
  * @since
  */
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(properties = {
-        "microsphere.redis.enabled=true"
-})
 @EnableRedisTest
 @Disabled
 public class AbstractRedisTest {
