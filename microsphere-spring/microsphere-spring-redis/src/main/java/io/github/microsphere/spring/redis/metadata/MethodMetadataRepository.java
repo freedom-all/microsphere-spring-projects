@@ -35,9 +35,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.FAIL_FAST_ENABLED;
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.FAIL_FAST_ENABLED_PROPERTY_NAME;
 import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildCommandMethodId;
+import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED;
+import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED_PROPERTY_NAME;
 import static java.util.Collections.unmodifiableList;
 
 /**

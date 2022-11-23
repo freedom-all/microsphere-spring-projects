@@ -53,30 +53,26 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
 
     private static final Logger logger = LoggerFactory.getLogger(RedisInterceptorBeanDefinitionRegistrar.class);
 
-    private BeanDefinitionRegistry registry;
-
     private ConfigurableEnvironment environment;
 
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        this.registry = registry;
-
         Map<String, Object> attributes = importingClassMetadata.getAnnotationAttributes(EnableRedisInterceptor.class.getName());
         String[] wrapRedisTemplates = (String[]) attributes.get("wrapRedisTemplates");
 
         if (ObjectUtils.isEmpty(wrapRedisTemplates)) {
-            registerRedisConnectionFactoryWrapperBeanPostProcessor();
+            registerRedisConnectionFactoryWrapperBeanPostProcessor(registry);
         } else {
-            registerRedisTemplateWrapperBeanPostProcessor(wrapRedisTemplates);
+            registerRedisTemplateWrapperBeanPostProcessor(wrapRedisTemplates, registry);
         }
 
         boolean exposeCommandEvent = (boolean) attributes.get("exposeCommandEvent");
         if (exposeCommandEvent) {
             MethodMetadataRepository.init();
-            registerEventPublishingRedisCommendInterceptor();
+            registerEventPublishingRedisCommendInterceptor(registry);
         }
     }
 
-    private void registerRedisTemplateWrapperBeanPostProcessor(String[] wrapRedisTemplates) {
+    private void registerRedisTemplateWrapperBeanPostProcessor(String[] wrapRedisTemplates, BeanDefinitionRegistry registry) {
         Set<String> wrappedRedisTemplateBeanNames = new LinkedHashSet<>();
         for (String wrapRedisTemplate : wrapRedisTemplates) {
             String wrappedRedisTemplateBeanName = environment.resolveRequiredPlaceholders(wrapRedisTemplate);
@@ -89,27 +85,27 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
             }
         }
         if (!wrappedRedisTemplateBeanNames.isEmpty()) {
-            registerBeanDefinition(RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class, wrappedRedisTemplateBeanNames);
+            registerBeanDefinition(registry, RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class, wrappedRedisTemplateBeanNames);
         }
     }
 
-    private void registerRedisConnectionFactoryWrapperBeanPostProcessor() {
-        registerBeanDefinition(RedisConnectionFactoryWrapperBeanPostProcessor.BEAN_NAME, RedisConnectionFactoryWrapperBeanPostProcessor.class);
+    private void registerRedisConnectionFactoryWrapperBeanPostProcessor(BeanDefinitionRegistry registry) {
+        registerBeanDefinition(registry, RedisConnectionFactoryWrapperBeanPostProcessor.BEAN_NAME, RedisConnectionFactoryWrapperBeanPostProcessor.class);
     }
 
-    private void registerEventPublishingRedisCommendInterceptor() {
-        registerBeanDefinition(EventPublishingRedisCommendInterceptor.BEAN_NAME, EventPublishingRedisCommendInterceptor.class);
+    private void registerEventPublishingRedisCommendInterceptor(BeanDefinitionRegistry registry) {
+        registerBeanDefinition(registry, EventPublishingRedisCommendInterceptor.BEAN_NAME, EventPublishingRedisCommendInterceptor.class);
     }
 
-    private void registerBeanDefinition(String beanName, Class<?> beanClass, Object... constructorArgs) {
+    private void registerBeanDefinition(BeanDefinitionRegistry registry, String beanName, Class<?>
+            beanClass, Object... constructorArgs) {
         if (!registry.containsBeanDefinition(beanName)) {
             BeanDefinitionBuilder beanDefinitionBuilder = genericBeanDefinition(beanClass);
             for (Object constructorArg : constructorArgs) {
                 beanDefinitionBuilder.addConstructorArgValue(constructorArg);
             }
             registry.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
-            logger.debug("Redis Interceptor Component[name : '{}' , class : {} , args : {}] registered",
-                    beanName, beanClass, Arrays.asList(constructorArgs));
+            logger.debug("Redis Interceptor Component[name : '{}' , class : {} , args : {}] registered", beanName, beanClass, Arrays.asList(constructorArgs));
         }
     }
 
@@ -117,5 +113,4 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
     public void setEnvironment(Environment environment) {
         this.environment = (ConfigurableEnvironment) environment;
     }
-
 }

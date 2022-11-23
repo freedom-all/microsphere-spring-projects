@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.PROPERTY_NAME_PREFIX;
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.get;
+import static io.github.microsphere.spring.redis.util.RedisConstants.WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -38,21 +38,6 @@ import static org.springframework.aop.framework.AopProxyUtils.ultimateTargetClas
 public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor, InitializingBean, ApplicationContextAware {
 
     public static final String BEAN_NAME = "redisTemplateWrapperBeanPostProcessor";
-
-    /**
-     * {@link RedisTemplate} Bean Name
-     */
-    public static final String REDIS_TEMPLATE_BEAN_NAME = "redisTemplate";
-
-    /**
-     * {@link StringRedisTemplate} Bean Name
-     */
-    public static final String STRING_REDIS_TEMPLATE_BEAN_NAME = "stringRedisTemplate";
-
-    /**
-     * Wrapped {@link RedisTemplate} list of Bean names
-     */
-    public static final String WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "wrapped-redis-templates";
 
     /**
      * The all wrapped bean names of {@link RedisTemplate}: "*"

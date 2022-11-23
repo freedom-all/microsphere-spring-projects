@@ -16,11 +16,8 @@
  */
 package io.github.microsphere.spring.redis.util;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-
-import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor.WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME;
 
 /**
  * The constants of Redis
@@ -47,15 +44,45 @@ public interface RedisConstants {
     byte CUSTOMIZED_REDIS_TEMPLATE_SOURCE = 3;
 
     /**
+     * {@link RedisTemplate} Bean Name
+     */
+    String REDIS_TEMPLATE_BEAN_NAME = "redisTemplate";
+
+    /**
+     * {@link StringRedisTemplate} Bean Name
+     */
+    String STRING_REDIS_TEMPLATE_BEAN_NAME = "stringRedisTemplate";
+
+    String PROPERTY_NAME_PREFIX = "microsphere.redis.";
+
+    String ENABLED_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "enabled";
+
+    boolean DEFAULT_ENABLED = Boolean.getBoolean(ENABLED_PROPERTY_NAME);
+
+    String COMMAND_EVENT_PROPERTY_NAME_PREFIX = PROPERTY_NAME_PREFIX + "command-event.";
+
+    String COMMAND_EVENT_EXPOSED_PROPERTY_NAME = COMMAND_EVENT_PROPERTY_NAME_PREFIX + "exposed";
+
+    boolean DEFAULT_COMMAND_EVENT_EXPOSED = true;
+
+    String FAIL_FAST_ENABLED_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "fail-fast";
+
+    boolean FAIL_FAST_ENABLED = Boolean.getBoolean(System.getProperty(FAIL_FAST_ENABLED_PROPERTY_NAME, "true"));
+
+    /**
+     * Wrapped {@link RedisTemplate} list of Bean names
+     */
+    String WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "wrapped-redis-templates";
+
+    /**
      * The prefix of Redis Interceptors' property name
      */
-    String INTERCEPTOR_PROPERTY_NAME_PREFIX = RedisConfiguration.PROPERTY_NAME_PREFIX + "interceptor.";
+    String INTERCEPTOR_PROPERTY_NAME_PREFIX = PROPERTY_NAME_PREFIX + "interceptor.";
 
     String INTERCEPTOR_ENABLED_PROPERTY_NAME = INTERCEPTOR_PROPERTY_NAME_PREFIX + "enabled";
 
     boolean DEFAULT_INTERCEPTOR_ENABLED = true;
 
     String DEFAULT_WRAP_REDIS_TEMPLATE_PLACEHOLDER = "${" + WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME + ":}";
-
 
 }

@@ -18,6 +18,7 @@ package io.github.microsphere.spring.redis.interceptor;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.connection.RedisCommands;
 
 import java.lang.reflect.Method;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getParameterMetadataList;
+import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
 
 /**
  * {@link RedisCommandInterceptor} publishes {@link RedisCommandEvent}
@@ -39,22 +42,36 @@ import static io.github.microsphere.spring.redis.metadata.MethodMetadataReposito
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class EventPublishingRedisCommendInterceptor implements RedisCommandInterceptor, ApplicationEventPublisherAware {
+public class EventPublishingRedisCommendInterceptor implements RedisCommandInterceptor, ApplicationListener<RedisConfigurationPropertyChangedEvent>, ApplicationEventPublisherAware {
     private static final Logger logger = LoggerFactory.getLogger(EventPublishingRedisCommendInterceptor.class);
 
     public static final String BEAN_NAME = "eventPublishingRedisCommendInterceptor";
+
+    private final RedisConfiguration redisConfiguration;
 
     private final String applicationName;
 
     private ApplicationEventPublisher applicationEventPublisher;
 
+    private volatile boolean enabled = false;
+
     public EventPublishingRedisCommendInterceptor(RedisConfiguration redisConfiguration) {
+        this.redisConfiguration = redisConfiguration;
         this.applicationName = redisConfiguration.getApplicationName();
+        setEnabled();
+    }
+
+    public void setEnabled() {
+        this.enabled = redisConfiguration.isCommandEventExposed();
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     @Override
     public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> redisTemplateBeanName) throws Throwable {
-        if (!failure.isPresent()) {
+        if (isEnabled() && !failure.isPresent()) {
             List<ParameterMetadata> parameterMetadataList = getParameterMetadataList(method);
             if (parameterMetadataList != null) { // The current method is to copy the Redis command
                 // Initializes the method parameter data
@@ -83,6 +100,13 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
             logger.error("Redis failed to create a command method event.", method, e);
         }
         return redisCommandEvent;
+    }
+
+    @Override
+    public void onApplicationEvent(RedisConfigurationPropertyChangedEvent event) {
+        if (event.hasProperty(COMMAND_EVENT_EXPOSED_PROPERTY_NAME)) {
+            this.setEnabled();
+        }
     }
 
     @Override

@@ -18,6 +18,10 @@
     <name>Microsphere Spring Projects :: Spring :: Redis</name>
     <description>Microsphere Spring Redis</description>
 
+    <properties>
+        <spring-cloud-context.version>1.0.1.RELEASE</spring-cloud-context.version>
+    </properties>
+
     <dependencies>
 
         <!-- Servlet API -->
@@ -44,6 +48,14 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Cloud Context -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-context</artifactId>
+            <version>${spring-cloud-context.version}</version>
             <optional>true</optional>
         </dependency>
 

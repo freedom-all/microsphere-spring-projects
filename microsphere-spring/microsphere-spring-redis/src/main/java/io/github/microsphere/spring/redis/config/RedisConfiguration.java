@@ -1,9 +1,11 @@
 package io.github.microsphere.spring.redis.config;
 
+import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -11,9 +13,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor.REDIS_TEMPLATE_BEAN_NAME;
-import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor.STRING_REDIS_TEMPLATE_BEAN_NAME;
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.BEAN_NAME;
+import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
+import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_COMMAND_EVENT_EXPOSED;
+import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_ENABLED;
+import static io.github.microsphere.spring.redis.util.RedisConstants.ENABLED_PROPERTY_NAME;
+import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_TEMPLATE_BEAN_NAME;
+import static io.github.microsphere.spring.redis.util.RedisConstants.STRING_REDIS_TEMPLATE_BEAN_NAME;
 
 /**
  * Redis Configuration
@@ -22,7 +28,7 @@ import static io.github.microsphere.spring.redis.config.RedisConfiguration.BEAN_
  * @since 1.0.0
  */
 @Configuration(BEAN_NAME)
-public class RedisConfiguration {
+public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
@@ -30,22 +36,6 @@ public class RedisConfiguration {
      * {@link RedisConfiguration} Bean Name
      */
     public static final String BEAN_NAME = "redisConfiguration";
-
-    public static final String PROPERTY_NAME_PREFIX = "microsphere.redis.";
-
-    public static final String ENABLED_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "enabled";
-
-    public static final boolean DEFAULT_ENABLED = Boolean.getBoolean(ENABLED_PROPERTY_NAME);
-
-    public static final String COMMAND_EVENT_PROPERTY_NAME_PREFIX = PROPERTY_NAME_PREFIX + "command-event.";
-
-    public static final String COMMAND_EVENT_EXPOSED_PROPERTY_NAME = COMMAND_EVENT_PROPERTY_NAME_PREFIX + "exposed";
-
-    public static final boolean DEFAULT_COMMAND_EVENT_EXPOSED = true;
-
-    public static final String FAIL_FAST_ENABLED_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "fail-fast";
-
-    public static final boolean FAIL_FAST_ENABLED = Boolean.getBoolean(System.getProperty(FAIL_FAST_ENABLED_PROPERTY_NAME, "true"));
 
     protected final ConfigurableApplicationContext context;
 
@@ -62,7 +52,14 @@ public class RedisConfiguration {
         setEnabled();
     }
 
-    protected void setEnabled() {
+    @Override
+    public void onApplicationEvent(RedisConfigurationPropertyChangedEvent event) {
+        if (event.hasProperty(ENABLED_PROPERTY_NAME)) {
+            setEnabled();
+        }
+    }
+
+    public void setEnabled() {
         this.enabled = isEnabled(environment);
     }
 
@@ -70,6 +67,26 @@ public class RedisConfiguration {
         return enabled;
     }
 
+    protected String resolveApplicationName(Environment environment) {
+        String applicationName = environment.getProperty("spring.application.name", "default");
+        return applicationName;
+    }
+
+    public ConfigurableApplicationContext getContext() {
+        return context;
+    }
+
+    public ConfigurableEnvironment getEnvironment() {
+        return environment;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public boolean isCommandEventExposed() {
+        return isCommandEventExposed(context);
+    }
 
     public static boolean isEnabled(ApplicationContext context) {
         Environment environment = context.getEnvironment();
@@ -97,24 +114,6 @@ public class RedisConfiguration {
         return exposed;
     }
 
-    protected String resolveApplicationName(Environment environment) {
-        String applicationName = environment.getProperty("spring.application.name", "default");
-        return applicationName;
-    }
-
-
-    public ConfigurableApplicationContext getContext() {
-        return context;
-    }
-
-    public ConfigurableEnvironment getEnvironment() {
-        return environment;
-    }
-
-    public String getApplicationName() {
-        return applicationName;
-    }
-
     public static RedisTemplate<?, ?> getRedisTemplate(ApplicationContext context, boolean isSourceFromStringTemplate) {
         if (isSourceFromStringTemplate) {
             return context.getBean(STRING_REDIS_TEMPLATE_BEAN_NAME, StringRedisTemplate.class);
@@ -126,5 +125,4 @@ public class RedisConfiguration {
     public static RedisConfiguration get(BeanFactory beanFactory) {
         return beanFactory.getBean(BEAN_NAME, RedisConfiguration.class);
     }
-
 }
