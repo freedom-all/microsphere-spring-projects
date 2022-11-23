@@ -17,9 +17,9 @@
 package io.github.microsphere.spring.redis.annotation;
 
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapper;
-import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.StringRedisTemplateWrapper;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.util.RedisConstants;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -50,8 +50,8 @@ public @interface EnableRedisInterceptor {
      * Each attribute value can be :
      * <ul>
      *     <li>the string presenting bean name</li>
-     *     <li>the Spring property placeholder, like : {@link RedisTemplateWrapperBeanPostProcessor#WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME "microsphere.redis.wrapped-redis-templates"}</li>
-     *     <li>{@link RedisTemplateWrapperBeanPostProcessor#ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES "*"} indicates all {@link RedisTemplate} beans</li>
+     *     <li>the Spring property placeholder, like : {@link RedisConstants#WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME "microsphere.redis.wrapped-redis-templates"}</li>
+     *     <li>{@link RedisConstants#ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES "*"} indicates all {@link RedisTemplate} beans</li>
      *  </ul>
      *
      * @return If the value is empty, it indicates no  {@link RedisTemplateWrapper} or {@link StringRedisTemplateWrapper} being wrapped.
@@ -64,6 +64,5 @@ public @interface EnableRedisInterceptor {
      * @return If {@link RedisCommandEvent} is required to be exposed, return <code>true</code>, or <code>false</code>
      */
     boolean exposeCommandEvent() default true;
-
 
 }

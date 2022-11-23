@@ -19,6 +19,11 @@ package io.github.microsphere.spring.redis.util;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
 /**
  * The constants of Redis
  *
@@ -73,6 +78,11 @@ public interface RedisConstants {
      * Wrapped {@link RedisTemplate} list of Bean names
      */
     String WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "wrapped-redis-templates";
+
+    /**
+     * The all wrapped bean names of {@link RedisTemplate}: "*"
+     */
+    List<String> ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES = unmodifiableList(asList("*"));
 
     /**
      * The prefix of Redis Interceptors' property name

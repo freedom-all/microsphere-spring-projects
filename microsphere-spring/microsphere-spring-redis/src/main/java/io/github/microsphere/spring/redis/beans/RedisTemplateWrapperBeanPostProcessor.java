@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.get;
+import static io.github.microsphere.spring.redis.util.RedisConstants.ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES;
 import static io.github.microsphere.spring.redis.util.RedisConstants.WRAPPED_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -38,11 +39,6 @@ import static org.springframework.aop.framework.AopProxyUtils.ultimateTargetClas
 public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor, InitializingBean, ApplicationContextAware {
 
     public static final String BEAN_NAME = "redisTemplateWrapperBeanPostProcessor";
-
-    /**
-     * The all wrapped bean names of {@link RedisTemplate}: "*"
-     */
-    public static final List<String> ALL_WRAPPED_REDIS_TEMPLATE_BEAN_NAMES = unmodifiableList(asList("*"));
 
     private ConfigurableApplicationContext context;
 
