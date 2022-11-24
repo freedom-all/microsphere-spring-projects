@@ -19,6 +19,8 @@
     <description>Microsphere Spring Cloud Parent</description>
 
     <properties>
+        <spring-cloud.version>3.1.4</spring-cloud.version>
+        <spring-cloud-alibaba.version>2021.0.4.0</spring-cloud-alibaba.version>
     </properties>
 
     <dependencyManagement>
@@ -37,6 +39,15 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-build-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba Dependencies -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
