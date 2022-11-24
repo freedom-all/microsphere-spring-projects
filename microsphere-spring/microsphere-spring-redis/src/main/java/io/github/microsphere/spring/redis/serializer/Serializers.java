@@ -55,8 +55,13 @@ public abstract class Serializers {
         initializeParameterizedSerializers();
     }
 
-    public static <T> RedisSerializer<T> getSerializer(Class<T> parameterizedType) {
-        return parameterizedType == null ? null : (RedisSerializer<T>) getSerializer(parameterizedType.getName());
+    public static RedisSerializer<?> getSerializer(Object object) {
+        Class<?> type = object.getClass();
+        return getSerializer(type);
+    }
+
+    public static <T> RedisSerializer<T> getSerializer(Class<T> type) {
+        return type == null ? null : (RedisSerializer<T>) getSerializer(type.getName());
     }
 
     public static RedisSerializer<?> getSerializer(String typeName) {
@@ -86,12 +91,17 @@ public abstract class Serializers {
         return rawParameterValue;
     }
 
-    public static byte[] serialize(RedisCommandEvent event) {
+    public static byte[] defaultSerialize(RedisCommandEvent event) {
         return defaultSerializer.serialize(event);
     }
 
     public static byte[] defaultSerialize(Object object) {
         return defaultSerializer.serialize(object);
+    }
+
+    public static byte[] serialize(Object object) {
+        RedisSerializer redisSerializer = getSerializer(object);
+        return redisSerializer.serialize(object);
     }
 
     public static Object deserialize(byte[] bytes, String parameterType) {
@@ -260,10 +270,7 @@ public abstract class Serializers {
     }
 
     private static void initializeParameterizedSerializer(RedisSerializer serializer) {
-        Class<?> parameterizedType = ResolvableType.forType(serializer.getClass())
-                .as(RedisSerializer.class)
-                .getGeneric(0)
-                .resolve();
+        Class<?> parameterizedType = ResolvableType.forType(serializer.getClass()).as(RedisSerializer.class).getGeneric(0).resolve();
 
         if (parameterizedType != null) {
             initializeSerializer(parameterizedType, serializer);

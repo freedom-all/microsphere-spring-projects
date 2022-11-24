@@ -16,6 +16,7 @@
  */
 package io.github.microsphere.spring.redis.util;
 
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -33,20 +34,19 @@ import static java.util.Collections.unmodifiableList;
 public interface RedisConstants {
 
     /**
-     * {@link RedisTemplate} Source identification
+     * {@link RedisTemplate} Source type
      */
     byte REDIS_TEMPLATE_SOURCE = 1;
 
     /**
-     * {@link StringRedisTemplate} source identification
+     * {@link RedisConnection} source type
      */
-    byte STRING_REDIS_TEMPLATE_SOURCE = 2;
+    byte REDIS_CONNECTION_SOURCE = 2;
 
     /**
-     * The custom {@link RedisTemplate} source identification
-     * TODO: customization is not supported {@link RedisTemplate}
+     * The other source type
      */
-    byte CUSTOMIZED_REDIS_TEMPLATE_SOURCE = 3;
+    byte OTHER_SOURCE = -1;
 
     /**
      * {@link RedisTemplate} Bean Name

@@ -11,15 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.BEAN_NAME;
 import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
 import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_COMMAND_EVENT_EXPOSED;
 import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_ENABLED;
 import static io.github.microsphere.spring.redis.util.RedisConstants.ENABLED_PROPERTY_NAME;
-import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_TEMPLATE_BEAN_NAME;
-import static io.github.microsphere.spring.redis.util.RedisConstants.STRING_REDIS_TEMPLATE_BEAN_NAME;
 
 /**
  * Redis Configuration
@@ -31,6 +28,10 @@ import static io.github.microsphere.spring.redis.util.RedisConstants.STRING_REDI
 public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
+
+    private static final Class<RedisTemplate> REDIS_TEMPLATE_CLASS = RedisTemplate.class;
+
+    private static final Class<RedisConfiguration> REDIS_CONFIGURATION_CLASS = RedisConfiguration.class;
 
     /**
      * {@link RedisConfiguration} Bean Name
@@ -114,15 +115,18 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
         return exposed;
     }
 
-    public static RedisTemplate<?, ?> getRedisTemplate(ApplicationContext context, boolean isSourceFromStringTemplate) {
-        if (isSourceFromStringTemplate) {
-            return context.getBean(STRING_REDIS_TEMPLATE_BEAN_NAME, StringRedisTemplate.class);
-        } else {
-            return context.getBean(REDIS_TEMPLATE_BEAN_NAME, RedisTemplate.class);
+    public static RedisTemplate<?, ?> getRedisTemplate(BeanFactory beanFactory, String redisTemplateBeanName) {
+        if (beanFactory.containsBean(redisTemplateBeanName)) {
+            return beanFactory.getBean(redisTemplateBeanName, REDIS_TEMPLATE_CLASS);
         }
+        return null;
+    }
+
+    public RedisTemplate<?, ?> getRedisTemplate(String redisTemplateBeanName) {
+        return getRedisTemplate(context, redisTemplateBeanName);
     }
 
     public static RedisConfiguration get(BeanFactory beanFactory) {
-        return beanFactory.getBean(BEAN_NAME, RedisConfiguration.class);
+        return beanFactory.getBean(BEAN_NAME, REDIS_CONFIGURATION_CLASS);
     }
 }
