@@ -2,6 +2,7 @@ package io.github.microsphere.spring.redis.metadata;
 
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.serializer.Serializers;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.geo.Point;
@@ -81,7 +82,7 @@ public class MethodMetadataRepository {
         if (initialized) {
             return;
         }
-        initRedisConnectionMethods();
+        initRedisMethodsAccessible();
         initRedisCommandsInterfaces();
         initInterceptedCommandMethods();
         initialized = true;
@@ -140,8 +141,16 @@ public class MethodMetadataRepository {
         return redisCommandBindings.getOrDefault(interfaceName, redisConnection -> redisConnection);
     }
 
-    private static void initRedisConnectionMethods() {
-        for (Method method : RedisConnection.class.getMethods()) {
+    private static void initRedisMethodsAccessible() {
+        initRedisMethodsAccessible(RedisConnection.class);
+        List<Class<?>> allInterfaces = ClassUtils.getAllInterfaces(RedisConnection.class);
+        for (Class<?> interfaceClass : allInterfaces) {
+            initRedisMethodsAccessible(interfaceClass);
+        }
+    }
+
+    private static void initRedisMethodsAccessible(Class<?> interfaceClass) {
+        for (Method method : interfaceClass.getMethods()) {
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
@@ -793,7 +802,9 @@ public class MethodMetadataRepository {
             logger.debug("Initializes the intercepted command Method[Declared Class: {} , Method: {}, Parameter types: {}]...", declaredClass.getName(), methodName, Arrays.toString(parameterTypes));
             Method method = declaredClass.getMethod(methodName, parameterTypes);
             // Reduced Method runtime checks
-            method.setAccessible(true);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
             initInterceptedCommandMethodMethod(method, parameterTypes);
             initInterceptedCommandMethodCache(declaredClass, method, parameterTypes);
         } catch (Throwable e) {
