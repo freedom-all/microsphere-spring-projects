@@ -81,6 +81,7 @@ public class MethodMetadataRepository {
         if (initialized) {
             return;
         }
+        initRedisConnectionMethods();
         initRedisCommandsInterfaces();
         initInterceptedCommandMethods();
         initialized = true;
@@ -137,6 +138,14 @@ public class MethodMetadataRepository {
 
     public static Function<RedisConnection, Object> getRedisCommandBindingFunction(String interfaceName) {
         return redisCommandBindings.getOrDefault(interfaceName, redisConnection -> redisConnection);
+    }
+
+    private static void initRedisConnectionMethods() {
+        for (Method method : RedisConnection.class.getMethods()) {
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+        }
     }
 
     /**
