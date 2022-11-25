@@ -80,7 +80,7 @@ public class InterceptingRedisConnectionInvocationHandler implements InvocationH
             result = method.invoke(rawRedisConnection, args);
         } catch (Throwable e) {
             failure = e;
-            throw e;
+            throw e.getCause();
         } finally {
             afterExecute(redisMethodContext, result, failure);
         }
