@@ -17,12 +17,15 @@
 package io.github.microsphere.spring.redis.context;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.interceptor.RedisCommandInterceptor;
+import io.github.microsphere.spring.redis.interceptor.RedisConnectionInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -37,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 import static io.github.microsphere.spring.util.BeanUtils.getBeanNames;
+import static io.github.microsphere.spring.util.BeanUtils.getSortedBeans;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -66,10 +70,16 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
 
     private Set<String> redisTemplateBeanNames;
 
+    private List<RedisConnectionInterceptor> redisConnectionInterceptors;
+
+    private List<RedisCommandInterceptor> redisCommandInterceptors;
+
     @Override
     public void afterSingletonsInstantiated() {
         this.redisConfiguration = getRedisConfiguration(context);
-        this.redisTemplateBeanNames = resolveAllRestTemplateBeanNames(beanFactory);
+        this.redisTemplateBeanNames = findAllRestTemplateBeanNames(beanFactory);
+        this.redisConnectionInterceptors = findRedisConnectionInterceptors(beanFactory);
+        this.redisCommandInterceptors = findRedisCommandInterceptors(beanFactory);
     }
 
     @NonNull
@@ -125,6 +135,13 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
         return getRedisConfiguration().getApplicationName();
     }
 
+    public List<RedisConnectionInterceptor> getRedisConnectionInterceptors() {
+        return redisConnectionInterceptors;
+    }
+
+    public List<RedisCommandInterceptor> getRedisCommandInterceptors() {
+        return redisCommandInterceptors;
+    }
 
     public RedisTemplate<?, ?> getRedisTemplate(String redisTemplateBeanName) {
         return getRedisTemplate(context, redisTemplateBeanName);
@@ -150,9 +167,17 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
         return beanFactory.getBean(RedisConfiguration.BEAN_NAME, REDIS_CONFIGURATION_CLASS);
     }
 
-    public static Set<String> resolveAllRestTemplateBeanNames(ConfigurableListableBeanFactory beanFactory) {
+    public static Set<String> findAllRestTemplateBeanNames(ConfigurableListableBeanFactory beanFactory) {
         List<String> redisTemplateBeanNames = asList(getBeanNames(beanFactory, RedisTemplate.class));
         logger.debug("The all bean names of RedisTemplate : {}", redisTemplateBeanNames);
         return new HashSet<>(redisTemplateBeanNames);
+    }
+
+    public static List<RedisCommandInterceptor> findRedisCommandInterceptors(ListableBeanFactory beanFactory) {
+        return getSortedBeans(beanFactory, RedisCommandInterceptor.class);
+    }
+
+    public static List<RedisConnectionInterceptor> findRedisConnectionInterceptors(ListableBeanFactory beanFactory) {
+        return getSortedBeans(beanFactory, RedisConnectionInterceptor.class);
     }
 }

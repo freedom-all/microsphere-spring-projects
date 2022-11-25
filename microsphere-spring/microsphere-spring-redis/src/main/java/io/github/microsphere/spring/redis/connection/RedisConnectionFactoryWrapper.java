@@ -17,6 +17,7 @@
 package io.github.microsphere.spring.redis.connection;
 
 import io.github.microsphere.spring.redis.context.RedisContext;
+import io.github.microsphere.spring.redis.interceptor.InterceptingRedisConnectionInvocationHandler;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisClusterConnection;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -88,6 +89,6 @@ public class RedisConnectionFactoryWrapper implements RedisConnectionFactory {
     }
 
     private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisContext redisContext, String sourceBeanName) {
-        return new RedisConnectionInvocationHandler(connection, redisContext, sourceBeanName);
+        return new InterceptingRedisConnectionInvocationHandler(connection, redisContext, sourceBeanName);
     }
 }

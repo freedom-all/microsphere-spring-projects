@@ -19,7 +19,8 @@ package io.github.microsphere.spring.redis.interceptor;
 import io.github.microsphere.spring.redis.context.RedisContext;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,22 +37,24 @@ public class RedisMethodContext<T> {
 
     private final Object[] args;
 
-    private final Optional<String> sourceBeanName;
-
     private final RedisContext redisContext;
+
+    private final String sourceBeanName;
 
     private long startTimeNanos = -1;
 
+    private long durationNanos = -1;
+
     public RedisMethodContext(T target, Method method, Object[] args, RedisContext redisContext) {
-        this(target, method, args, Optional.empty(), redisContext);
+        this(target, method, args, redisContext, null);
     }
 
-    public RedisMethodContext(T target, Method method, Object[] args, Optional<String> sourceBeanName, RedisContext redisContext) {
+    public RedisMethodContext(T target, Method method, Object[] args, RedisContext redisContext, String sourceBeanName) {
         this.target = target;
         this.method = method;
         this.args = args;
-        this.sourceBeanName = sourceBeanName;
         this.redisContext = redisContext;
+        this.sourceBeanName = sourceBeanName;
     }
 
     public T getTarget() {
@@ -66,7 +69,7 @@ public class RedisMethodContext<T> {
         return args;
     }
 
-    public Optional<String> getSourceBeanName() {
+    public String getSourceBeanName() {
         return sourceBeanName;
     }
 
@@ -79,6 +82,18 @@ public class RedisMethodContext<T> {
      */
     public void start() {
         this.startTimeNanos = System.nanoTime();
+    }
+
+    /**
+     * Stop and record the time in nano seconds, the initialized value is negative
+     *
+     * @throws IllegalStateException if {@link #start()} is not execute before
+     */
+    public void stop() {
+        if (startTimeNanos < 0) {
+            throw new IllegalStateException("'stop()' method must not be invoked before the execution of 'start()' method");
+        }
+        this.durationNanos = System.nanoTime() - startTimeNanos;
     }
 
     /**
@@ -97,10 +112,7 @@ public class RedisMethodContext<T> {
      * because {@link #start()} method was not executed
      */
     public long getDurationNanos() {
-        if (startTimeNanos < 0) {
-            return -1;
-        }
-        return System.nanoTime() - startTimeNanos;
+        return durationNanos;
     }
 
     /**
@@ -115,5 +127,18 @@ public class RedisMethodContext<T> {
             return durationNanos;
         }
         return TimeUnit.NANOSECONDS.convert(durationNanos, timeUnit);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", RedisMethodContext.class.getSimpleName() + "[", "]")
+                .add("target=" + target)
+                .add("method=" + method)
+                .add("args=" + Arrays.toString(args))
+                .add("redisContext=" + redisContext)
+                .add("sourceBeanName='" + sourceBeanName + "'")
+                .add("startTimeNanos=" + startTimeNanos)
+                .add("durationNanos=" + durationNanos)
+                .toString();
     }
 }

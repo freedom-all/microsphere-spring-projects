@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.redis.beans;
 
-import io.github.microsphere.spring.redis.connection.RedisConnectionInvocationHandler;
+import io.github.microsphere.spring.redis.interceptor.InterceptingRedisConnectionInvocationHandler;
 import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
@@ -81,7 +81,7 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
     }
 
     private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisContext redisContext, String redisTemplateBeanName) {
-        return new RedisConnectionInvocationHandler(connection, redisContext, redisTemplateBeanName);
+        return new InterceptingRedisConnectionInvocationHandler(connection, redisContext, redisTemplateBeanName);
     }
 
     public String getBeanName() {

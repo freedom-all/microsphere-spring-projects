@@ -5,8 +5,6 @@ import org.springframework.lang.Nullable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
-
 /**
  * Redis Method interceptor
  *
@@ -35,31 +33,18 @@ public interface RedisMethodInterceptor<T> {
      * @param sourceBeanName The {@link Optional} of Source Bean Name
      * @throws Throwable When method implementations execute exceptions
      */
-    default void beforeExecute(T target, Method method, Object[] args, Optional<String> sourceBeanName) throws Throwable {
-    }
-
-    /**
-     * Intercept {@link T The target Redis instance} method before execution
-     *
-     * @param target         {@link T The target Redis instance}
-     * @param method         {@link T The target Redis instance} executing {@link Method}
-     * @param args           {@link T The target Redis instance} executing {@link Method} arguments
-     * @param sourceBeanName The {@link Optional} of Source Bean Name
-     * @throws Throwable When method implementations execute exceptions
-     */
     default void beforeExecute(T target, Method method, Object[] args, @Nullable String sourceBeanName) throws Throwable {
-        beforeExecute(target, method, args, ofNullable(sourceBeanName));
     }
 
     /**
      * Intercept {@link T The target Redis instance} method after execution
      *
      * @param context {@link RedisMethodContext}
-     * @param result  The Optional of {@link T The target Redis instance} execution result
-     * @param failure The Optional of {@link Throwable} Throwable
+     * @param result  The nullable {@link T The target Redis instance} method execution result
+     * @param failure The nullable {@link Throwable Throwable} caused by Redis method execution
      * @throws Throwable When method implementations execute exceptions
      */
-    default void afterExecute(RedisMethodContext<T> context, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
+    default void afterExecute(RedisMethodContext<T> context, @Nullable Object result, @Nullable Throwable failure) throws Throwable {
         afterExecute(context.getTarget(), context.getMethod(), context.getArgs(), context.getSourceBeanName(), result, failure);
     }
 
@@ -70,25 +55,22 @@ public interface RedisMethodInterceptor<T> {
      * @param method         {@link T The target Redis instance} executing {@link Method}
      * @param args           {@link T The target Redis instance} executing {@link Method} arguments
      * @param sourceBeanName The {@link Optional} of Source Bean Name
-     * @param result         The Optional of {@link T The target Redis instance} execution result
-     * @param failure        The Optional of {@link Throwable} Throwable
-     * @throws Throwable When method implementations execute exceptions
-     */
-    default void afterExecute(T target, Method method, Object[] args, Optional<String> sourceBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
-    }
-
-    /**
-     * Intercept {@link T The target Redis instance} method after execution
-     *
-     * @param target         {@link T The target Redis instance}
-     * @param method         {@link T The target Redis instance} executing {@link Method}
-     * @param args           {@link T The target Redis instance} executing {@link Method} arguments
-     * @param sourceBeanName The {@link Optional} of Source Bean Name
-     * @param result         The Optional of {@link T The target Redis instance} execution result
-     * @param failure        The Optional of {@link Throwable} Throwable
+     * @param result         The nullable {@link T The target Redis instance} method execution result
+     * @param failure        The nullable {@link Throwable Throwable} caused by Redis method execution
      * @throws Throwable When method implementations execute exceptions
      */
     default void afterExecute(T target, Method method, Object[] args, @Nullable String sourceBeanName, @Nullable Object result, @Nullable Throwable failure) throws Throwable {
-        afterExecute(target, method, args, ofNullable(sourceBeanName), ofNullable(result), ofNullable(failure));
+    }
+
+    /**
+     * Handle interception error
+     *
+     * @param context {@link RedisMethodContext}
+     * @param before  If <code>true</code>, it indicates error occurs on {@link #beforeExecute(RedisMethodContext)}, or {@link #afterExecute(RedisMethodContext, Object, Throwable)}
+     * @param result  The nullable {@link T The target Redis instance} method execution result
+     * @param failure The nullable {@link Throwable Throwable} caused by Redis method execution
+     * @param error   {@link Throwable error} caused by interception
+     */
+    default void handleError(RedisMethodContext<T> context, boolean before, @Nullable Object result, @Nullable Throwable failure, Throwable error) {
     }
 }

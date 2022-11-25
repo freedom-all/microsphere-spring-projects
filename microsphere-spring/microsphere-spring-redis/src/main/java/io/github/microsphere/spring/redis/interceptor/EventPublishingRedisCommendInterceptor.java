@@ -31,7 +31,6 @@ import org.springframework.data.redis.connection.RedisCommands;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Optional;
 
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getParameterMetadataList;
 import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
@@ -70,32 +69,35 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
     }
 
     @Override
-    public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> redisTemplateBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
-        if (isEnabled() && !failure.isPresent()) {
+    public void afterExecute(RedisMethodContext<RedisCommands> context, Object result, Throwable failure) throws Throwable {
+        if (isEnabled() && failure == null) {
+            Method method = context.getMethod();
             List<ParameterMetadata> parameterMetadataList = getParameterMetadataList(method);
             if (parameterMetadataList != null) { // The current method is to copy the Redis command
+                Object[] args = context.getArgs();
+                String sourceBeanName = context.getSourceBeanName();
                 // Initializes the method parameter data
                 ParametersHolder.init(parameterMetadataList, args);
                 // Publish Redis Command Event
-                publishRedisCommandEvent(method, args, redisTemplateBeanName);
+                publishRedisCommandEvent(method, args, sourceBeanName);
             }
         }
     }
 
-    private void publishRedisCommandEvent(Method method, Object[] args, Optional<String> redisTemplateBeanName) {
-        RedisCommandEvent redisCommandEvent = createRedisCommandEvent(method, args, redisTemplateBeanName);
+    private void publishRedisCommandEvent(Method method, Object[] args, String sourceBeanName) {
+        RedisCommandEvent redisCommandEvent = createRedisCommandEvent(method, args, sourceBeanName);
         if (redisCommandEvent != null) {
             // Event handling allows exceptions to be thrown
             applicationEventPublisher.publishEvent(redisCommandEvent);
         }
     }
 
-    private RedisCommandEvent createRedisCommandEvent(Method method, Object[] args, Optional<String> redisTemplateBeanName) {
+    private RedisCommandEvent createRedisCommandEvent(Method method, Object[] args, String sourceBeanName) {
         RedisCommandEvent redisCommandEvent = null;
         try {
             Parameter[] parameters = ParametersHolder.bulkGet(args);
             redisCommandEvent = new RedisCommandEvent(method, parameters, applicationName);
-            redisTemplateBeanName.ifPresent(redisCommandEvent::setSourceBeanName);
+            redisCommandEvent.setSourceBeanName(sourceBeanName);
         } catch (Throwable e) {
             logger.error("Redis failed to create a command method event.", method, e);
         }

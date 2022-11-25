@@ -18,10 +18,6 @@ package io.github.microsphere.spring.redis.interceptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.RedisCommands;
-
-import java.lang.reflect.Method;
-import java.util.Optional;
 
 /**
  * Logging
@@ -39,7 +35,7 @@ public class LoggingRedisCommandInterceptor implements RedisCommandInterceptor {
     }
 
     @Override
-    public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> redisTemplateBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
+    public void afterExecute(RedisMethodContext redisMethodContext, Object result, Throwable failure) throws Throwable {
         logger.info("afterExecute");
     }
 }

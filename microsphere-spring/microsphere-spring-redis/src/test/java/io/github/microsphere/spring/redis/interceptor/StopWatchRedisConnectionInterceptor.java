@@ -20,26 +20,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
-
 /**
  * Logging
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class LoggingRedisConnectionInterceptor implements RedisConnectionInterceptor {
+public class StopWatchRedisConnectionInterceptor implements RedisConnectionInterceptor {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisConnectionInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(StopWatchRedisConnectionInterceptor.class);
 
     @Override
-    public void beforeExecute(RedisMethodContext redisMethodContext) {
-        logger.info("beforeExecute");
+    public void beforeExecute(RedisMethodContext context) {
+        context.start();
     }
 
+
     @Override
-    public void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
-        logger.info("afterExecute");
+    public void afterExecute(RedisMethodContext<RedisConnection> context, Object result, Throwable failure) throws Throwable {
+        context.stop();
+        logger.info("{} , result : {} , failure : {}", context, result, failure);
     }
 }
