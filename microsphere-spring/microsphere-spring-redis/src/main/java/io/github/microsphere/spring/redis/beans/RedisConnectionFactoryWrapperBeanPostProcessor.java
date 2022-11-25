@@ -16,8 +16,8 @@
  */
 package io.github.microsphere.spring.redis.beans;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.connection.RedisConnectionFactoryWrapper;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -37,7 +37,7 @@ public class RedisConnectionFactoryWrapperBeanPostProcessor implements BeanPostP
 
     public static final String BEAN_NAME = "redisConnectionFactoryWrapperBeanPostProcessor";
 
-    private RedisConfiguration redisConfiguration;
+    private RedisContext redisContext;
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -46,7 +46,7 @@ public class RedisConnectionFactoryWrapperBeanPostProcessor implements BeanPostP
 
         if (RedisConnectionFactory.class.isAssignableFrom(beanClass)) {
             RedisConnectionFactory redisConnectionFactory = (RedisConnectionFactory) bean;
-            return new RedisConnectionFactoryWrapper(beanName, redisConnectionFactory, redisConfiguration);
+            return new RedisConnectionFactoryWrapper(beanName, redisConnectionFactory, redisContext);
         }
 
         return bean;
@@ -54,6 +54,6 @@ public class RedisConnectionFactoryWrapperBeanPostProcessor implements BeanPostP
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.redisConfiguration = RedisConfiguration.get(beanFactory);
+        this.redisContext = RedisContext.get(beanFactory);
     }
 }

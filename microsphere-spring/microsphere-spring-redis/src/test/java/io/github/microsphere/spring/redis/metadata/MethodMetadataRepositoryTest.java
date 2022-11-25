@@ -14,32 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.microsphere.spring.redis.interceptor;
+package io.github.microsphere.spring.redis.metadata;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.RedisCommands;
+import org.junit.Test;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
+import java.lang.reflect.Parameter;
 
 /**
- * Logging
+ * {@link MethodMetadataRepository} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class LoggingRedisCommandInterceptor implements RedisCommandInterceptor {
+public class MethodMetadataRepositoryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingRedisCommandInterceptor.class);
-
-    @Override
-    public void beforeExecute(RedisMethodContext redisMethodContext) {
-        logger.info("beforeExecute");
+    @Test
+    public void testInit() {
+        MethodMetadataRepository.init();
     }
 
-    @Override
-    public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> redisTemplateBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
-        logger.info("afterExecute");
+    @Test
+    public void test() {
+        for (Method method : ValueOperations.class.getMethods()) {
+            for (int i = 0; i < method.getParameterCount(); i++) {
+                Parameter param = method.getParameters()[i];
+                System.out.println(param.getName());
+            }
+        }
     }
 }

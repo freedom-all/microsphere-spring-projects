@@ -16,25 +16,41 @@
  */
 package io.github.microsphere.spring.redis.annotation;
 
-import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
 import io.github.microsphere.spring.redis.AbstractRedisTest;
+import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 /**
- * {@link EnableRedisInterceptor} Test
+ * {@link EnableRedisConfiguration} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see RedisConfiguration
  * @since 1.0.0
  */
-@ContextConfiguration(classes = EnableRedisInterceptorTest.class)
-@TestPropertySource(properties = {
-        "microsphere.redis.enabled=true",
-        "microsphere.redis.wrapped-rest-templates=redisTemplate",
-})
-@EnableRedisInterceptor(wrapRedisTemplates = {
-        "${microsphere.redis.wrapped-rest-templates}",
-        " redisTemplate , stringRedisTemplate"
-})
-public class EnableRedisInterceptorTest extends AbstractRedisCommandEventTest {
+@ContextConfiguration(classes = EnableRedisConfigurationTest.class)
+@TestPropertySource(properties = {"microsphere.redis.enabled=true", "spring.application.name=test-app"})
+@EnableRedisConfiguration
+public class EnableRedisConfigurationTest extends AbstractRedisTest {
+
+    @Autowired
+    private RedisConfiguration redisConfiguration;
+
+    @Autowired
+    private Environment environment;
+
+    @Test
+    public void test() throws Throwable {
+        assertSame(environment, redisConfiguration.getEnvironment());
+        assertEquals("test-app", redisConfiguration.getApplicationName());
+        assertTrue(redisConfiguration.isEnabled());
+        assertTrue(redisConfiguration.isCommandEventExposed());
+    }
 }

@@ -16,6 +16,7 @@
  */
 package io.github.microsphere.spring.redis.event;
 
+import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
 import io.github.microsphere.spring.redis.AbstractRedisTest;
 import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptor;
 import io.github.microsphere.spring.redis.interceptor.LoggingRedisCommandInterceptor;
@@ -38,5 +39,5 @@ import org.springframework.test.context.TestPropertySource;
         "microsphere.redis.enabled=true"
 })
 @EnableRedisInterceptor
-public class RedisCommandEventTest extends AbstractRedisTest {
+public class RedisCommandEventTest extends AbstractRedisCommandEventTest {
 }

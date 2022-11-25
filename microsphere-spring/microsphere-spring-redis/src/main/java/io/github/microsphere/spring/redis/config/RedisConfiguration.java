@@ -3,16 +3,12 @@ package io.github.microsphere.spring.redis.config;
 import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.core.RedisTemplate;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.BEAN_NAME;
 import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
 import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_COMMAND_EVENT_EXPOSED;
 import static io.github.microsphere.spring.redis.util.RedisConstants.DEFAULT_ENABLED;
@@ -24,34 +20,21 @@ import static io.github.microsphere.spring.redis.util.RedisConstants.ENABLED_PRO
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-@Configuration(BEAN_NAME)
-public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent> {
+public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent>, EnvironmentAware {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
-    private static final Class<RedisTemplate> REDIS_TEMPLATE_CLASS = RedisTemplate.class;
-
-    private static final Class<RedisConfiguration> REDIS_CONFIGURATION_CLASS = RedisConfiguration.class;
-
     /**
+     * RedisConfiguration
      * {@link RedisConfiguration} Bean Name
      */
     public static final String BEAN_NAME = "redisConfiguration";
 
-    protected final ConfigurableApplicationContext context;
+    protected ConfigurableEnvironment environment;
 
-    protected final ConfigurableEnvironment environment;
-
-    protected final String applicationName;
+    protected String applicationName;
 
     protected volatile boolean enabled;
-
-    public RedisConfiguration(ConfigurableApplicationContext context) {
-        this.context = context;
-        this.environment = context.getEnvironment();
-        this.applicationName = resolveApplicationName(environment);
-        setEnabled();
-    }
 
     @Override
     public void onApplicationEvent(RedisConfigurationPropertyChangedEvent event) {
@@ -73,10 +56,6 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
         return applicationName;
     }
 
-    public ConfigurableApplicationContext getContext() {
-        return context;
-    }
-
     public ConfigurableEnvironment getEnvironment() {
         return environment;
     }
@@ -86,7 +65,7 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
     }
 
     public boolean isCommandEventExposed() {
-        return isCommandEventExposed(context);
+        return isCommandEventExposed(environment);
     }
 
     public static boolean isEnabled(ApplicationContext context) {
@@ -115,18 +94,10 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
         return exposed;
     }
 
-    public static RedisTemplate<?, ?> getRedisTemplate(BeanFactory beanFactory, String redisTemplateBeanName) {
-        if (beanFactory.containsBean(redisTemplateBeanName)) {
-            return beanFactory.getBean(redisTemplateBeanName, REDIS_TEMPLATE_CLASS);
-        }
-        return null;
-    }
-
-    public RedisTemplate<?, ?> getRedisTemplate(String redisTemplateBeanName) {
-        return getRedisTemplate(context, redisTemplateBeanName);
-    }
-
-    public static RedisConfiguration get(BeanFactory beanFactory) {
-        return beanFactory.getBean(BEAN_NAME, REDIS_CONFIGURATION_CLASS);
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = (ConfigurableEnvironment) environment;
+        this.applicationName = resolveApplicationName(environment);
+        setEnabled();
     }
 }

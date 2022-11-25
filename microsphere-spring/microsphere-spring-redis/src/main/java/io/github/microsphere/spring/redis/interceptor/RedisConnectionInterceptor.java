@@ -25,15 +25,16 @@ public interface RedisConnectionInterceptor extends RedisMethodInterceptor<Redis
      * @param sourceBeanName  The {@link Optional} of Source Bean Name
      * @throws Throwable When method implementations execute exceptions
      */
-    void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName);
+    default void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName) {
+    }
 
     /**
      * Intercept {@link RedisConnection} method before execution
      *
-     * @param redisConnection       {@link RedisConnection}
-     * @param method                {@link RedisConnection} executing {@link Method}
-     * @param args                  {@link RedisConnection} executing {@link Method} arguments
-     * @param sourceBeanName The {@link Optional} of Source Bean Name
+     * @param redisConnection {@link RedisConnection}
+     * @param method          {@link RedisConnection} executing {@link Method}
+     * @param args            {@link RedisConnection} executing {@link Method} arguments
+     * @param sourceBeanName  The {@link Optional} of Source Bean Name
      * @throws Throwable When method implementations execute exceptions
      */
     default void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, @Nullable String sourceBeanName) throws Throwable {
@@ -43,28 +44,29 @@ public interface RedisConnectionInterceptor extends RedisMethodInterceptor<Redis
     /**
      * Intercept {@link RedisConnection} method after execution
      *
-     * @param redisConnection       {@link RedisConnection}
-     * @param method                {@link RedisConnection} executing {@link Method}
-     * @param args                  {@link RedisConnection} executing {@link Method} arguments
-     * @param result                The {@link Optional} of {@link RedisConnection} execution result
-     * @param failure               The {@link Optional} of {@link Throwable} Throwable
-     * @param sourceBeanName The {@link Optional} of Source Bean Name
+     * @param redisConnection {@link RedisConnection}
+     * @param method          {@link RedisConnection} executing {@link Method}
+     * @param args            {@link RedisConnection} executing {@link Method} arguments
+     * @param sourceBeanName  The {@link Optional} of Source Bean Name
+     * @param result          The {@link Optional} of {@link RedisConnection} execution result
+     * @param failure         The {@link Optional} of {@link Throwable} Throwable
      * @throws Throwable When method implementations execute exceptions
      */
-    void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> sourceBeanName) throws Throwable;
+    default void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
+    }
 
     /**
      * Intercept {@link RedisConnection} method after execution
      *
-     * @param redisConnection       {@link RedisConnection}
-     * @param method                {@link RedisConnection} executing {@link Method}
-     * @param args                  {@link RedisConnection} executing {@link Method} arguments
-     * @param result                The {@link Optional} of {@link RedisConnection} execution result
-     * @param failure               The {@link Optional} of {@link Throwable} Throwable
-     * @param sourceBeanName The {@link Optional} of Source Bean Name
+     * @param redisConnection {@link RedisConnection}
+     * @param method          {@link RedisConnection} executing {@link Method}
+     * @param args            {@link RedisConnection} executing {@link Method} arguments
+     * @param sourceBeanName  The {@link Optional} of Source Bean Name
+     * @param result          The {@link Optional} of {@link RedisConnection} execution result
+     * @param failure         The {@link Optional} of {@link Throwable} Throwable
      * @throws Throwable When method implementations execute exceptions
      */
-    default void afterExecute(RedisConnection redisConnection, Method method, Object[] args, @Nullable Object result, @Nullable Throwable failure, @Nullable String sourceBeanName) throws Throwable {
-        afterExecute(redisConnection, method, args, ofNullable(result), ofNullable(failure), ofNullable(sourceBeanName));
+    default void afterExecute(RedisConnection redisConnection, Method method, Object[] args, @Nullable String sourceBeanName, @Nullable Object result, @Nullable Throwable failure) throws Throwable {
+        afterExecute(redisConnection, method, args, ofNullable(sourceBeanName), ofNullable(result), ofNullable(failure));
     }
 }

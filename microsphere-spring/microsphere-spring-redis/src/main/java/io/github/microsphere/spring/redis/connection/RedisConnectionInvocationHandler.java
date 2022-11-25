@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.redis.connection;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.interceptor.RedisCommandInterceptor;
 import io.github.microsphere.spring.redis.interceptor.RedisConnectionInterceptor;
 import io.github.microsphere.spring.redis.interceptor.RedisMethodInterceptor;
@@ -45,14 +45,14 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
 
     private final boolean hasRedisCommandInterceptors;
 
-    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisConfiguration redisConfiguration) {
-        this(rawRedisConnection, redisConfiguration, null);
+    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisContext redisContext) {
+        this(rawRedisConnection, redisContext, null);
     }
 
-    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisConfiguration redisConfiguration, String sourceBeanName) {
+    public RedisConnectionInvocationHandler(RedisConnection rawRedisConnection, RedisContext redisContext, String sourceBeanName) {
         this.rawRedisConnection = rawRedisConnection;
-        this.context = redisConfiguration.getContext();
-        this.applicationName = redisConfiguration.getApplicationName();
+        this.context = redisContext.getApplicationContext();
+        this.applicationName = redisContext.getApplicationName();
         this.sourceBeanName = sourceBeanName;
         this.redisCommandInterceptors = getRedisCommandInterceptors(context);
         this.redisConnectionInterceptors = getRedisConnectionInterceptors(context);
@@ -117,7 +117,7 @@ public class RedisConnectionInvocationHandler implements InvocationHandler {
             for (int i = 0; i < size; i++) {
                 RedisMethodInterceptor interceptor = redisMethodInterceptors.get(i);
                 try {
-                    interceptor.afterExecute(rawRedisConnection, method, args, result, failure, sourceBeanName);
+                    interceptor.afterExecute(rawRedisConnection, method, args, sourceBeanName, result, failure);
                 } catch (Throwable e) {
                     logger.error("beforeExecute method fails to execute, Source[bean name: '{}'], method: '{}'", interceptor.getClass().getName(), sourceBeanName, method, e);
                 }

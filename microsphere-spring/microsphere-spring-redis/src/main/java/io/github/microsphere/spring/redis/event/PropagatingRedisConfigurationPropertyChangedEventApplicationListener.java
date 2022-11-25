@@ -20,7 +20,7 @@ import static io.github.microsphere.spring.redis.util.RedisConstants.PROPERTY_NA
  */
 public class PropagatingRedisConfigurationPropertyChangedEventApplicationListener implements SmartApplicationListener {
 
-    public static final String SOURCE_EVENT_CLASS_NAME = "org.springframework.cloud.context.environment.EnvironmentChangeEvent";
+    public static final String ENVIRONMENT_CHANGE_EVENT_CLASS_NAME = "org.springframework.cloud.context.environment.EnvironmentChangeEvent";
 
     private final ConfigurableApplicationContext context;
 
@@ -30,7 +30,7 @@ public class PropagatingRedisConfigurationPropertyChangedEventApplicationListene
 
     @Override
     public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
-        return SOURCE_EVENT_CLASS_NAME.equals(eventType.getName());
+        return ENVIRONMENT_CHANGE_EVENT_CLASS_NAME.equals(eventType.getName());
     }
 
     @Override

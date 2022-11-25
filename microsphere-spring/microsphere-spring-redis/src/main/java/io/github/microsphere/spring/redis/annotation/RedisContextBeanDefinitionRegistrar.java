@@ -16,25 +16,28 @@
  */
 package io.github.microsphere.spring.redis.annotation;
 
-import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
-import io.github.microsphere.spring.redis.AbstractRedisTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import io.github.microsphere.spring.redis.context.RedisContext;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
+
+import static io.github.microsphere.spring.util.BeanRegistrar.registerBeanDefinition;
 
 /**
- * {@link EnableRedisInterceptor} Test
+ * {@link RedisContext} {@link BeanDefinition} Registrar
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-@ContextConfiguration(classes = EnableRedisInterceptorTest.class)
-@TestPropertySource(properties = {
-        "microsphere.redis.enabled=true",
-        "microsphere.redis.wrapped-rest-templates=redisTemplate",
-})
-@EnableRedisInterceptor(wrapRedisTemplates = {
-        "${microsphere.redis.wrapped-rest-templates}",
-        " redisTemplate , stringRedisTemplate"
-})
-public class EnableRedisInterceptorTest extends AbstractRedisCommandEventTest {
+public class RedisContextBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        registerBeanDefinitions(registry);
+    }
+
+    public void registerBeanDefinitions(BeanDefinitionRegistry registry) {
+        registerBeanDefinition(registry, RedisContext.BEAN_NAME, RedisContext.class);
+    }
 }

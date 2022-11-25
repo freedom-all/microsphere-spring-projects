@@ -17,6 +17,7 @@
 package io.github.microsphere.spring.redis.util;
 
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -36,17 +37,17 @@ public interface RedisConstants {
     /**
      * {@link RedisTemplate} Source type
      */
-    byte REDIS_TEMPLATE_SOURCE = 1;
+    byte REDIS_TEMPLATE_SOURCE_TYPE = 1;
 
     /**
-     * {@link RedisConnection} source type
+     * {@link RedisConnectionFactory} source type
      */
-    byte REDIS_CONNECTION_SOURCE = 2;
+    byte REDIS_CONNECTION_FACTORY_SOURCE_TYPE = 2;
 
     /**
      * The other source type
      */
-    byte OTHER_SOURCE = -1;
+    byte OTHER_SOURCE_TYPE = -1;
 
     /**
      * {@link RedisTemplate} Bean Name

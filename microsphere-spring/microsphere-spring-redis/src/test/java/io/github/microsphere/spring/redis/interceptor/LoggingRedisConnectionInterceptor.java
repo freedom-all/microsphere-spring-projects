@@ -34,12 +34,12 @@ public class LoggingRedisConnectionInterceptor implements RedisConnectionInterce
     private static final Logger logger = LoggerFactory.getLogger(LoggingRedisConnectionInterceptor.class);
 
     @Override
-    public void beforeExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName) {
+    public void beforeExecute(RedisMethodContext redisMethodContext) {
         logger.info("beforeExecute");
     }
 
     @Override
-    public void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> sourceBeanName) throws Throwable {
+    public void afterExecute(RedisConnection redisConnection, Method method, Object[] args, Optional<String> sourceBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
         logger.info("afterExecute");
     }
 }

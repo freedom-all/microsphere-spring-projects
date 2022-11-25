@@ -23,6 +23,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_CONNECTION_FACTORY_SOURCE_TYPE;
+import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_TEMPLATE_SOURCE_TYPE;
+
 
 /**
  * {@link RedisCommands Redis command} event
@@ -88,6 +91,8 @@ public class RedisCommandEvent extends ApplicationEvent {
      * Source Bean name (non-serialized field, initialized by the consumer)
      */
     private transient String sourceBeanName;
+
+    private transient byte sourceType;
 
     public RedisCommandEvent() {
         this("this");
@@ -228,6 +233,22 @@ public class RedisCommandEvent extends ApplicationEvent {
      */
     public void setSourceBeanName(String sourceBeanName) {
         this.sourceBeanName = sourceBeanName;
+    }
+
+    public byte getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(byte sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public boolean isSourceFromRedisTemplate() {
+        return REDIS_TEMPLATE_SOURCE_TYPE == sourceType;
+    }
+
+    public boolean isSourceFromRedisConnection() {
+        return REDIS_CONNECTION_FACTORY_SOURCE_TYPE == sourceType;
     }
 
     @Override

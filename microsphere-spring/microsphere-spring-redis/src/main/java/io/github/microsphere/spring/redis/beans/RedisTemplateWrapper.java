@@ -1,11 +1,10 @@
 package io.github.microsphere.spring.redis.beans;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.connection.RedisConnectionInvocationHandler;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.Nullable;
@@ -29,11 +28,11 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
 
     private final String beanName;
 
-    private final RedisConfiguration redisConfiguration;
+    private final RedisContext redisContext;
 
-    public RedisTemplateWrapper(String beanName, RedisTemplate<K, V> redisTemplate, RedisConfiguration redisConfiguration) {
+    public RedisTemplateWrapper(String beanName, RedisTemplate<K, V> redisTemplate, RedisContext redisContext) {
         this.beanName = beanName;
-        this.redisConfiguration = redisConfiguration;
+        this.redisContext = redisContext;
         initSettings(redisTemplate);
     }
 
@@ -55,7 +54,7 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return newProxyRedisConnection(connection, redisConfiguration, beanName);
+            return newProxyRedisConnection(connection, redisContext, beanName);
         }
         return connection;
     }
@@ -72,25 +71,24 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
     }
 
     public boolean isEnabled() {
-        return redisConfiguration.isEnabled();
+        return redisContext.isEnabled();
     }
 
-    protected static RedisConnection newProxyRedisConnection(RedisConnection connection, RedisConfiguration redisConfiguration, String sourceBeanName) {
-        ApplicationContext context = redisConfiguration.getContext();
-        ClassLoader classLoader = context.getClassLoader();
-        InvocationHandler invocationHandler = newInvocationHandler(connection, redisConfiguration, sourceBeanName);
+    protected static RedisConnection newProxyRedisConnection(RedisConnection connection, RedisContext redisContext, String sourceBeanName) {
+        ClassLoader classLoader = redisContext.getClassLoader();
+        InvocationHandler invocationHandler = newInvocationHandler(connection, redisContext, sourceBeanName);
         return (RedisConnection) Proxy.newProxyInstance(classLoader, REDIS_CONNECTION_TYPES, invocationHandler);
     }
 
-    private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisConfiguration redisConfiguration, String redisTemplateBeanName) {
-        return new RedisConnectionInvocationHandler(connection, redisConfiguration, redisTemplateBeanName);
+    private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisContext redisContext, String redisTemplateBeanName) {
+        return new RedisConnectionInvocationHandler(connection, redisContext, redisTemplateBeanName);
     }
 
     public String getBeanName() {
         return beanName;
     }
 
-    public RedisConfiguration getRedisConfiguration() {
-        return redisConfiguration;
+    public RedisContext getRedisContext() {
+        return redisContext;
     }
 }

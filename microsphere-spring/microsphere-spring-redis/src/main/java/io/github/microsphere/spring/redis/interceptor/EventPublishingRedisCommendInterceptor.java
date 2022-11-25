@@ -70,7 +70,7 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
     }
 
     @Override
-    public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<Object> result, Optional<Throwable> failure, Optional<String> redisTemplateBeanName) throws Throwable {
+    public void afterExecute(RedisCommands redisCommands, Method method, Object[] args, Optional<String> redisTemplateBeanName, Optional<Object> result, Optional<Throwable> failure) throws Throwable {
         if (isEnabled() && !failure.isPresent()) {
             List<ParameterMetadata> parameterMetadataList = getParameterMetadataList(method);
             if (parameterMetadataList != null) { // The current method is to copy the Redis command

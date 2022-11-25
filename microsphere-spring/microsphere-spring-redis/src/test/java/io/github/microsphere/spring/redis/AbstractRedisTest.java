@@ -16,24 +16,13 @@
  */
 package io.github.microsphere.spring.redis;
 
-import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.test.redis.EnableRedisTest;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
@@ -42,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 @ExtendWith(SpringExtension.class)
 @EnableRedisTest
 @Disabled
-public class AbstractRedisTest {
+public abstract class AbstractRedisTest {
 
     @Autowired
     protected StringRedisTemplate stringRedisTemplate;
@@ -50,24 +39,4 @@ public class AbstractRedisTest {
     @Autowired
     protected ConfigurableApplicationContext context;
 
-    @Test
-    public void test() {
-
-        Map<Object, Object> data = new HashMap<>();
-        context.addApplicationListener((ApplicationListener<RedisCommandEvent>) event -> {
-            RedisSerializer keySerializer = stringRedisTemplate.getKeySerializer();
-            RedisSerializer valueSerializer = stringRedisTemplate.getValueSerializer();
-            Object key = keySerializer.deserialize((byte[]) event.getObjectParameter(0));
-            Object value = valueSerializer.deserialize((byte[]) event.getObjectParameter(1));
-            data.put(key, value);
-
-            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getInterfaceName());
-            assertEquals("set", event.getMethodName());
-            assertArrayEquals(new String[]{"[B", "[B"}, event.getParameterTypes());
-            assertEquals("default", event.getSourceApplication());
-        });
-
-        stringRedisTemplate.opsForValue().set("Key-1", "Value-1");
-        assertEquals("Value-1", data.get("Key-1"));
-    }
 }

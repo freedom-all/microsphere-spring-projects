@@ -16,6 +16,7 @@
  */
 package io.github.microsphere.spring.redis.context;
 
+import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
 import io.github.microsphere.spring.redis.AbstractRedisTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -34,6 +35,6 @@ import org.springframework.test.context.TestPropertySource;
         "microsphere.redis.enabled=true",
         "microsphere.redis.wrapped-redis-templates=redisTemplate,stringRedisTemplate",
 })
-public class RedisInterceptorModuleInitializerTest extends AbstractRedisTest {
+public class RedisInterceptorModuleInitializerTest extends AbstractRedisCommandEventTest {
 
 }

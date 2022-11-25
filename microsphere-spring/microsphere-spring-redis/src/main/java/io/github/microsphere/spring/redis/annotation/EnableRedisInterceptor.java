@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@EnableRedisConfiguration
+@EnableRedisContext
 @Import(RedisInterceptorBeanDefinitionRegistrar.class)
 public @interface EnableRedisInterceptor {
 

@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.redis.beans;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +21,11 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate {
 
     private final String beanName;
 
-    private final RedisConfiguration redisConfiguration;
+    private final RedisContext redisContext;
 
-    public StringRedisTemplateWrapper(String beanName, StringRedisTemplate stringRedisTemplate, RedisConfiguration redisConfiguration) {
+    public StringRedisTemplateWrapper(String beanName, StringRedisTemplate stringRedisTemplate, RedisContext redisContext) {
         this.beanName = beanName;
-        this.redisConfiguration = redisConfiguration;
+        this.redisContext = redisContext;
         initSettings(stringRedisTemplate);
     }
 
@@ -47,7 +47,7 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate {
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisConfiguration, beanName);
+            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisContext, beanName);
         }
         return connection;
     }
@@ -64,7 +64,7 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate {
     }
 
     public boolean isEnabled() {
-        return redisConfiguration.isEnabled();
+        return redisContext.isEnabled();
     }
 
 }

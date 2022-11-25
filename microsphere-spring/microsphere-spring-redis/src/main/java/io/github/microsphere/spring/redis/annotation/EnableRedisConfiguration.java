@@ -17,7 +17,6 @@
 package io.github.microsphere.spring.redis.annotation;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
-import io.github.microsphere.spring.redis.event.PropagatingRedisConfigurationPropertyChangedEventApplicationListener;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -27,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Enable {@link RedisConfiguration}
+ * An annotation enables {@link RedisConfiguration}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
@@ -35,9 +34,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(value = {
-        RedisConfiguration.class,
-        PropagatingRedisConfigurationPropertyChangedEventApplicationListener.class
-})
+@Import(RedisConfigurationBeanDefinitionRegistrar.class)
 public @interface EnableRedisConfiguration {
 }
