@@ -126,7 +126,7 @@ public class RedisMethodContext<T> {
         if (durationNanos < 0) {
             return durationNanos;
         }
-        return TimeUnit.NANOSECONDS.convert(durationNanos, timeUnit);
+        return timeUnit.convert(durationNanos, TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class RedisMethodContext<T> {
                 .add("redisContext=" + redisContext)
                 .add("sourceBeanName='" + sourceBeanName + "'")
                 .add("startTimeNanos=" + startTimeNanos)
-                .add("durationNanos=" + durationNanos)
+                .add("duration=" + getDuration(TimeUnit.MILLISECONDS))
                 .toString();
     }
 }

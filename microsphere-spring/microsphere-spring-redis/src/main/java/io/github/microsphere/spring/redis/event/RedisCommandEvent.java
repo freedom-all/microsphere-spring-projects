@@ -1,5 +1,6 @@
 package io.github.microsphere.spring.redis.event;
 
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.springframework.context.ApplicationEvent;
@@ -22,9 +23,6 @@ import org.springframework.util.ClassUtils;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_CONNECTION_FACTORY_SOURCE_TYPE;
-import static io.github.microsphere.spring.redis.util.RedisConstants.REDIS_TEMPLATE_SOURCE_TYPE;
 
 
 /**
@@ -92,7 +90,7 @@ public class RedisCommandEvent extends ApplicationEvent {
      */
     private transient String sourceBeanName;
 
-    private transient byte sourceType;
+    private transient RedisContext redisContext;
 
     public RedisCommandEvent() {
         this("this");
@@ -235,20 +233,19 @@ public class RedisCommandEvent extends ApplicationEvent {
         this.sourceBeanName = sourceBeanName;
     }
 
-    public byte getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(byte sourceType) {
-        this.sourceType = sourceType;
+    /**
+     * @param redisContext {@link RedisContext}
+     */
+    public void setRedisContext(RedisContext redisContext) {
+        this.redisContext = redisContext;
     }
 
     public boolean isSourceFromRedisTemplate() {
-        return REDIS_TEMPLATE_SOURCE_TYPE == sourceType;
+        return redisContext != null && redisContext.getRedisTemplateBeanNames().contains(sourceBeanName);
     }
 
-    public boolean isSourceFromRedisConnection() {
-        return REDIS_CONNECTION_FACTORY_SOURCE_TYPE == sourceType;
+    public boolean isSourceFromRedisConnectionFactory() {
+        return redisContext != null && redisContext.getRedisConnectionFactoryBeanNames().contains(sourceBeanName);
     }
 
     @Override

@@ -16,7 +16,7 @@
  */
 package io.github.microsphere.spring.redis.interceptor;
 
-import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import io.github.microsphere.spring.redis.metadata.Parameter;
@@ -46,7 +46,7 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
 
     public static final String BEAN_NAME = "eventPublishingRedisCommendInterceptor";
 
-    private final RedisConfiguration redisConfiguration;
+    private final RedisContext redisContext;
 
     private final String applicationName;
 
@@ -54,14 +54,14 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
 
     private volatile boolean enabled = false;
 
-    public EventPublishingRedisCommendInterceptor(RedisConfiguration redisConfiguration) {
-        this.redisConfiguration = redisConfiguration;
-        this.applicationName = redisConfiguration.getApplicationName();
+    public EventPublishingRedisCommendInterceptor(RedisContext redisContext) {
+        this.redisContext = redisContext;
+        this.applicationName = redisContext.getApplicationName();
         setEnabled();
     }
 
     public void setEnabled() {
-        this.enabled = redisConfiguration.isCommandEventExposed();
+        this.enabled = redisContext.isCommandEventExposed();
     }
 
     public boolean isEnabled() {
@@ -98,6 +98,7 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
             Parameter[] parameters = ParametersHolder.bulkGet(args);
             redisCommandEvent = new RedisCommandEvent(method, parameters, applicationName);
             redisCommandEvent.setSourceBeanName(sourceBeanName);
+            redisCommandEvent.setRedisContext(redisContext);
         } catch (Throwable e) {
             logger.error("Redis failed to create a command method event.", method, e);
         }
