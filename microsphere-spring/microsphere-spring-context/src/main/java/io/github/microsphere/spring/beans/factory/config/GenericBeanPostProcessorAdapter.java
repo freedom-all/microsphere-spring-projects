@@ -2,10 +2,9 @@ package io.github.microsphere.spring.beans.factory.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.util.ClassUtils;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import static org.springframework.aop.framework.AopProxyUtils.ultimateTargetClass;
+import static org.springframework.core.GenericTypeResolver.resolveTypeArgument;
 
 /**
  * Generic {@link BeanPostProcessor} Adapter
@@ -20,14 +19,13 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
     private final Class<T> beanType;
 
     public GenericBeanPostProcessorAdapter() {
-        ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-        this.beanType = (Class<T>) actualTypeArguments[0];
+        this.beanType = (Class<T>) resolveTypeArgument(getClass(), GenericBeanPostProcessorAdapter.class);
     }
 
     @Override
     public final Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (ClassUtils.isAssignableValue(beanType, bean)) {
+        Class<?> beanClass = ultimateTargetClass(bean);
+        if (beanType.isAssignableFrom(beanClass)) {
             return doPostProcessBeforeInitialization((T) bean, beanName);
         }
         return bean;
@@ -35,7 +33,8 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
 
     @Override
     public final Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (ClassUtils.isAssignableValue(beanType, bean)) {
+        Class<?> beanClass = ultimateTargetClass(bean);
+        if (beanType.isAssignableFrom(beanClass)) {
             return doPostProcessAfterInitialization((T) bean, beanName);
         }
         return bean;
@@ -91,7 +90,7 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
      *
      * @param bean     Bean Object
      * @param beanName Bean Name
-     * @throws BeansException  in case of errors
+     * @throws BeansException in case of errors
      */
     protected void processBeforeInitialization(T bean, String beanName) throws BeansException {
     }
@@ -103,7 +102,7 @@ public abstract class GenericBeanPostProcessorAdapter<T> implements BeanPostProc
      *
      * @param bean     Bean Object
      * @param beanName Bean Name
-     * @throws BeansException  in case of errors
+     * @throws BeansException in case of errors
      */
     protected void processAfterInitialization(T bean, String beanName) throws BeansException {
     }
