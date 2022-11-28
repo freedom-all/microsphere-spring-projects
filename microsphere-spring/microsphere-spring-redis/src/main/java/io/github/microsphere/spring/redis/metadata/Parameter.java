@@ -1,6 +1,7 @@
 package io.github.microsphere.spring.redis.metadata;
 
 import org.springframework.data.redis.connection.RedisCommands;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link RedisCommands Redis 命令} Method parameters encapsulate the object
@@ -14,7 +15,7 @@ public class Parameter {
 
     private final ParameterMetadata metadata;
 
-    private byte[] rawValue;
+    private @Nullable byte[] rawValue;
 
     public Parameter(Object value, ParameterMetadata metadata) {
         this.value = value;
@@ -29,11 +30,11 @@ public class Parameter {
         return metadata;
     }
 
-    public byte[] getRawValue() {
+    public @Nullable byte[] getRawValue() {
         return rawValue;
     }
 
-    public void setRawValue(byte[] rawValue) {
+    public void setRawValue(@Nullable byte[] rawValue) {
         this.rawValue = rawValue;
     }
 
