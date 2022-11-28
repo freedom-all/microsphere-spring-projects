@@ -16,6 +16,7 @@
  */
 package io.github.microsphere.spring.redis.beans;
 
+import io.github.microsphere.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
 import io.github.microsphere.spring.redis.connection.RedisConnectionFactoryWrapper;
 import io.github.microsphere.spring.redis.context.RedisContext;
 import org.springframework.beans.BeansException;
@@ -24,8 +25,6 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
-import static org.springframework.aop.framework.AopProxyUtils.ultimateTargetClass;
-
 /**
  * {@link RedisConnectionFactoryWrapper} {@link BeanPostProcessor}
  *
@@ -33,23 +32,15 @@ import static org.springframework.aop.framework.AopProxyUtils.ultimateTargetClas
  * @see RedisConnectionFactoryWrapper
  * @since 1.0.0
  */
-public class RedisConnectionFactoryWrapperBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
+public class RedisConnectionFactoryWrapperBeanPostProcessor extends GenericBeanPostProcessorAdapter<RedisConnectionFactory> implements BeanFactoryAware {
 
     public static final String BEAN_NAME = "redisConnectionFactoryWrapperBeanPostProcessor";
 
     private RedisContext redisContext;
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-
-        Class<?> beanClass = ultimateTargetClass(bean);
-
-        if (RedisConnectionFactory.class.isAssignableFrom(beanClass)) {
-            RedisConnectionFactory redisConnectionFactory = (RedisConnectionFactory) bean;
-            return new RedisConnectionFactoryWrapper(beanName, redisConnectionFactory, redisContext);
-        }
-
-        return bean;
+    protected RedisConnectionFactory doPostProcessAfterInitialization(RedisConnectionFactory bean, String beanName) throws BeansException {
+        return new RedisConnectionFactoryWrapper(beanName, bean, redisContext);
     }
 
     @Override
