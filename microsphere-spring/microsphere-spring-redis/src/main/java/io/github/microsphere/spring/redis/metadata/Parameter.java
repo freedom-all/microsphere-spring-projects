@@ -4,7 +4,7 @@ import org.springframework.data.redis.connection.RedisCommands;
 import org.springframework.lang.Nullable;
 
 /**
- * {@link RedisCommands Redis 命令} Method parameters encapsulate the object
+ * {@link RedisCommands Redis Command} Method parameters encapsulate the object
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0

@@ -1,8 +1,10 @@
 package io.github.microsphere.spring.redis.metadata;
 
 import org.springframework.data.redis.connection.RedisCommands;
+import org.springframework.lang.Nullable;
 
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * {@link RedisCommands Redis command} Method parameter meta information
@@ -16,9 +18,12 @@ public final class ParameterMetadata {
 
     private final String parameterType;
 
-    public ParameterMetadata(int parameterIndex, String parameterType) {
+    private final @Nullable String parameterName;
+
+    public ParameterMetadata(int parameterIndex, String parameterType, @Nullable String parameterName) {
         this.parameterIndex = parameterIndex;
         this.parameterType = parameterType;
+        this.parameterName = parameterName;
     }
 
     public int getParameterIndex() {
@@ -27,6 +32,11 @@ public final class ParameterMetadata {
 
     public String getParameterType() {
         return parameterType;
+    }
+
+    @Nullable
+    public String getParameterName() {
+        return parameterName;
     }
 
     @Override
@@ -44,10 +54,10 @@ public final class ParameterMetadata {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ParameterMetadata{");
-        sb.append("parameterIndex=").append(parameterIndex);
-        sb.append(", parameterType='").append(parameterType).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(", ", ParameterMetadata.class.getSimpleName() + "[", "]")
+                .add("parameterIndex=" + parameterIndex)
+                .add("parameterType='" + parameterType + "'")
+                .add("parameterName='" + parameterName + "'")
+                .toString();
     }
 }

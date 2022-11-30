@@ -1,6 +1,7 @@
 package io.github.microsphere.spring.redis.event;
 
 import io.github.microsphere.spring.redis.context.RedisContext;
+import io.github.microsphere.spring.redis.interceptor.RedisMethodContext;
 import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.springframework.context.ApplicationEvent;
@@ -18,11 +19,13 @@ import org.springframework.data.redis.connection.RedisSetCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.RedisTxCommands;
 import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 
 /**
@@ -63,56 +66,59 @@ public class RedisCommandEvent extends ApplicationEvent {
      * RedisStringCommands
      * RedisHashCommands
      */
-    private String interfaceName;
+    private final String interfaceName;
 
     /**
      * Command interface method name, for example, set method
      */
-    private String methodName;
+    private final String methodName;
+
+    private transient final int parameterCount;
 
     /**
-     * Method parameter type list, such as: [Java. Lang. String, Java. Lang. String]
+     * Method parameter type list, such as: [java.lang.String,java.lang.String]
      */
-    private String[] parameterTypes;
+    private final String[] parameterTypes;
 
     /**
      * List of method parameter objects
      */
-    private byte[][] parameters;
+    private final byte[][] parameters;
 
     /**
      * Event source Application name
      */
-    private String sourceApplication;
-
-    /**
-     * Source Bean name (non-serialized field, initialized by the consumer)
-     */
-    private transient String sourceBeanName;
+    private final String sourceApplication;
 
     private transient RedisContext redisContext;
 
-    public RedisCommandEvent() {
-        this("this");
+    private transient @Nullable RedisMethodContext redisMethodContext;
+
+    public RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
+        super("default");
+        this.interfaceName = interfaceName;
+        this.methodName = methodName;
+        this.parameterTypes = parameterTypes;
+        this.parameterCount = parameterTypes.length;
+        this.parameters = parameters;
+        this.sourceApplication = sourceApplication;
     }
 
-    public RedisCommandEvent(Object source) {
-        super(source);
-    }
-
-    public RedisCommandEvent(Method method, Parameter[] parameters, String sourceApplication) {
-        this(method);
+    public RedisCommandEvent(RedisMethodContext redisMethodContext) {
+        super(redisMethodContext);
+        Method method = redisMethodContext.getMethod();
         this.interfaceName = resolveInterfaceName(method);
         this.methodName = method.getName();
-        this.sourceApplication = sourceApplication;
-        init(parameters);
+        Parameter[] parameters = redisMethodContext.getParameters();
+        this.parameterCount = parameters.length;
+        this.parameterTypes = new String[parameterCount];
+        this.parameters = new byte[parameterCount][];
+        this.sourceApplication = redisMethodContext.getApplicationName();
+        init(parameters, parameterCount);
     }
 
-    private void init(Parameter[] parameters) {
-        int length = parameters.length;
-        this.parameterTypes = new String[length];
-        this.parameters = new byte[length][];
-        for (int i = 0; i < length; i++) {
+    private void init(Parameter[] parameters, int parameterCount) {
+        for (int i = 0; i < parameterCount; i++) {
             Parameter parameter = parameters[i];
             this.parameterTypes[i] = parameter.getParameterType();
             this.parameters[i] = parameter.getRawValue();
@@ -220,65 +226,69 @@ public class RedisCommandEvent extends ApplicationEvent {
     }
 
     /**
+     * Source Bean name (non-serialized field, initialized by the consumer)
+     *
      * @return Source Bean name
      */
     public String getSourceBeanName() {
-        return sourceBeanName;
+        return getRedisMethodContext().getSourceBeanName();
     }
 
-    /**
-     * @param sourceBeanName Source Bean name
-     */
-    public void setSourceBeanName(String sourceBeanName) {
-        this.sourceBeanName = sourceBeanName;
+    public RedisContext getRedisContext() {
+        RedisContext redisContext = this.redisContext;
+        if (redisContext == null) {
+            return redisMethodContext.getRedisContext();
+        }
+        return redisContext;
     }
 
-    /**
-     * @param redisContext {@link RedisContext}
-     */
     public void setRedisContext(RedisContext redisContext) {
         this.redisContext = redisContext;
     }
 
-    public boolean isSourceFromRedisTemplate() {
-        return redisContext != null && redisContext.getRedisTemplateBeanNames().contains(sourceBeanName);
+    public RedisMethodContext getRedisMethodContext() {
+        return redisMethodContext;
     }
 
-    public boolean isSourceFromRedisConnectionFactory() {
-        return redisContext != null && redisContext.getRedisConnectionFactoryBeanNames().contains(sourceBeanName);
+    public void setRedisMethodContext(RedisMethodContext redisMethodContext) {
+        this.redisMethodContext = redisMethodContext;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RedisCommandEvent)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+
         RedisCommandEvent that = (RedisCommandEvent) o;
-        return Objects.equals(interfaceName, that.interfaceName) &&
-                Objects.equals(methodName, that.methodName) &&
-                Arrays.deepEquals(parameterTypes, that.parameterTypes) &&
-                Arrays.deepEquals(parameters, that.parameters);
+
+        if (!Objects.equals(interfaceName, that.interfaceName))
+            return false;
+        if (!Objects.equals(methodName, that.methodName)) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(parameterTypes, that.parameterTypes)) return false;
+        if (!Arrays.deepEquals(parameters, that.parameters)) return false;
+        return Objects.equals(sourceApplication, that.sourceApplication);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(interfaceName, methodName);
-        result = 31 * result + Arrays.deepHashCode(parameterTypes);
+        int result = interfaceName != null ? interfaceName.hashCode() : 0;
+        result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(parameterTypes);
         result = 31 * result + Arrays.deepHashCode(parameters);
+        result = 31 * result + (sourceApplication != null ? sourceApplication.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("RedisCommandEvent{");
-        sb.append("interfaceName='").append(getInterfaceName()).append('\'');
-        sb.append(", methodName='").append(getMethodName()).append('\'');
-        sb.append(", parameterTypes=").append(Arrays.toString(getParameterTypes()));
-        sb.append(", parameterCount=").append(getParameterCount());
-        sb.append(", rawParameters=").append(Arrays.toString(getParameters()));
-        sb.append(", objectParameters=").append(Arrays.toString(getObjectParameters()));
-        sb.append(", sourceApplication='").append(getSourceApplication()).append('\'');
-        sb.append(", sourceBeanName='").append(getSourceBeanName()).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(", ", RedisCommandEvent.class.getSimpleName() + "[", "]")
+                .add("interfaceName='" + interfaceName + "'")
+                .add("methodName='" + methodName + "'")
+                .add("parameterCount=" + parameterCount)
+                .add("parameterTypes=" + Arrays.toString(parameterTypes))
+                .add("parameters=" + Arrays.toString(parameters))
+                .add("sourceApplication='" + sourceApplication + "'")
+                .toString();
     }
 }

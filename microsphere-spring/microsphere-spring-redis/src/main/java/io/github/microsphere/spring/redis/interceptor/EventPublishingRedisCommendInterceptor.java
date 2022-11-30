@@ -19,9 +19,6 @@ package io.github.microsphere.spring.redis.interceptor;
 import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
-import io.github.microsphere.spring.redis.metadata.Parameter;
-import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
-import io.github.microsphere.spring.redis.metadata.ParametersHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,10 +26,6 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.connection.RedisCommands;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getParameterMetadataList;
 import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
 
 /**
@@ -69,39 +62,42 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
     }
 
     @Override
-    public void afterExecute(RedisMethodContext<RedisCommands> context, Object result, Throwable failure) throws Throwable {
-        if (isEnabled() && failure == null) {
-            Method method = context.getMethod();
-            List<ParameterMetadata> parameterMetadataList = getParameterMetadataList(method);
-            if (parameterMetadataList != null) { // The current method is to copy the Redis command
-                Object[] args = context.getArgs();
-                String sourceBeanName = context.getSourceBeanName();
-                // Initializes the method parameter data
-                ParametersHolder.init(parameterMetadataList, args);
-                // Publish Redis Command Event
-                publishRedisCommandEvent(method, args, sourceBeanName);
+    public void beforeExecute(RedisMethodContext<RedisCommands> context) throws Throwable {
+        if (isEnabled()) {
+            if (context.isSourceFromRedisTemplate()) {
+                // RedisMethodContext will be stored into the ThreadLocal to help the wrapper of RedisSerializer
+                // retrieving in the RedisTemplate scenario
+                RedisMethodContext.set(context);
             }
         }
     }
 
-    private void publishRedisCommandEvent(Method method, Object[] args, String sourceBeanName) {
-        RedisCommandEvent redisCommandEvent = createRedisCommandEvent(method, args, sourceBeanName);
+    @Override
+    public void afterExecute(RedisMethodContext<RedisCommands> context, Object result, Throwable failure) throws Throwable {
+        if (isEnabled() && failure == null) {
+            try {
+                if (context.isWriteMethod(true)) { // The current method is a Redis write command
+                    // Publish Redis Command Event
+                    publishRedisCommandEvent(context);
+                }
+            } finally {
+                if (context.isSourceFromRedisTemplate()) {
+                    RedisMethodContext.clear();
+                }
+            }
+        }
+    }
+
+    private void publishRedisCommandEvent(RedisMethodContext<RedisCommands> context) {
+        RedisCommandEvent redisCommandEvent = createRedisCommandEvent(context);
         if (redisCommandEvent != null) {
             // Event handling allows exceptions to be thrown
             applicationEventPublisher.publishEvent(redisCommandEvent);
         }
     }
 
-    private RedisCommandEvent createRedisCommandEvent(Method method, Object[] args, String sourceBeanName) {
-        RedisCommandEvent redisCommandEvent = null;
-        try {
-            Parameter[] parameters = ParametersHolder.bulkGet(args);
-            redisCommandEvent = new RedisCommandEvent(method, parameters, applicationName);
-            redisCommandEvent.setSourceBeanName(sourceBeanName);
-            redisCommandEvent.setRedisContext(redisContext);
-        } catch (Throwable e) {
-            logger.error("Redis failed to create a command method event.", method, e);
-        }
+    private RedisCommandEvent createRedisCommandEvent(RedisMethodContext<RedisCommands> redisMethodContext) {
+        RedisCommandEvent redisCommandEvent = new RedisCommandEvent(redisMethodContext);
         return redisCommandEvent;
     }
 

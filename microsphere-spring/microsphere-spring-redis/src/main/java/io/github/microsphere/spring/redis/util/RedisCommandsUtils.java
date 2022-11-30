@@ -1,10 +1,21 @@
 package io.github.microsphere.spring.redis.util;
 
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
+import io.github.microsphere.spring.redis.serializer.Serializers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.data.redis.connection.RedisCommands;
 import org.springframework.data.redis.connection.RedisConnection;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
+
+import static java.util.Collections.unmodifiableList;
 
 /**
  * {@link RedisCommands Redis Command} Utilities Class
@@ -13,6 +24,10 @@ import java.util.StringJoiner;
  * @since 1.0.0
  */
 public abstract class RedisCommandsUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(RedisCommandsUtils.class);
+
+    private static final ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
 
     public static final String REDIS_GEO_COMMANDS = "RedisGeoCommands";
 
@@ -94,6 +109,26 @@ public abstract class RedisCommandsUtils {
         }
         infoBuilder.append(paramTypesInfo);
         return infoBuilder.toString();
+    }
+
+    public static List<ParameterMetadata> buildParameterMetadata(Method method, Class<?>[] parameterTypes) {
+        int parameterCount = parameterTypes.length;
+        String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+        List<ParameterMetadata> parameterMetadataList = new ArrayList<>(parameterCount);
+        for (int i = 0; i < parameterCount; i++) {
+            String parameterType = parameterTypes[i].getName();
+            String parameterName = parameterNames[i];
+            ParameterMetadata parameterMetadata = new ParameterMetadata(i, parameterType, parameterName);
+            parameterMetadataList.add(parameterMetadata);
+            // Preload the RedisSerializer implementation for the Method parameter type
+            Serializers.getSerializer(parameterType);
+        }
+        return unmodifiableList(parameterMetadataList);
+    }
+
+    public static List<ParameterMetadata> buildParameterMetadataList(Method method) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        return buildParameterMetadata(method, parameterTypes);
     }
 
 }

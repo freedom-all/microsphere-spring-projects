@@ -5,8 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * {@link Parameter} Holder
@@ -37,6 +40,9 @@ public class ParametersHolder {
         }
     }
 
+
+
+
     public static Parameter[] bulkGet(Object[] parameterValues) {
         Map<Object, Parameter> metadataMap = value.get();
         int length = parameterValues.length;
@@ -44,7 +50,7 @@ public class ParametersHolder {
         for (int i = 0; i < length; i++) {
             Object parameterValue = parameterValues[i];
             Parameter parameter = metadataMap.get(parameterValue);
-            // 序列化参数
+            // serialize parameter
             Serializers.serializeRawParameter(parameter);
             parameters[i] = parameter;
         }

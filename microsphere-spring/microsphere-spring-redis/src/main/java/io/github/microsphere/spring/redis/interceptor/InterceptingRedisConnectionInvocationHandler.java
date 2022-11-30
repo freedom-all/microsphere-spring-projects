@@ -74,10 +74,10 @@ public class InterceptingRedisConnectionInvocationHandler implements InvocationH
 
         RedisMethodContext<RedisConnection> redisMethodContext = createRedisMethodContext(method, args);
 
-        beforeExecute(redisMethodContext);
         Object result = null;
         Throwable failure = null;
         try {
+            beforeExecute(redisMethodContext);
             result = method.invoke(rawRedisConnection, args);
         } catch (Throwable e) {
             failure = e;
