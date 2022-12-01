@@ -1,12 +1,11 @@
 package io.github.microsphere.spring.redis.beans;
 
 import io.github.microsphere.spring.redis.context.RedisContext;
-import io.github.microsphere.spring.redis.metadata.ParametersHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.lang.Nullable;
+
+import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapper.configure;
+import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapper.newProxyRedisConnection;
 
 
 /**
@@ -15,56 +14,51 @@ import org.springframework.lang.Nullable;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class StringRedisTemplateWrapper extends StringRedisTemplate {
+public class StringRedisTemplateWrapper extends StringRedisTemplate implements Wrapper {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Class<StringRedisTemplate> STRING_REDIS_TEMPLATE_CLASS = StringRedisTemplate.class;
 
     private final String beanName;
 
+    private final StringRedisTemplate delegate;
+
     private final RedisContext redisContext;
 
-    public StringRedisTemplateWrapper(String beanName, StringRedisTemplate stringRedisTemplate, RedisContext redisContext) {
+    public StringRedisTemplateWrapper(String beanName, StringRedisTemplate delegate, RedisContext redisContext) {
         this.beanName = beanName;
+        this.delegate = delegate;
         this.redisContext = redisContext;
-        initSettings(stringRedisTemplate);
+        init();
     }
 
-    private void initSettings(StringRedisTemplate stringRedisTemplate) {
-        // Set up the connection
-        setConnectionFactory(stringRedisTemplate.getConnectionFactory());
-        setExposeConnection(stringRedisTemplate.isExposeConnection());
-
-        // Set the RedisSerializers
-        setEnableDefaultSerializer(stringRedisTemplate.isEnableDefaultSerializer());
-        setDefaultSerializer(stringRedisTemplate.getDefaultSerializer());
-        setKeySerializer(stringRedisTemplate.getKeySerializer());
-        setValueSerializer(stringRedisTemplate.getValueSerializer());
-        setHashKeySerializer(stringRedisTemplate.getHashKeySerializer());
-        setHashValueSerializer(stringRedisTemplate.getHashValueSerializer());
-        setStringSerializer(stringRedisTemplate.getStringSerializer());
+    private void init() {
+        configure(delegate, this);
     }
 
     @Override
     protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
         if (isEnabled()) {
-            return RedisTemplateWrapper.newProxyRedisConnection(connection, redisContext, beanName);
+            return newProxyRedisConnection(connection, redisContext, beanName);
         }
         return connection;
-    }
-
-    @Nullable
-    @Override
-    protected <T> T postProcessResult(@Nullable T result, RedisConnection conn, boolean existingConnection) {
-        if (isEnabled()) {
-            // Clear method parameter data
-            ParametersHolder.clear();
-            logger.debug("Method parameter metadata has been cleared");
-        }
-        return result;
     }
 
     public boolean isEnabled() {
         return redisContext.isEnabled();
     }
 
+    @Override
+    public <T> T unwrap(Class<T> type) throws IllegalArgumentException {
+        if (STRING_REDIS_TEMPLATE_CLASS.equals(type)) {
+            return (T) delegate;
+        } else if (type.isInstance(this)) {
+            return (T) this;
+        }
+        throw new IllegalArgumentException(getClass().getName() + " can't unwrap the given type '" + type.getName() + "'");
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> type) {
+        return STRING_REDIS_TEMPLATE_CLASS.equals(type);
+    }
 }

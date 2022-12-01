@@ -42,6 +42,8 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
 
     private Set<String> wrappedRedisTemplateBeanNames;
 
+    private WrapperCustomizers wrapperCustomizers;
+
     public RedisTemplateWrapperBeanPostProcessor() {
     }
 
@@ -54,13 +56,19 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
         if (wrappedRedisTemplateBeanNames.contains(beanName)) {
             Class<?> beanClass = ultimateTargetClass(bean);
             if (StringRedisTemplate.class.equals(beanClass)) {
-                return new StringRedisTemplateWrapper(beanName, (StringRedisTemplate) bean, redisContext);
+                StringRedisTemplate stringRedisTemplate = (StringRedisTemplate) bean;
+                return customize(new StringRedisTemplateWrapper(beanName, stringRedisTemplate, redisContext));
             } else if (RedisTemplate.class.equals(beanClass)) {
-                return new RedisTemplateWrapper(beanName, (RedisTemplate) bean, redisContext);
+                RedisTemplate redisTemplate = (RedisTemplate) bean;
+                return customize(new RedisTemplateWrapper(beanName, redisTemplate, redisContext));
             }
             // TODO Support for more custom RedisTemplate types
         }
         return bean;
+    }
+
+    private <W extends Wrapper> W customize(W wrapper) {
+        return wrapperCustomizers.customize(wrapper);
     }
 
     @Override
@@ -93,6 +101,7 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
         if (this.wrappedRedisTemplateBeanNames == null) {
             this.wrappedRedisTemplateBeanNames = resolveWrappedRedisTemplateBeanNames(context);
         }
+        this.wrapperCustomizers = context.getBean(WrapperCustomizers.class);
     }
 
     public Set<String> getWrappedRedisTemplateBeanNames() {

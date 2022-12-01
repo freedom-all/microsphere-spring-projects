@@ -1,13 +1,9 @@
 package io.github.microsphere.spring.redis.beans;
 
-import io.github.microsphere.spring.redis.interceptor.InterceptingRedisConnectionInvocationHandler;
 import io.github.microsphere.spring.redis.context.RedisContext;
-import io.github.microsphere.spring.redis.metadata.ParametersHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.microsphere.spring.redis.interceptor.InterceptingRedisConnectionInvocationHandler;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.lang.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -20,35 +16,42 @@ import java.lang.reflect.Proxy;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
+public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements Wrapper {
 
-    private static final Class[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
+    private static final Class<RedisTemplate> REDIS_TEMPLATE_CLASS = RedisTemplate.class;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Class<?>[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
 
     private final String beanName;
 
+    private final RedisTemplate<K, V> delegate;
+
     private final RedisContext redisContext;
 
-    public RedisTemplateWrapper(String beanName, RedisTemplate<K, V> redisTemplate, RedisContext redisContext) {
+    public RedisTemplateWrapper(String beanName, RedisTemplate<K, V> delegate, RedisContext redisContext) {
         this.beanName = beanName;
+        this.delegate = delegate;
         this.redisContext = redisContext;
-        initSettings(redisTemplate);
+        init();
     }
 
-    private void initSettings(RedisTemplate<K, V> redisTemplate) {
+    private void init() {
+        configure(delegate, this);
+    }
+
+    static void configure(RedisTemplate<?, ?> source, RedisTemplate<?, ?> target) {
         // Set the connection
-        setConnectionFactory(redisTemplate.getConnectionFactory());
-        setExposeConnection(redisTemplate.isExposeConnection());
+        target.setConnectionFactory(source.getConnectionFactory());
+        target.setExposeConnection(source.isExposeConnection());
 
         // Set the RedisSerializers
-        setEnableDefaultSerializer(redisTemplate.isEnableDefaultSerializer());
-        setDefaultSerializer(redisTemplate.getDefaultSerializer());
-        setKeySerializer(redisTemplate.getKeySerializer());
-        setValueSerializer(redisTemplate.getValueSerializer());
-        setHashKeySerializer(redisTemplate.getHashKeySerializer());
-        setHashValueSerializer(redisTemplate.getHashValueSerializer());
-        setStringSerializer(redisTemplate.getStringSerializer());
+        target.setEnableDefaultSerializer(source.isEnableDefaultSerializer());
+        target.setDefaultSerializer(source.getDefaultSerializer());
+        target.setKeySerializer(source.getKeySerializer());
+        target.setValueSerializer(source.getValueSerializer());
+        target.setHashKeySerializer(source.getHashKeySerializer());
+        target.setHashValueSerializer(source.getHashValueSerializer());
+        target.setStringSerializer(source.getStringSerializer());
     }
 
     @Override
@@ -59,19 +62,16 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
         return connection;
     }
 
-    @Nullable
-    @Override
-    protected <T> T postProcessResult(@Nullable T result, RedisConnection conn, boolean existingConnection) {
-        if (isEnabled()) {
-            // Clear method parameter data
-            ParametersHolder.clear();
-            logger.debug("Method parameter metadata has been cleared");
-        }
-        return result;
-    }
-
     public boolean isEnabled() {
         return redisContext.isEnabled();
+    }
+
+    public String getBeanName() {
+        return beanName;
+    }
+
+    public RedisContext getRedisContext() {
+        return redisContext;
     }
 
     protected static RedisConnection newProxyRedisConnection(RedisConnection connection, RedisContext redisContext, String sourceBeanName) {
@@ -84,11 +84,18 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> {
         return new InterceptingRedisConnectionInvocationHandler(connection, redisContext, redisTemplateBeanName);
     }
 
-    public String getBeanName() {
-        return beanName;
+    @Override
+    public <T> T unwrap(Class<T> type) throws IllegalArgumentException {
+        if (REDIS_TEMPLATE_CLASS.equals(type)) {
+            return (T) delegate;
+        } else if (type.isInstance(this)) {
+            return (T) this;
+        }
+        throw new IllegalArgumentException(getClass().getName() + " can't unwrap the given type '" + type.getName() + "'");
     }
 
-    public RedisContext getRedisContext() {
-        return redisContext;
+    @Override
+    public boolean isWrapperFor(Class<?> type) {
+        return REDIS_TEMPLATE_CLASS.equals(type);
     }
 }
