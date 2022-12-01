@@ -18,8 +18,10 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,8 @@ public abstract class Serializers {
      * Key is the full name of the type, and Value is implemented as {@link RedisSerializer}
      */
     static final Map<String, RedisSerializer<?>> typedSerializers = new HashMap<>(32);
+
+    private static final ThreadLocal<Map<Object, byte[]>> parametersHolder = ThreadLocal.withInitial(() -> new IdentityHashMap<>(4));
 
     static {
         initializeBuiltinSerializers();
@@ -289,4 +293,28 @@ public abstract class Serializers {
         typedSerializers.put(typeName, serializer);
     }
 
+    public static <T> RedisSerializer wrap(RedisSerializer<?> redisSerializer) {
+        return new RedisSerializerWrapper(redisSerializer);
+    }
+
+    public static void setParameter(Object value, byte[] rawValue) {
+        Map<Object, byte[]> parameters = getParameters();
+        byte[] oldRawValue = parameters.put(value, rawValue);
+        if (oldRawValue != null && logger.isDebugEnabled()) {
+            logger.debug("The old raw value was found, old == new ? {}", Arrays.equals(oldRawValue, rawValue));
+        }
+    }
+
+    public static byte[] getRawValue(Object value) {
+        Map<Object, byte[]> parameters = getParameters();
+        return parameters.get(value);
+    }
+
+    public static Map<Object, byte[]> getParameters() {
+        return parametersHolder.get();
+    }
+
+    public static void clearParameters() {
+        parametersHolder.remove();
+    }
 }

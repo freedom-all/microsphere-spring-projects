@@ -34,8 +34,9 @@ import static io.github.microsphere.spring.redis.util.RedisConstants.COMMAND_EVE
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class EventPublishingRedisCommendInterceptor implements RedisCommandInterceptor, ApplicationListener<RedisConfigurationPropertyChangedEvent>, ApplicationEventPublisherAware {
-    private static final Logger logger = LoggerFactory.getLogger(EventPublishingRedisCommendInterceptor.class);
+public class EventPublishingRedisCommandInterceptor implements RedisCommandInterceptor, ApplicationListener<RedisConfigurationPropertyChangedEvent>, ApplicationEventPublisherAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(EventPublishingRedisCommandInterceptor.class);
 
     public static final String BEAN_NAME = "eventPublishingRedisCommendInterceptor";
 
@@ -47,7 +48,7 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
 
     private volatile boolean enabled = false;
 
-    public EventPublishingRedisCommendInterceptor(RedisContext redisContext) {
+    public EventPublishingRedisCommandInterceptor(RedisContext redisContext) {
         this.redisContext = redisContext;
         this.applicationName = redisContext.getApplicationName();
         setEnabled();
@@ -62,28 +63,11 @@ public class EventPublishingRedisCommendInterceptor implements RedisCommandInter
     }
 
     @Override
-    public void beforeExecute(RedisMethodContext<RedisCommands> context) throws Throwable {
-        if (isEnabled()) {
-            if (context.isSourceFromRedisTemplate()) {
-                // RedisMethodContext will be stored into the ThreadLocal to help the wrapper of RedisSerializer
-                // retrieving in the RedisTemplate scenario
-                RedisMethodContext.set(context);
-            }
-        }
-    }
-
-    @Override
     public void afterExecute(RedisMethodContext<RedisCommands> context, Object result, Throwable failure) throws Throwable {
         if (isEnabled() && failure == null) {
-            try {
-                if (context.isWriteMethod(true)) { // The current method is a Redis write command
-                    // Publish Redis Command Event
-                    publishRedisCommandEvent(context);
-                }
-            } finally {
-                if (context.isSourceFromRedisTemplate()) {
-                    RedisMethodContext.clear();
-                }
+            if (context.isWriteMethod(true)) { // The current method is a Redis write command
+                // Publish Redis Command Event
+                publishRedisCommandEvent(context);
             }
         }
     }

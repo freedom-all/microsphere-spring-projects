@@ -18,7 +18,7 @@ package io.github.microsphere.spring.redis.annotation;
 
 import io.github.microsphere.spring.redis.beans.RedisConnectionFactoryWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
-import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommendInterceptor;
+import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommandInterceptor;
 import io.github.microsphere.spring.redis.metadata.MethodMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +105,7 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
     }
 
     private void registerEventPublishingRedisCommendInterceptor(BeanDefinitionRegistry registry) {
-        registerBeanDefinition(registry, EventPublishingRedisCommendInterceptor.BEAN_NAME, EventPublishingRedisCommendInterceptor.class);
+        registerBeanDefinition(registry, EventPublishingRedisCommandInterceptor.BEAN_NAME, EventPublishingRedisCommandInterceptor.class);
     }
 
     private void registerBeanDefinition(BeanDefinitionRegistry registry, String beanName, Class<?>

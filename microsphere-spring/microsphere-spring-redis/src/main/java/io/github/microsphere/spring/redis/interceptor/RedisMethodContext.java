@@ -19,8 +19,7 @@ package io.github.microsphere.spring.redis.interceptor;
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.metadata.Parameter;
-import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
-import io.github.microsphere.spring.redis.serializer.Serializers;
+import io.github.microsphere.spring.redis.util.RedisCommandsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -31,15 +30,12 @@ import org.springframework.lang.NonNull;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getWriteParameterMetadataList;
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.isWriteCommandMethod;
-import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildParameterMetadataList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
@@ -116,44 +112,26 @@ public class RedisMethodContext<T> {
     }
 
     private void initParameters() {
-        List<ParameterMetadata> parameterMetadataList = getWriteParameterMetadataList(method);
-        if (parameterMetadataList != null) {
-            initParameters(parameterMetadataList, true);
-        } else {
-            parameterMetadataList = buildParameterMetadataList(method);
-            initParameters(parameterMetadataList, false);
-        }
-    }
-
-    private void initParameters(List<ParameterMetadata> parameterMetadataList, boolean write) {
+        int size = args.length;
         final Parameter[] parameters;
         final Map<Object, Parameter> parametersMap;
-        final int size = parameterMetadataList == null ? 0 : parameterMetadataList.size();
+        final boolean write;
 
-        if (size > 0) {
+        if (size > 1) {
             parameters = new Parameter[size];
             parametersMap = new HashMap<>(size);
-            try {
-                for (int i = 0; i < size; i++) {
-                    Object parameterValue = args[i];
-                    ParameterMetadata parameterMetadata = parameterMetadataList.get(i);
-                    Parameter parameter = new Parameter(parameterValue, parameterMetadata);
-                    // serialize parameter
-                    Serializers.serializeRawParameter(parameter);
-                    parameters[i] = parameter;
-                    parametersMap.put(parameterValue, parameter);
-                }
-            } catch (Throwable e) {
-                logger.error("Redis failed to initialize Redis command method parameter {}!", parameterMetadataList, e);
-            }
+            write = RedisCommandsUtils.initParameters(method, args, (parameter, index) -> {
+                parameters[index] = parameter;
+                parametersMap.put(parameter.getValue(), parameter);
+            });
         } else {
             parameters = EMPTY_PARAMETERS;
             parametersMap = emptyMap();
+            write = false;
         }
 
         this.parameters = parameters;
         this.parametersMap = unmodifiableMap(parametersMap);
-        this.parameterCount = size;
         this.write = write;
     }
 
@@ -311,6 +289,14 @@ public class RedisMethodContext<T> {
             this.sourceFromRedisConnectionFactory = sourceFromRedisConnectionFactory;
         }
         return sourceFromRedisConnectionFactory;
+    }
+
+    public void setParameters(Parameter[] parameters) {
+        this.parameters = parameters;
+    }
+
+    public void setParametersMap(Map<Object, Parameter> parametersMap) {
+        this.parametersMap = parametersMap;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.github.microsphere.spring.redis.util;
 
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.metadata.Parameter;
 import io.github.microsphere.spring.redis.metadata.ParameterMetadata;
 import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.slf4j.Logger;
@@ -14,7 +15,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
 
+import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getWriteParameterMetadataList;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -111,6 +114,60 @@ public abstract class RedisCommandsUtils {
         return infoBuilder.toString();
     }
 
+    /**
+     * @param method         the Redis command {@link Method}
+     * @param args           the parameter values of the Redis command {@link Method}
+     * @param consumer       The one {@link BiConsumer BiConsumer} of {@link Parameter} and its index
+     * @param otherConsumers The others {@link BiConsumer BiConsumers} of {@link Parameter} and its index
+     * @return if the parameters from the write method, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean initParameters(Method method, Object[] args, BiConsumer<Parameter, Integer> consumer, BiConsumer<Parameter, Integer>... otherConsumers) {
+
+        boolean sourceFromWriteMethod = true;
+
+        List<ParameterMetadata> parameterMetadataList = null;
+
+        try {
+            // First, attempt to get the cached list of ParameterMetadata from the write method
+            parameterMetadataList = getWriteParameterMetadataList(method);
+            // If not found, try to build them
+            if (parameterMetadataList == null) {
+                sourceFromWriteMethod = false;
+                parameterMetadataList = buildParameterMetadataList(method);
+            }
+
+            int size = parameterMetadataList.size();
+            int otherConsumerCount = otherConsumers.length;
+
+            if (size > 0) {
+
+                for (int i = 0; i < size; i++) {
+                    Object parameterValue = args[i];
+                    ParameterMetadata parameterMetadata = parameterMetadataList.get(i);
+                    Parameter parameter = new Parameter(parameterValue, parameterMetadata);
+                    // serialize parameter
+                    Serializers.serializeRawParameter(parameter);
+                    // consumer one
+                    consumer.accept(parameter, i);
+                    // consumer others
+                    for (int j = 0; j < otherConsumerCount; j++) {
+                        BiConsumer<Parameter, Integer> parameterConsumer = otherConsumers[j];
+                        parameterConsumer.accept(parameter, i);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.error("Redis failed to initialize Redis command method parameter {}!", parameterMetadataList, e);
+        }
+
+        return sourceFromWriteMethod;
+    }
+
+    public static List<ParameterMetadata> buildParameterMetadataList(Method method) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        return buildParameterMetadata(method, parameterTypes);
+    }
+
     public static List<ParameterMetadata> buildParameterMetadata(Method method, Class<?>[] parameterTypes) {
         int parameterCount = parameterTypes.length;
         String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
@@ -124,11 +181,6 @@ public abstract class RedisCommandsUtils {
             Serializers.getSerializer(parameterType);
         }
         return unmodifiableList(parameterMetadataList);
-    }
-
-    public static List<ParameterMetadata> buildParameterMetadataList(Method method) {
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        return buildParameterMetadata(method, parameterTypes);
     }
 
 }
