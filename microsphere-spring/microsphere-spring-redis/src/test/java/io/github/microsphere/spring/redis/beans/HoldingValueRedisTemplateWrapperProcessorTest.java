@@ -18,30 +18,17 @@ package io.github.microsphere.spring.redis.beans;
 
 import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
 import io.github.microsphere.spring.redis.annotation.EnableRedisInterceptor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * {@link WrapperCustomizer} Test
+ * {@link HoldingValueRedisTemplateWrapperProcessor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-@ContextConfiguration(classes = WrapperCustomizerTest.class)
-@TestPropertySource(properties = {
-        "microsphere.redis.enabled=true"
-})
-@EnableRedisInterceptor(wrapRedisTemplates = {
-        "stringRedisTemplate"
-})
-public class WrapperCustomizerTest extends AbstractRedisCommandEventTest {
-
-    @Bean
-    public WrapperCustomizer<StringRedisTemplateWrapper> redisTemplateCustomizer() {
-        return redisTemplate -> {
-            redisTemplate.setKeySerializer(StringRedisSerializer.US_ASCII);
-        };
-    }
+@ContextConfiguration(classes = {HoldingValueRedisTemplateWrapperProcessorTest.class, HoldingValueRedisTemplateWrapperProcessor.class})
+@TestPropertySource(properties = {"microsphere.redis.enabled=true"})
+@EnableRedisInterceptor(wrapRedisTemplates = {"redisTemplate", "stringRedisTemplate"})
+public class HoldingValueRedisTemplateWrapperProcessorTest extends AbstractRedisCommandEventTest {
 }

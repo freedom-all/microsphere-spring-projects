@@ -42,7 +42,7 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
 
     private Set<String> wrappedRedisTemplateBeanNames;
 
-    private WrapperCustomizers wrapperCustomizers;
+    private WrapperProcessors wrapperProcessors;
 
     public RedisTemplateWrapperBeanPostProcessor() {
     }
@@ -57,18 +57,18 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
             Class<?> beanClass = ultimateTargetClass(bean);
             if (StringRedisTemplate.class.equals(beanClass)) {
                 StringRedisTemplate stringRedisTemplate = (StringRedisTemplate) bean;
-                return customize(new StringRedisTemplateWrapper(beanName, stringRedisTemplate, redisContext));
+                return process(new StringRedisTemplateWrapper(beanName, stringRedisTemplate, redisContext));
             } else if (RedisTemplate.class.equals(beanClass)) {
                 RedisTemplate redisTemplate = (RedisTemplate) bean;
-                return customize(new RedisTemplateWrapper(beanName, redisTemplate, redisContext));
+                return process(new RedisTemplateWrapper(beanName, redisTemplate, redisContext));
             }
             // TODO Support for more custom RedisTemplate types
         }
         return bean;
     }
 
-    private <W extends Wrapper> W customize(W wrapper) {
-        return wrapperCustomizers.customize(wrapper);
+    private <W extends Wrapper> W process(W wrapper) {
+        return wrapperProcessors.process(wrapper);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class RedisTemplateWrapperBeanPostProcessor implements BeanPostProcessor,
         if (this.wrappedRedisTemplateBeanNames == null) {
             this.wrappedRedisTemplateBeanNames = resolveWrappedRedisTemplateBeanNames(context);
         }
-        this.wrapperCustomizers = context.getBean(WrapperCustomizers.class);
+        this.wrapperProcessors = context.getBean(WrapperProcessors.BEAN_NAME, WrapperProcessors.class);
     }
 
     public Set<String> getWrappedRedisTemplateBeanNames() {

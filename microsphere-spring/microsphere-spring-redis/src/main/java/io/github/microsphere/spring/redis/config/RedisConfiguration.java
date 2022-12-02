@@ -3,9 +3,11 @@ package io.github.microsphere.spring.redis.config;
 import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.EnvironmentAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
@@ -20,7 +22,7 @@ import static io.github.microsphere.spring.redis.util.RedisConstants.ENABLED_PRO
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent>, EnvironmentAware {
+public class RedisConfiguration implements ApplicationListener<RedisConfigurationPropertyChangedEvent>, ApplicationContextAware {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
@@ -29,6 +31,8 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
      * {@link RedisConfiguration} Bean Name
      */
     public static final String BEAN_NAME = "redisConfiguration";
+
+    protected ConfigurableApplicationContext context;
 
     protected ConfigurableEnvironment environment;
 
@@ -44,7 +48,7 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
     }
 
     public void setEnabled() {
-        this.enabled = isEnabled(environment);
+        this.enabled = isEnabled(context);
     }
 
     public boolean isEnabled() {
@@ -65,39 +69,33 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
     }
 
     public boolean isCommandEventExposed() {
-        return isCommandEventExposed(environment);
-    }
-
-    public static boolean isEnabled(ApplicationContext context) {
-        Environment environment = context.getEnvironment();
-        return isEnabled(environment);
-    }
-
-    public static boolean isEnabled(Environment environment) {
-        boolean enabled = getEnabled(environment);
-        logger.debug("Microsphere Redis is {}, if {}, please configure the Spring property [{} = {}]", enabled ? "Enabled" : "Disabled", enabled ? "Disabled" : "Enabled", ENABLED_PROPERTY_NAME, !enabled);
-        return enabled;
-    }
-
-    protected static boolean getEnabled(Environment environment) {
-        return environment.getProperty(ENABLED_PROPERTY_NAME, boolean.class, DEFAULT_ENABLED);
-    }
-
-    public static boolean isCommandEventExposed(ApplicationContext context) {
-        return isCommandEventExposed(context.getEnvironment());
-    }
-
-    public static boolean isCommandEventExposed(Environment environment) {
-        String name = COMMAND_EVENT_EXPOSED_PROPERTY_NAME;
-        boolean exposed = environment.getProperty(name, boolean.class, DEFAULT_COMMAND_EVENT_EXPOSED);
-        logger.debug("Microsphere Redis Command Event is {}exposed, if {}, please configure the Spring property [{} = {}]", exposed ? "" : "not ", exposed ? "Disabled" : "Exposed", name, !exposed);
-        return exposed;
+        return isCommandEventExposed(context);
     }
 
     @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = (ConfigurableEnvironment) environment;
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = (ConfigurableApplicationContext) context;
+        this.environment = (ConfigurableEnvironment) context.getEnvironment();
         this.applicationName = resolveApplicationName(environment);
         setEnabled();
+    }
+
+    public static boolean isEnabled(ApplicationContext context) {
+        return getBoolean(context, ENABLED_PROPERTY_NAME, DEFAULT_ENABLED, "Configuration", "enabled");
+    }
+
+    public static boolean isCommandEventExposed(ApplicationContext context) {
+        return getBoolean(context, COMMAND_EVENT_EXPOSED_PROPERTY_NAME, DEFAULT_COMMAND_EVENT_EXPOSED, "Command Event", "exposed");
+    }
+
+    public static boolean getBoolean(ApplicationContext context, String propertyName, boolean defaultValue, String feature, String statusIfTrue) {
+        Environment environment = context.getEnvironment();
+        Boolean propertyValue = environment.getProperty(propertyName, Boolean.class);
+        boolean value = propertyValue == null ? defaultValue : propertyValue.booleanValue();
+        if (logger.isDebugEnabled()) {
+            String status = value ? statusIfTrue : "not " + statusIfTrue;
+            logger.debug("Microsphere Redis {} is '{}' in the Spring ApplicationContext[id :'{}' , property name: '{}' , property value: {} , default value: {}", feature, status, context.getId(), propertyName, propertyValue, defaultValue);
+        }
+        return value;
     }
 }

@@ -16,9 +16,7 @@ import java.lang.reflect.Proxy;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements Wrapper {
-
-    private static final Class<RedisTemplate> REDIS_TEMPLATE_CLASS = RedisTemplate.class;
+public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements DelegatingWrapper {
 
     private static final Class<?>[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
 
@@ -85,17 +83,7 @@ public class RedisTemplateWrapper<K, V> extends RedisTemplate<K, V> implements W
     }
 
     @Override
-    public <T> T unwrap(Class<T> type) throws IllegalArgumentException {
-        if (REDIS_TEMPLATE_CLASS.equals(type)) {
-            return (T) delegate;
-        } else if (type.isInstance(this)) {
-            return (T) this;
-        }
-        throw new IllegalArgumentException(getClass().getName() + " can't unwrap the given type '" + type.getName() + "'");
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> type) {
-        return REDIS_TEMPLATE_CLASS.equals(type);
+    public Object getDelegate() {
+        return delegate;
     }
 }

@@ -14,9 +14,7 @@ import static io.github.microsphere.spring.redis.beans.RedisTemplateWrapper.newP
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class StringRedisTemplateWrapper extends StringRedisTemplate implements Wrapper {
-
-    private static final Class<StringRedisTemplate> STRING_REDIS_TEMPLATE_CLASS = StringRedisTemplate.class;
+public class StringRedisTemplateWrapper extends StringRedisTemplate implements DelegatingWrapper {
 
     private final String beanName;
 
@@ -48,17 +46,7 @@ public class StringRedisTemplateWrapper extends StringRedisTemplate implements W
     }
 
     @Override
-    public <T> T unwrap(Class<T> type) throws IllegalArgumentException {
-        if (STRING_REDIS_TEMPLATE_CLASS.equals(type)) {
-            return (T) delegate;
-        } else if (type.isInstance(this)) {
-            return (T) this;
-        }
-        throw new IllegalArgumentException(getClass().getName() + " can't unwrap the given type '" + type.getName() + "'");
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> type) {
-        return STRING_REDIS_TEMPLATE_CLASS.equals(type);
+    public Object getDelegate() {
+        return delegate;
     }
 }

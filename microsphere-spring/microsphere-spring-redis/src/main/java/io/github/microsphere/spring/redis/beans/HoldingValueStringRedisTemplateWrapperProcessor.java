@@ -16,19 +16,22 @@
  */
 package io.github.microsphere.spring.redis.beans;
 
+import io.github.microsphere.spring.redis.serializer.HoldingValueRedisSerializerWrapper;
+
+import static io.github.microsphere.spring.redis.serializer.HoldingValueRedisSerializerWrapper.wrap;
+
 /**
- * The Customizer for {@link Wrapper}
+ * The {@link WrapperProcessor} of {@link StringRedisTemplateWrapper} that holds the value
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see HoldingValueRedisSerializerWrapper
  * @since 1.0.0
  */
-public interface WrapperCustomizer<W extends Wrapper> {
+public class HoldingValueStringRedisTemplateWrapperProcessor implements WrapperProcessor<StringRedisTemplateWrapper> {
 
-    /**
-     * customize the {@link W Wrapper} bean
-     *
-     * @param wrapper {@link W Wrapper} instance
-     */
-    void customize(W wrapper);
+    @Override
+    public StringRedisTemplateWrapper process(StringRedisTemplateWrapper wrapper) {
+        wrap(wrapper);
+        return wrapper;
+    }
 }
-

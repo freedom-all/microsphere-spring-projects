@@ -18,7 +18,7 @@ package io.github.microsphere.spring.redis.annotation;
 
 import io.github.microsphere.spring.redis.beans.RedisConnectionFactoryWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
-import io.github.microsphere.spring.redis.beans.WrapperCustomizers;
+import io.github.microsphere.spring.redis.beans.WrapperProcessors;
 import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommandInterceptor;
 import io.github.microsphere.spring.redis.metadata.MethodMetadataRepository;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
             registerRedisTemplateWrapperBeanPostProcessor(wrapRedisTemplateBeanNames, registry);
         }
 
-        registerWrapperCustomizers(registry);
+        registerWrapperProcessors(registry);
 
         if (exposedCommandEvent) {
             MethodMetadataRepository.init();
@@ -103,8 +103,8 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
         }
     }
 
-    private void registerWrapperCustomizers(BeanDefinitionRegistry registry) {
-        registerBeanDefinition(registry, WrapperCustomizers.BEAN_NAME, WrapperCustomizers.class);
+    private void registerWrapperProcessors(BeanDefinitionRegistry registry) {
+        registerBeanDefinition(registry, WrapperProcessors.BEAN_NAME, WrapperProcessors.class);
     }
 
     private void registerRedisConnectionFactoryWrapperBeanPostProcessor(BeanDefinitionRegistry registry) {

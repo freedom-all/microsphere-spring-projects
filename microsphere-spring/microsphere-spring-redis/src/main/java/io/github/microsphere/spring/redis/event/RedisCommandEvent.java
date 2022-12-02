@@ -76,7 +76,7 @@ public class RedisCommandEvent extends ApplicationEvent {
     private transient final int parameterCount;
 
     /**
-     * Method parameter type list, such as: [java.lang.String,java.lang.String]
+     * Method parameter type list, such as: [{@link java.lang.String},{@link java.lang.Integer}]
      */
     private final String[] parameterTypes;
 

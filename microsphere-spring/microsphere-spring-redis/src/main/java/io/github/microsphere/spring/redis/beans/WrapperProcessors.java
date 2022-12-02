@@ -30,25 +30,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The composite class of {@link WrapperCustomizer}
+ * The composite class of {@link WrapperProcessor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class WrapperCustomizers implements InitializingBean, BeanFactoryAware {
+public class WrapperProcessors implements InitializingBean, BeanFactoryAware {
 
-    public static final String BEAN_NAME = "wrapperCustomizers";
+    public static final String BEAN_NAME = "wrapperProcessors";
 
     private ConfigurableListableBeanFactory beanFactory;
 
-    private Map<Class<?>, ObjectProvider<WrapperCustomizer>> wrapperCustomizersMap;
+    private Map<Class<?>, ObjectProvider<WrapperProcessor>> wrapperHandlersMap;
 
-    public <W extends Wrapper> W customize(W wrapper) {
+    public <W extends Wrapper> W process(W wrapper) {
         Class<?> wrapperType = wrapper.getClass();
-        wrapperCustomizersMap.computeIfPresent(wrapperType, (type, customizers) -> {
-            customizers.forEach(c -> c.customize(wrapper));
-            return customizers;
-        });
+        ObjectProvider<WrapperProcessor> processors = wrapperHandlersMap.get(wrapperType);
+        if (processors != null) {
+            for (WrapperProcessor<W> processor : processors) {
+                wrapper = processor.process(wrapper);
+            }
+        }
         return wrapper;
     }
 
@@ -60,21 +62,21 @@ public class WrapperCustomizers implements InitializingBean, BeanFactoryAware {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.wrapperCustomizersMap = initWrapperCustomizersMap();
+        this.wrapperHandlersMap = initWrapperHandlersMap();
     }
 
-    private Map<Class<?>, ObjectProvider<WrapperCustomizer>> initWrapperCustomizersMap() {
-        Map<Class<?>, ObjectProvider<WrapperCustomizer>> wrapperCustomizersMap = new HashMap<>(2);
+    private Map<Class<?>, ObjectProvider<WrapperProcessor>> initWrapperHandlersMap() {
+        Map<Class<?>, ObjectProvider<WrapperProcessor>> wrapperHandlersMap = new HashMap<>(2);
         for (String beanName : beanFactory.getBeanDefinitionNames()) {
             BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
             ResolvableType resolvableType = beanDefinition.getResolvableType();
             Class<?> beanClass = resolvableType.getRawClass();
-            if (WrapperCustomizer.class.isAssignableFrom(beanClass)) {
-                Class<?> redisTemplateClass = resolvableType.getGeneric(0).getRawClass();
-                wrapperCustomizersMap.computeIfAbsent(redisTemplateClass, type -> beanFactory.getBeanProvider(resolvableType));
+            if (WrapperProcessor.class.isAssignableFrom(beanClass)) {
+                Class<?> redisTemplateClass = resolvableType.as(WrapperProcessor.class).getGeneric(0).getRawClass();
+                wrapperHandlersMap.computeIfAbsent(redisTemplateClass, type -> beanFactory.getBeanProvider(resolvableType));
             }
         }
-        return wrapperCustomizersMap;
+        return wrapperHandlersMap;
     }
 
 }
