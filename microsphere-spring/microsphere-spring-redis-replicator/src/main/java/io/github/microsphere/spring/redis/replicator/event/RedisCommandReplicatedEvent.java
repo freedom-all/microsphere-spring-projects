@@ -30,7 +30,7 @@ public class RedisCommandReplicatedEvent extends ApplicationEvent {
 
     private static final long serialVersionUID = -1L;
 
-    private final RedisCommandEvent sourceEvent;
+    private final transient RedisCommandEvent sourceEvent;
 
     /**
      * Business domain (non-serialized field, initialized by the consumer)
