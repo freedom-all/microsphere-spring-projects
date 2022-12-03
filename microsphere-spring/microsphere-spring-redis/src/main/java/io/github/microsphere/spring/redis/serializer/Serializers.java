@@ -115,7 +115,8 @@ public abstract class Serializers {
     }
 
     public static <T> T deserialize(byte[] bytes, Class<T> type) {
-        Object object = defaultSerializer.deserialize(bytes);
+        RedisSerializer<?> serializer = getSerializer(type);
+        Object object = serializer.deserialize(bytes);
         if (type.isInstance(object)) {
             return type.cast(object);
         } else {
