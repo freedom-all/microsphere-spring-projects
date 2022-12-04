@@ -4,7 +4,6 @@ import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.replicator.event.RedisCommandReplicatedEvent;
 import io.github.microsphere.spring.redis.replicator.kafka.KafkaRedisReplicatorConfiguration;
 import io.github.microsphere.spring.redis.serializer.Serializers;
-import io.github.microsphere.spring.util.PropertySourcesUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
@@ -19,9 +18,13 @@ import org.springframework.kafka.listener.BatchAcknowledgingMessageListener;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.microsphere.spring.redis.config.RedisConfiguration.getBoolean;
+import static io.github.microsphere.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.GROUP_ID_CONFIG;
 
 /**
  * Kafka Consumer {@link KafkaRedisReplicatorConfiguration}
@@ -131,7 +134,19 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
     }
 
     private void initConsumerConfigs() {
-        this.consumerConfigs = PropertySourcesUtils.getSubProperties(environment, KAFKA_CONSUMER_PROPERTY_NAME_PREFIX);
+        Map<String, Object> consumerConfigs = new HashMap<>();
+
+        // Kafka bootstrap servers
+        consumerConfigs.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
+        // Kafka consumer group id
+        consumerConfigs.put(GROUP_ID_CONFIG, "test-1");
+
+        // Kafka Common properties
+        consumerConfigs.putAll(getSubProperties(environment, KAFKA_PROPERTY_NAME_PREFIX));
+
+        // Kafka Consumer properties
+        consumerConfigs.putAll(getSubProperties(environment, KAFKA_CONSUMER_PROPERTY_NAME_PREFIX));
+        this.consumerConfigs = consumerConfigs;
     }
 
     private void initListenerConfigs() {

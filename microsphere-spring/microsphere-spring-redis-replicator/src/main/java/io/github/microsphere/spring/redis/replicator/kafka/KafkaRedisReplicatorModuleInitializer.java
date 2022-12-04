@@ -8,11 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 
+import static io.github.microsphere.spring.redis.replicator.kafka.KafkaRedisReplicatorConfiguration.SPRING_KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME;
+import static io.github.microsphere.spring.redis.replicator.kafka.KafkaRedisReplicatorConfiguration.KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME;
 import static io.github.microsphere.spring.redis.replicator.kafka.consumer.KafkaConsumerRedisReplicatorConfiguration.KAFKA_CONSUMER_ENABLED_PROPERTY_NAME;
+import static io.github.microsphere.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static io.github.microsphere.spring.util.BeanRegistrar.registerBeanDefinition;
 
 /**
  * Kafka {@link RedisReplicatorModuleInitializer}
@@ -41,31 +44,19 @@ public class KafkaRedisReplicatorModuleInitializer implements RedisReplicatorMod
 
     @Override
     public void initializeProducerModule(ConfigurableApplicationContext context, BeanDefinitionRegistry registry) {
-        registerConfiguration(context, registry, KafkaProducerRedisReplicatorConfiguration.class);
-        initializeKafkaProducerRedisCommandEventListener(context);
+        registerBeans(registry, KafkaProducerRedisReplicatorConfiguration.class);
+        registerBeanDefinition(registry, KafkaProducerRedisCommandEventListener.class);
     }
 
     @Override
     public void initializeConsumerModule(ConfigurableApplicationContext context, BeanDefinitionRegistry registry) {
         if (!KafkaConsumerRedisReplicatorConfiguration.isEnabled(context)) {
-            logger.warn("Application context [id: '{}'] Redis Repliator Kafka Consumer is not activated, you can configure Spring property {} = true to enable!", context.getId(), KAFKA_CONSUMER_ENABLED_PROPERTY_NAME);
+            logger.warn("Application context [id: '{}'] Redis Replicator Kafka Consumer is not activated, you can configure Spring property {} = true to enable!", context.getId(), KAFKA_CONSUMER_ENABLED_PROPERTY_NAME);
             return;
         }
-        registerConfiguration(context, registry, KafkaConsumerRedisReplicatorConfiguration.class);
+        registerBeans(registry, KafkaConsumerRedisReplicatorConfiguration.class);
     }
 
-    private boolean registerConfiguration(ConfigurableApplicationContext context, BeanDefinitionRegistry registry, Class<?> configClass) {
-        AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(registry, context.getEnvironment());
-        reader.register(configClass);
-        logger.debug("Application context [id: '{}'] Registered Redis data replication Kafka configuration class: {}", context.getId(), configClass);
-        return true;
-    }
-
-    private void initializeKafkaProducerRedisCommandEventListener(ConfigurableApplicationContext context) {
-        KafkaProducerRedisCommandEventListener listener = new KafkaProducerRedisCommandEventListener();
-        context.addApplicationListener(listener);
-        logger.debug("Application context [id: '{}'] Listener added: {}", context.getId(), listener.getClass());
-    }
 
     private boolean isClassPresent(ConfigurableApplicationContext context) {
         ClassLoader classLoader = context.getClassLoader();
@@ -74,6 +65,6 @@ public class KafkaRedisReplicatorModuleInitializer implements RedisReplicatorMod
 
     private boolean hasBootstrapServers(ConfigurableApplicationContext context) {
         Environment environment = context.getEnvironment();
-        return environment.containsProperty(KafkaRedisReplicatorConfiguration.BOOTSTRAP_SERVERS_PROPERTY_NAME);
+        return environment.containsProperty(KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME) || environment.containsProperty(SPRING_KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME);
     }
 }

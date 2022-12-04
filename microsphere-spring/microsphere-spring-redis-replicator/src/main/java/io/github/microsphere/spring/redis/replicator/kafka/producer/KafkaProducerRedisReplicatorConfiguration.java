@@ -3,16 +3,17 @@ package io.github.microsphere.spring.redis.replicator.kafka.producer;
 import io.github.microsphere.spring.redis.replicator.RedisReplicatorInitializer;
 import io.github.microsphere.spring.redis.replicator.kafka.KafkaRedisReplicatorConfiguration;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.microsphere.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 
 /**
  * Redis Replicator Kafka producer configuration (loaded by {@link RedisReplicatorInitializer})
@@ -54,7 +55,13 @@ public class KafkaProducerRedisReplicatorConfiguration extends KafkaRedisReplica
     }
 
     private void initProducerConfigs() {
-        this.producerConfigs = getSubProperties(environment, KAFKA_PRODUCER_PROPERTY_NAME_PREFIX);
+        Map<String, Object> producerConfigs = new HashMap<>();
+        producerConfigs.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
+        // Kafka Common properties
+        producerConfigs.putAll(getSubProperties(environment, KAFKA_PROPERTY_NAME_PREFIX));
+        // Kafka Producer properties
+        producerConfigs.putAll(getSubProperties(environment, KAFKA_PRODUCER_PROPERTY_NAME_PREFIX));
+        this.producerConfigs = producerConfigs;
     }
 
     private void initRedisReplicatorKafkaTemplate() {

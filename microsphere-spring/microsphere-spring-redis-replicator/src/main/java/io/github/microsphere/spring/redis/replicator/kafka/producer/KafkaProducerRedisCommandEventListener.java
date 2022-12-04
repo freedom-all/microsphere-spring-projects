@@ -2,10 +2,10 @@ package io.github.microsphere.spring.redis.replicator.kafka.producer;
 
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.replicator.config.RedisReplicatorConfiguration;
-import io.github.microsphere.spring.redis.replicator.event.RedisCommandReplicatedEvent;
 import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -18,19 +18,17 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static io.github.microsphere.spring.redis.config.RedisConfiguration.BEAN_NAME;
-
 /**
- * {@link ApplicationListener} listens to {@link RedisCommandReplicatedEvent} implementation -
- * Transfers {@link RedisCommandReplicatedEvent} objects using Kafka messages
+ * {@link ApplicationListener} listens to {@link RedisCommandEvent} implementation -
+ * Transfers {@link RedisCommandEvent} objects using Kafka messages
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class KafkaProducerRedisCommandEventListener implements SmartApplicationListener {
+public class KafkaProducerRedisCommandEventListener implements SmartApplicationListener, DisposableBean {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -46,7 +44,7 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
 
     private String keyPrefix;
 
-    private Executor executor;
+    private ExecutorService executor;
 
 
     @Override
@@ -79,7 +77,7 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
     }
 
     private void initRedisReplicatorConfiguration(ApplicationContext context) {
-        this.redisReplicatorConfiguration = context.getBean(BEAN_NAME, RedisReplicatorConfiguration.class);
+        this.redisReplicatorConfiguration = context.getBean(RedisReplicatorConfiguration.BEAN_NAME, RedisReplicatorConfiguration.class);
     }
 
     private void initRedisReplicatorKafkaProducerConfiguration(ApplicationContext context) {
@@ -141,7 +139,7 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
     /**
      * Generate Kafka message keys, using Redis Key as part of Kafka
      *
-     * @param event {@link RedisCommandReplicatedEvent}
+     * @param event {@link RedisCommandEvent}
      * @return Generate Kafka message keys
      */
     private byte[] generateKafkaKey(RedisCommandEvent event) {
@@ -152,5 +150,10 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
     private Integer calcPartition(RedisCommandEvent event) {
         // TODO Future computing partition
         return null;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        executor.shutdown();
     }
 }

@@ -1,6 +1,7 @@
 package io.github.microsphere.spring.redis.replicator.kafka;
 
 import io.github.microsphere.spring.redis.replicator.config.RedisReplicatorConfiguration;
+import org.apache.kafka.clients.CommonClientConfigs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -12,6 +13,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 
 import java.util.List;
+
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 
 
 /**
@@ -25,9 +28,13 @@ public class KafkaRedisReplicatorConfiguration implements EnvironmentAware, Init
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaRedisReplicatorConfiguration.class);
 
-    public static final String BOOTSTRAP_SERVERS_PROPERTY_NAME = "spring.kafka.bootstrap-servers";
+    public static final String SPRING_KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME = "spring.kafka.bootstrap-servers";
 
     public static final String KAFKA_PROPERTY_NAME_PREFIX = RedisReplicatorConfiguration.PROPERTY_NAME_PREFIX + "kafka.";
+
+    public static final String KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME = KAFKA_PROPERTY_NAME_PREFIX + BOOTSTRAP_SERVERS_CONFIG;
+
+    public static final String KAFKA_BOOTSTRAP_SERVERS_PROPERTY_PLACEHOLDER = "${" + KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME + ":${" + SPRING_KAFKA_BOOTSTRAP_SERVERS_PROPERTY_NAME + "}}";
 
     public static final String KAFKA_TOPIC_PREFIX_PROPERTY_NAME = KAFKA_PROPERTY_NAME_PREFIX + "topic-prefix";
 
@@ -87,12 +94,12 @@ public class KafkaRedisReplicatorConfiguration implements EnvironmentAware, Init
     @Override
     public void afterPropertiesSet() throws Exception {
         initBrokerList();
-        initTopics();
         initTopicPrefix();
+        initTopics();
     }
 
     private void initBrokerList() {
-        String brokerList = environment.getRequiredProperty(BOOTSTRAP_SERVERS_PROPERTY_NAME);
+        String brokerList = environment.resolvePlaceholders(KAFKA_BOOTSTRAP_SERVERS_PROPERTY_PLACEHOLDER);
         logger.debug("Kafka Broker list : {}", brokerList);
         this.brokerList = brokerList;
     }
@@ -105,6 +112,5 @@ public class KafkaRedisReplicatorConfiguration implements EnvironmentAware, Init
 
     @Override
     public void destroy() throws Exception {
-
     }
 }
