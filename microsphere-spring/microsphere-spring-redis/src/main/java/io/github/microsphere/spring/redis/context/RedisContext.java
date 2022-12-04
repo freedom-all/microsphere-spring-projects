@@ -79,7 +79,7 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
 
     @Override
     public void afterSingletonsInstantiated() {
-        this.redisConfiguration = getRedisConfiguration(context);
+        this.redisConfiguration = RedisConfiguration.get(context);
         this.redisTemplateBeanNames = findRestTemplateBeanNames(beanFactory);
         this.redisConnectionFactoryBeanNames = findRedisConnectionFactoryBeanNames(beanFactory);
         this.redisConnectionInterceptors = findRedisConnectionInterceptors(beanFactory);
@@ -91,7 +91,7 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
         RedisConfiguration redisConfiguration = this.redisConfiguration;
         if (redisConfiguration == null) {
             logger.debug("RedisConfiguration is not initialized, it will be got from BeanFactory[{}]", beanFactory);
-            redisConfiguration = getRedisConfiguration(beanFactory);
+            redisConfiguration = RedisConfiguration.get(beanFactory);
             this.redisConfiguration = redisConfiguration;
         }
         return redisConfiguration;
@@ -169,10 +169,6 @@ public class RedisContext implements SmartInitializingSingleton, ApplicationCont
             return beanFactory.getBean(redisTemplateBeanName, REDIS_TEMPLATE_CLASS);
         }
         return null;
-    }
-
-    public static RedisConfiguration getRedisConfiguration(BeanFactory beanFactory) {
-        return beanFactory.getBean(RedisConfiguration.BEAN_NAME, REDIS_CONFIGURATION_CLASS);
     }
 
     public static Set<String> findRestTemplateBeanNames(ConfigurableListableBeanFactory beanFactory) {

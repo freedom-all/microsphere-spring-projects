@@ -1,7 +1,6 @@
 package io.github.microsphere.spring.redis.replicator.kafka;
 
 import io.github.microsphere.spring.redis.replicator.config.RedisReplicatorConfiguration;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;

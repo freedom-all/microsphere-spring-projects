@@ -9,11 +9,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.BatchAcknowledgingMessageListener;
@@ -69,9 +69,6 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
     private int listenerConcurrency;
 
     private ApplicationEventPublisher applicationEventPublisher;
-
-    @Autowired
-    private RedisConfiguration redisConfiguration;
 
     public static boolean isEnabled(ApplicationContext applicationContext) {
         return getBoolean(applicationContext, KAFKA_CONSUMER_ENABLED_PROPERTY_NAME, DEFAULT_KAFKA_CONSUMER_ENABLED, "Kafka Consumer", "enabled");
@@ -166,6 +163,7 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
     }
 
     private String getConsumerGroupId() {
+        RedisConfiguration redisConfiguration = redisReplicatorConfiguration.getRedisConfiguration();
         return KAFKA_CONSUMER_GROUP_ID_PREFIX + redisConfiguration.getApplicationName();
     }
 

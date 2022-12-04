@@ -4,6 +4,7 @@ import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChange
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -97,5 +98,9 @@ public class RedisConfiguration implements ApplicationListener<RedisConfiguratio
             logger.debug("Microsphere Redis {} is '{}' in the Spring ApplicationContext[id :'{}' , property name: '{}' , property value: {} , default value: {}", feature, status, context.getId(), propertyName, propertyValue, defaultValue);
         }
         return value;
+    }
+
+    public static RedisConfiguration get(BeanFactory beanFactory) {
+        return beanFactory.getBean(BEAN_NAME, RedisConfiguration.class);
     }
 }

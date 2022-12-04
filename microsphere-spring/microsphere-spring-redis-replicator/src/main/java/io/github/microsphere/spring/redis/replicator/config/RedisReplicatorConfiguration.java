@@ -17,10 +17,12 @@
 package io.github.microsphere.spring.redis.replicator.config;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
+import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.event.RedisConfigurationPropertyChangedEvent;
 import io.github.microsphere.spring.redis.util.RedisConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -89,6 +91,8 @@ public class RedisReplicatorConfiguration implements ApplicationListener<RedisCo
     private volatile List<String> domains;
 
     private volatile Map<String, List<String>> sourceBeanDomains;
+
+    private RedisContext redisContext;
 
     public RedisReplicatorConfiguration(ConfigurableApplicationContext context) {
         this.context = context;
@@ -168,7 +172,6 @@ public class RedisReplicatorConfiguration implements ApplicationListener<RedisCo
         return DOMAIN_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME_PREFIX + domain + DOMAIN_REDIS_TEMPLATE_BEAN_NAMES_PROPERTY_NAME_SUFFIX;
     }
 
-
     public boolean isEnabled() {
         return enabled;
     }
@@ -185,11 +188,32 @@ public class RedisReplicatorConfiguration implements ApplicationListener<RedisCo
         return sourceBeanDomains.getOrDefault(sourceBeanName, getDomains());
     }
 
+    @NonNull
+    public RedisContext getRedisContext() {
+        RedisContext redisContext = this.redisContext;
+        if (redisContext == null) {
+            BeanFactory beanFactory = context.getBeanFactory();
+            logger.debug("RedisContext is not initialized, it will be got from BeanFactory[{}]", beanFactory);
+            redisContext = RedisContext.get(beanFactory);
+            this.redisContext = redisContext;
+        }
+        return redisContext;
+    }
+
+    @NonNull
+    public RedisConfiguration getRedisConfiguration() {
+        return getRedisContext().getRedisConfiguration();
+    }
+
     public static boolean isEnabled(ApplicationContext context) {
         return getBoolean(context, ENABLED_PROPERTY_NAME, DEFAULT_ENABLED, "Replicator", "enabled");
     }
 
     public static boolean isConsumerEnabled(ApplicationContext context) {
         return getBoolean(context, CONSUMER_ENABLED_PROPERTY_NAME, DEFAULT_CONSUMER_ENABLED, "Replicator Consumer", "enabled");
+    }
+
+    public static RedisReplicatorConfiguration get(BeanFactory beanFactory) {
+        return beanFactory.getBean(BEAN_NAME, RedisReplicatorConfiguration.class);
     }
 }

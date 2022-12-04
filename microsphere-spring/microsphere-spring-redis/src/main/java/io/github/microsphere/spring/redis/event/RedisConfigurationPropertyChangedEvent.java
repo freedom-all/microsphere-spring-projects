@@ -17,7 +17,6 @@
 package io.github.microsphere.spring.redis.event;
 
 import io.github.microsphere.spring.redis.config.RedisConfiguration;
-import io.github.microsphere.spring.redis.context.RedisContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.core.env.Environment;
@@ -60,6 +59,6 @@ public class RedisConfigurationPropertyChangedEvent extends ApplicationContextEv
     }
 
     public RedisConfiguration getRedisConfiguration() {
-        return RedisContext.getRedisConfiguration(getSource());
+        return RedisConfiguration.get(getSource());
     }
 }

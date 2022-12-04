@@ -77,7 +77,7 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
     }
 
     private void initRedisReplicatorConfiguration(ApplicationContext context) {
-        this.redisReplicatorConfiguration = context.getBean(RedisReplicatorConfiguration.BEAN_NAME, RedisReplicatorConfiguration.class);
+        this.redisReplicatorConfiguration = RedisReplicatorConfiguration.get(context);
     }
 
     private void initRedisReplicatorKafkaProducerConfiguration(ApplicationContext context) {
