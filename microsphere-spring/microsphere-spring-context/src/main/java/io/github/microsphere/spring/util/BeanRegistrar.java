@@ -26,6 +26,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.AliasRegistry;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 
+import java.beans.Introspector;
 import java.util.List;
 
 import static java.beans.Introspector.decapitalize;
@@ -71,6 +72,18 @@ public abstract class BeanRegistrar {
         }
 
         return registered;
+    }
+
+    /**
+     * Register {@link BeanDefinition}
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @param beanType the type of bean
+     * @return if the named {@link BeanDefinition} is not registered, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean registerBeanDefinition(BeanDefinitionRegistry registry, Class<?> beanType) {
+        String beanName = Introspector.decapitalize(beanType.getSimpleName());
+        return registerBeanDefinition(registry, beanName, beanType, ROLE_APPLICATION);
     }
 
     /**
