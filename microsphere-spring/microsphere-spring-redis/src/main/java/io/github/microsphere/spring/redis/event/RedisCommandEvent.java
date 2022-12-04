@@ -114,6 +114,7 @@ public class RedisCommandEvent extends ApplicationEvent {
         this.parameterTypes = new String[parameterCount];
         this.parameters = new byte[parameterCount][];
         this.sourceApplication = redisMethodContext.getApplicationName();
+        this.redisMethodContext = redisMethodContext;
         init(parameters, parameterCount);
     }
 
