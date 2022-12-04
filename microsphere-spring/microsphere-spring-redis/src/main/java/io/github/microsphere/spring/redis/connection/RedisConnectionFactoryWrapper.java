@@ -16,6 +16,7 @@
  */
 package io.github.microsphere.spring.redis.connection;
 
+import io.github.microsphere.spring.redis.beans.DelegatingWrapper;
 import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.interceptor.InterceptingRedisConnectionInvocationHandler;
 import org.springframework.dao.DataAccessException;
@@ -34,7 +35,7 @@ import java.lang.reflect.Proxy;
  * @see RedisConnectionFactory
  * @since 1.0.0
  */
-public class RedisConnectionFactoryWrapper implements RedisConnectionFactory {
+public class RedisConnectionFactoryWrapper implements RedisConnectionFactory, DelegatingWrapper {
 
     private static final Class[] REDIS_CONNECTION_TYPES = new Class[]{RedisConnection.class};
 
@@ -90,5 +91,10 @@ public class RedisConnectionFactoryWrapper implements RedisConnectionFactory {
 
     private static InvocationHandler newInvocationHandler(RedisConnection connection, RedisContext redisContext, String sourceBeanName) {
         return new InterceptingRedisConnectionInvocationHandler(connection, redisContext, sourceBeanName);
+    }
+
+    @Override
+    public Object getDelegate() {
+        return delegate;
     }
 }

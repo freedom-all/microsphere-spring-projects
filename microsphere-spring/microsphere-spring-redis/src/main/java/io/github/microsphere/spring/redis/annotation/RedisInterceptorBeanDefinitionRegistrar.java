@@ -31,13 +31,11 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.commaDelimitedListToSet;
@@ -65,17 +63,17 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
 
         boolean exposeCommandEvent = (boolean) attributes.get("exposeCommandEvent");
 
-        Collection<String> wrapRedisTemplateBeanNames = wrapRedisTemplates == null ? emptyList() : asList(wrapRedisTemplates);
+        Set<String> wrapRedisTemplateBeanNames = resolveWrappedRedisTemplateBeanNames(wrapRedisTemplates);
 
         registerBeanDefinitions(wrapRedisTemplateBeanNames, exposeCommandEvent, registry);
     }
 
-    public void registerBeanDefinitions(Collection<String> wrapRedisTemplateBeanNames, boolean exposedCommandEvent, BeanDefinitionRegistry registry) {
+    public void registerBeanDefinitions(Set<String> wrappedRedisTemplateBeanNames, boolean exposedCommandEvent, BeanDefinitionRegistry registry) {
 
-        if (isEmpty(wrapRedisTemplateBeanNames)) {
+        if (isEmpty(wrappedRedisTemplateBeanNames)) {
             registerRedisConnectionFactoryWrapperBeanPostProcessor(registry);
         } else {
-            registerRedisTemplateWrapperBeanPostProcessor(wrapRedisTemplateBeanNames, registry);
+            registerRedisTemplateWrapperBeanPostProcessor(wrappedRedisTemplateBeanNames, registry);
         }
 
         registerWrapperProcessors(registry);
@@ -86,7 +84,12 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
         }
     }
 
-    private void registerRedisTemplateWrapperBeanPostProcessor(Iterable<String> wrapRedisTemplates, BeanDefinitionRegistry registry) {
+    private void registerRedisTemplateWrapperBeanPostProcessor(Set<String> wrappedRedisTemplateBeanNames, BeanDefinitionRegistry registry) {
+        registerBeanDefinition(registry, RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class, wrappedRedisTemplateBeanNames);
+
+    }
+
+    private Set<String> resolveWrappedRedisTemplateBeanNames(String[] wrapRedisTemplates) {
         Set<String> wrappedRedisTemplateBeanNames = new LinkedHashSet<>();
         for (String wrapRedisTemplate : wrapRedisTemplates) {
             String wrappedRedisTemplateBeanName = environment.resolveRequiredPlaceholders(wrapRedisTemplate);
@@ -98,9 +101,7 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
                 }
             }
         }
-        if (!wrappedRedisTemplateBeanNames.isEmpty()) {
-            registerBeanDefinition(registry, RedisTemplateWrapperBeanPostProcessor.BEAN_NAME, RedisTemplateWrapperBeanPostProcessor.class, wrappedRedisTemplateBeanNames);
-        }
+        return wrappedRedisTemplateBeanNames;
     }
 
     private void registerWrapperProcessors(BeanDefinitionRegistry registry) {

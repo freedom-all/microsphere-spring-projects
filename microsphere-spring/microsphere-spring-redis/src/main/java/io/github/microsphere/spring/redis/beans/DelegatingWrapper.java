@@ -37,7 +37,7 @@ public interface DelegatingWrapper extends Wrapper {
             return (T) this;
         } else {
             Object delegate = getDelegate();
-            if (delegate.getClass().isAssignableFrom(type)) {
+            if (type.isInstance(delegate)) {
                 return (T) delegate;
             }
         }

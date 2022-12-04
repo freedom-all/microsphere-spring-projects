@@ -1,6 +1,8 @@
-package io.github.microsphere.spring.redis.replicator.event;
+package io.github.microsphere.spring.redis.replicator;
 
+import io.github.microsphere.spring.redis.beans.Wrapper;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
+import io.github.microsphere.spring.redis.replicator.event.RedisCommandReplicatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -35,7 +37,17 @@ public class RedisCommandReplicator implements ApplicationListener<RedisCommandR
     private RedisConnectionFactory redisConnectionFactory;
 
     public RedisCommandReplicator(RedisConnectionFactory redisConnectionFactory) {
-        this.redisConnectionFactory = redisConnectionFactory;
+        this.redisConnectionFactory = resolveRedisConnectionFactory(redisConnectionFactory);
+    }
+
+    private RedisConnectionFactory resolveRedisConnectionFactory(RedisConnectionFactory redisConnectionFactory) {
+        if (redisConnectionFactory instanceof Wrapper) {
+            Wrapper wrapper = (Wrapper) redisConnectionFactory;
+            if (wrapper.isWrapperFor(RedisConnectionFactory.class)) {
+                return wrapper.unwrap(RedisConnectionFactory.class);
+            }
+        }
+        return redisConnectionFactory;
     }
 
     @Override
