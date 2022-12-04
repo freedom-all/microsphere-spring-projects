@@ -1,13 +1,9 @@
 package io.github.microsphere.spring.redis.replicator;
 
-import io.github.microsphere.spring.redis.beans.Wrapper;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.replicator.event.RedisCommandReplicatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -16,6 +12,7 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
+import static io.github.microsphere.spring.redis.beans.Wrapper.tryUnwrap;
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.findWriteCommandMethod;
 import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getRedisCommandBindingFunction;
 
@@ -26,28 +23,16 @@ import static io.github.microsphere.spring.redis.metadata.MethodMetadataReposito
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class RedisCommandReplicator implements ApplicationListener<RedisCommandReplicatedEvent>, ApplicationContextAware {
+public class RedisCommandReplicator implements ApplicationListener<RedisCommandReplicatedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisCommandReplicator.class);
 
     public static final String BEAN_NAME = "redisCommandReplicator";
 
-    private ApplicationContext applicationContext;
-
-    private RedisConnectionFactory redisConnectionFactory;
+    private final RedisConnectionFactory redisConnectionFactory;
 
     public RedisCommandReplicator(RedisConnectionFactory redisConnectionFactory) {
-        this.redisConnectionFactory = resolveRedisConnectionFactory(redisConnectionFactory);
-    }
-
-    private RedisConnectionFactory resolveRedisConnectionFactory(RedisConnectionFactory redisConnectionFactory) {
-        if (redisConnectionFactory instanceof Wrapper) {
-            Wrapper wrapper = (Wrapper) redisConnectionFactory;
-            if (wrapper.isWrapperFor(RedisConnectionFactory.class)) {
-                return wrapper.unwrap(RedisConnectionFactory.class);
-            }
-        }
-        return redisConnectionFactory;
+        this.redisConnectionFactory = tryUnwrap(redisConnectionFactory, RedisConnectionFactory.class);
     }
 
     @Override
@@ -74,19 +59,6 @@ public class RedisCommandReplicator implements ApplicationListener<RedisCommandR
     }
 
     private RedisConnection getRedisConnection() {
-        RedisConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
         return redisConnectionFactory.getConnection();
-    }
-
-    private RedisConnectionFactory getRedisConnectionFactory() {
-        if (redisConnectionFactory == null) {
-            redisConnectionFactory = applicationContext.getBean(RedisConnectionFactory.class);
-        }
-        return redisConnectionFactory;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

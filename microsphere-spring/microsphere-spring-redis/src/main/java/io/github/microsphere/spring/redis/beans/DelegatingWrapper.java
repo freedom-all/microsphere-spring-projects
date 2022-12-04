@@ -36,9 +36,8 @@ public interface DelegatingWrapper extends Wrapper {
         if (getClass().equals(type)) {
             return (T) this;
         } else {
-            Object delegate = getDelegate();
-            if (type.isInstance(delegate)) {
-                return (T) delegate;
+            if (isWrapperFor(type)) {
+                return (T) getDelegate();
             }
         }
         throw new IllegalArgumentException(getClass().getName() + " can't unwrap the given type '" + type.getName() + "'");

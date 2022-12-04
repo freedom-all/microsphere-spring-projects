@@ -41,7 +41,7 @@ public interface Wrapper {
      * @return an object of the given class. May be a proxy for the actual implementing object.
      * @throws IllegalArgumentException
      */
-    <T> T unwrap(java.lang.Class<T> type) throws IllegalArgumentException;
+    <T> T unwrap(Class<T> type) throws IllegalArgumentException;
 
     /**
      * Returns true if this either extends or implements the type argument or is directly or indirectly a wrapper
@@ -55,6 +55,24 @@ public interface Wrapper {
      * @param type the wrapped type
      * @return true if this extends or implements the type or directly or indirectly wraps an object that does
      */
-    boolean isWrapperFor(java.lang.Class<?> type);
+    boolean isWrapperFor(Class<?> type);
 
+
+    /**
+     * Try to unwrap the specified object and target type
+     *
+     * @param object maybe {@link Wrapper}
+     * @param type   target type
+     * @param <T>    target type
+     * @return unwrapped instance if possible, or the original object
+     */
+    static <T> T tryUnwrap(T object, Class<T> type) {
+        if (object instanceof Wrapper) {
+            Wrapper wrapper = (Wrapper) object;
+            if (wrapper.isWrapperFor(type)) {
+                return wrapper.unwrap(type);
+            }
+        }
+        return object;
+    }
 }
