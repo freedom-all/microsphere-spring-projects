@@ -1,5 +1,6 @@
 package io.github.microsphere.spring.redis.replicator.kafka.consumer;
 
+import io.github.microsphere.spring.redis.config.RedisConfiguration;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import io.github.microsphere.spring.redis.replicator.event.RedisCommandReplicatedEvent;
 import io.github.microsphere.spring.redis.replicator.kafka.KafkaRedisReplicatorConfiguration;
@@ -8,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -46,6 +48,8 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
 
     public static final String KAFKA_LISTENER_CONCURRENCY_PROPERTY_NAME = KAFKA_LISTENER_PROPERTY_NAME_PREFIX + "concurrency";
 
+    public static final String KAFKA_CONSUMER_GROUP_ID_PREFIX = "Redis-Replicator-";
+
     public static final boolean DEFAULT_KAFKA_CONSUMER_ENABLED = true;
 
     public static final int DEFAULT_KAFKA_LISTENER_POLL_TIMEOUT = 10000;
@@ -65,6 +69,9 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
     private int listenerConcurrency;
 
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private RedisConfiguration redisConfiguration;
 
     public static boolean isEnabled(ApplicationContext applicationContext) {
         return getBoolean(applicationContext, KAFKA_CONSUMER_ENABLED_PROPERTY_NAME, DEFAULT_KAFKA_CONSUMER_ENABLED, "Kafka Consumer", "enabled");
@@ -139,7 +146,7 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
         // Kafka bootstrap servers
         consumerConfigs.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
         // Kafka consumer group id
-        consumerConfigs.put(GROUP_ID_CONFIG, "test-1");
+        consumerConfigs.put(GROUP_ID_CONFIG, getConsumerGroupId());
 
         // Kafka Common properties
         consumerConfigs.putAll(getSubProperties(environment, KAFKA_PROPERTY_NAME_PREFIX));
@@ -156,6 +163,10 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
 
     private Map<String, Object> getConsumerConfigs() {
         return consumerConfigs;
+    }
+
+    private String getConsumerGroupId() {
+        return KAFKA_CONSUMER_GROUP_ID_PREFIX + redisConfiguration.getApplicationName();
     }
 
     @Override
