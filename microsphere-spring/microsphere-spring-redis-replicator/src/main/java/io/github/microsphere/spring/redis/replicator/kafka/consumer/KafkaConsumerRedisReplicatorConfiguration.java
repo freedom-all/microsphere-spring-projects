@@ -13,7 +13,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.BatchAcknowledgingMessageListener;
@@ -108,18 +107,16 @@ public class KafkaConsumerRedisReplicatorConfiguration extends KafkaRedisReplica
             RedisCommandEvent redisCommandEvent = Serializers.deserialize(value, RedisCommandEvent.class);
             RedisCommandReplicatedEvent redisCommandReplicatedEvent = createRedisCommandReplicatedEvent(redisCommandEvent, consumerRecord);
             applicationEventPublisher.publishEvent(redisCommandReplicatedEvent);
-            logger.debug("[Redis-Replicator-Kafka-c-s] Processing Redis Replicator message succeeded. Topic: {}, key: {}, data size: {} bytes, partition: {}", consumerRecord.topic(), key, value.length, partition);
+            logger.debug("[Redis-Replicator-Kafka-C-S] Processing Redis Replicator message succeeded. Topic: {}, key: {}, data size: {} bytes, partition: {}", consumerRecord.topic(), key, value.length, partition);
         } catch (Throwable e) {
-            logger.warn("[redis-Replicator-Kafka-c-f] fails to process a Redis Replicator message. Topic: {}, key: {}, data size: {} bytes, partition: {}", consumerRecord.topic(), key, value.length, partition, e);
+            logger.warn("[Redis-Replicator-Kafka-C-F] fails to process a Redis Replicator message. Topic: {}, key: {}, data size: {} bytes, partition: {}", consumerRecord.topic(), key, value.length, partition, e);
         }
     }
 
     private RedisCommandReplicatedEvent createRedisCommandReplicatedEvent(RedisCommandEvent redisCommandEvent, ConsumerRecord<byte[], byte[]> consumerRecord) {
-        RedisCommandReplicatedEvent redisCommandReplicatedEvent = new RedisCommandReplicatedEvent(redisCommandEvent);
         String topic = consumerRecord.topic();
         String domain = getDomain(topic);
-        redisCommandReplicatedEvent.setDomain(domain);
-        return redisCommandReplicatedEvent;
+        return new RedisCommandReplicatedEvent(redisCommandEvent, domain);
     }
 
     private ConsumerFactory<byte[], byte[]> redisReplicatorConsumerFactory() {

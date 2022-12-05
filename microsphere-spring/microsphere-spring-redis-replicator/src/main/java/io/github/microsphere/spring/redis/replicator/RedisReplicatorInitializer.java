@@ -11,6 +11,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.List;
 
+import static io.github.microsphere.spring.util.BeanRegistrar.registerBeanDefinition;
 import static org.springframework.core.io.support.SpringFactoriesLoader.loadFactories;
 
 /**
@@ -54,7 +55,7 @@ public class RedisReplicatorInitializer implements RedisModuleInitializer {
     }
 
     private void registerRedisCommandReplicator(BeanDefinitionRegistry registry) {
-        BeanRegistrar.registerBeanDefinition(registry, RedisCommandReplicator.BEAN_NAME, RedisCommandReplicator.class);
+        registerBeanDefinition(registry, RedisCommandReplicator.BEAN_NAME, RedisCommandReplicator.class);
     }
 
     private RedisReplicatorConfiguration createRedisReplicatorConfiguration(ConfigurableApplicationContext context) {

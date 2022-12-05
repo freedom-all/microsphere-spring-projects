@@ -28,21 +28,13 @@ import org.springframework.context.ApplicationEvent;
  */
 public class RedisCommandReplicatedEvent extends ApplicationEvent {
 
-    private static final long serialVersionUID = -1L;
-
-    private final transient RedisCommandEvent sourceEvent;
-
     /**
      * Business domain (non-serialized field, initialized by the consumer)
      */
-    private transient String domain;
+    private transient final String domain;
 
-    public RedisCommandReplicatedEvent(RedisCommandEvent sourceEvent) {
+    public RedisCommandReplicatedEvent(RedisCommandEvent sourceEvent, String domain) {
         super(sourceEvent);
-        this.sourceEvent = sourceEvent;
-    }
-
-    public void setDomain(String domain) {
         this.domain = domain;
     }
 
@@ -54,6 +46,6 @@ public class RedisCommandReplicatedEvent extends ApplicationEvent {
     }
 
     public RedisCommandEvent getSourceEvent() {
-        return sourceEvent;
+        return (RedisCommandEvent) getSource();
     }
 }
