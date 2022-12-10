@@ -34,6 +34,11 @@ public class RedisCommandEventSerializerTest extends AbstractSerializerTest<Redi
 
     @Override
     protected RedisCommandEvent getValue() {
-        return new RedisCommandEvent("RedisStringCommands", "set", new String[]{"[b", "[b"}, new byte[][]{"A".getBytes(), "B".getBytes()}, "test");
+        String interfaceName = "org.springframework.data.redis.connection.RedisStringCommands";
+        String methodName = "set";
+        String[] parameterTypes = new String[]{"[b", "[b"};
+        byte[][] parameters = new byte[][]{"A".getBytes(), "B".getBytes()};
+        String sourceApplication = "test";
+        return new RedisCommandEvent(interfaceName, methodName, parameterTypes, parameters, sourceApplication);
     }
 }
