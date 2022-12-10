@@ -55,7 +55,13 @@ import java.util.StringJoiner;
  */
 public class RedisCommandEvent extends ApplicationEvent {
 
-    private static final long serialVersionUID = -1L;
+    public static final byte VERSION_1 = 1;
+
+    /**
+     * Serialization Version
+     */
+    public static final byte SERIALIZATION_VERSION = VERSION_1;
+
 
     private static final String REDIS_COMMANDS_PACKAGE_NAME = "org.springframework.data.redis.connection.";
 
@@ -262,8 +268,7 @@ public class RedisCommandEvent extends ApplicationEvent {
 
         RedisCommandEvent that = (RedisCommandEvent) o;
 
-        if (!Objects.equals(interfaceName, that.interfaceName))
-            return false;
+        if (!Objects.equals(interfaceName, that.interfaceName)) return false;
         if (!Objects.equals(methodName, that.methodName)) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(parameterTypes, that.parameterTypes)) return false;
@@ -283,13 +288,6 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RedisCommandEvent.class.getSimpleName() + "[", "]")
-                .add("interfaceName='" + interfaceName + "'")
-                .add("methodName='" + methodName + "'")
-                .add("parameterCount=" + parameterCount)
-                .add("parameterTypes=" + Arrays.toString(parameterTypes))
-                .add("parameters=" + Arrays.toString(parameters))
-                .add("sourceApplication='" + sourceApplication + "'")
-                .toString();
+        return new StringJoiner(", ", RedisCommandEvent.class.getSimpleName() + "[", "]").add("interfaceName='" + interfaceName + "'").add("methodName='" + methodName + "'").add("parameterCount=" + parameterCount).add("parameterTypes=" + Arrays.toString(parameterTypes)).add("parameters=" + Arrays.toString(parameters)).add("sourceApplication='" + sourceApplication + "'").toString();
     }
 }
