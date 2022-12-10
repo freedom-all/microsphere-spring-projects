@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import static io.github.microsphere.spring.redis.event.RedisCommandEvent.SERIALIZATION_VERSION;
 import static io.github.microsphere.spring.redis.event.RedisCommandEvent.VERSION_1;
+import static io.github.microsphere.spring.redis.event.RedisCommandEvent.VERSION_DEFAULT;
 import static io.github.microsphere.spring.redis.serializer.RedisCommandEventSerializer.VersionedRedisSerializer.valueOf;
 import static io.github.microsphere.spring.redis.serializer.Serializers.defaultSerializer;
 
@@ -45,7 +46,11 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
     private static final RedisSerializer<RedisCommandEvent> delegate = findDelegate();
 
     private static RedisSerializer<RedisCommandEvent> findDelegate() {
-        return valueOf(SERIALIZATION_VERSION);
+        return findDelegate(SERIALIZATION_VERSION);
+    }
+
+    private static RedisSerializer<RedisCommandEvent> findDelegate(byte version) {
+        return valueOf(version);
     }
 
     @Override
@@ -56,14 +61,13 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
     @Override
     protected RedisCommandEvent doDeserialize(byte[] bytes) throws SerializationException {
         byte version = bytes[0];
-        RedisSerializer<RedisCommandEvent> delegate = valueOf(version);
+        RedisSerializer<RedisCommandEvent> delegate = findDelegate(version);
         return delegate.deserialize(bytes);
     }
 
-
     enum VersionedRedisSerializer implements RedisSerializer<RedisCommandEvent> {
 
-        DEFAULT(-1) {
+        DEFAULT(VERSION_DEFAULT) {
             @Override
             public byte[] serialize(RedisCommandEvent redisCommandEvent) throws SerializationException {
                 return defaultSerializer.serialize(redisCommandEvent);
