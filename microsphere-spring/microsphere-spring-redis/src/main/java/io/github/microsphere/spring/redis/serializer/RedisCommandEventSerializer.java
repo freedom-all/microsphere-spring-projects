@@ -136,7 +136,7 @@ public class RedisCommandEventSerializer implements RedisSerializer<RedisCommand
                 int parameterCount = parameters.length;
                 for (int i = 0; i < parameterCount; i++) {
                     byte[] parameter = parameters[i];
-                    outputStream.write(parameter);
+                    writeBytes(parameter, outputStream);
                 }
             }
 
