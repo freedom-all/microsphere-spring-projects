@@ -40,7 +40,7 @@ import static io.github.microsphere.spring.redis.serializer.Serializers.defaultS
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class RedisCommandEventSerializer implements RedisSerializer<RedisCommandEvent> {
+public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommandEvent> {
 
     private static final RedisSerializer<RedisCommandEvent> delegate = findDelegate();
 
@@ -49,18 +49,14 @@ public class RedisCommandEventSerializer implements RedisSerializer<RedisCommand
     }
 
     @Override
-    public byte[] serialize(RedisCommandEvent redisCommandEvent) throws SerializationException {
-        if (redisCommandEvent == null) {
-            return null;
-        }
+    protected byte[] doSerialize(RedisCommandEvent redisCommandEvent) throws SerializationException {
         return delegate.serialize(redisCommandEvent);
     }
 
     @Override
-    public RedisCommandEvent deserialize(byte[] bytes) throws SerializationException {
-        if (bytes == null || bytes.length < 1) {
-            return null;
-        }
+    protected RedisCommandEvent doDeserialize(byte[] bytes) throws SerializationException {
+        byte version = bytes[0];
+        RedisSerializer<RedisCommandEvent> delegate = valueOf(version);
         return delegate.deserialize(bytes);
     }
 
@@ -166,11 +162,9 @@ public class RedisCommandEventSerializer implements RedisSerializer<RedisCommand
 
             @Override
             public RedisCommandEvent deserialize(byte[] bytes) throws SerializationException {
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes, 1, bytes.length);
                 RedisCommandEvent redisCommandEvent = null;
                 try {
-                    // read version
-                    int version = inputStream.read();
                     // read interfaceName
                     String interfaceName = readInterfaceName(inputStream);
                     // read methodName
@@ -243,10 +237,8 @@ public class RedisCommandEventSerializer implements RedisSerializer<RedisCommand
         }
 
         static RedisSerializer<RedisCommandEvent> valueOf(byte version) {
-            for (VersionedRedisSerializer redisSerializer : VersionedRedisSerializer.values()) {
-                if (redisSerializer.version == version) {
-                    return redisSerializer;
-                }
+            if (VERSION_1 == version) {
+                return V1;
             }
             return VersionedRedisSerializer.DEFAULT;
         }
