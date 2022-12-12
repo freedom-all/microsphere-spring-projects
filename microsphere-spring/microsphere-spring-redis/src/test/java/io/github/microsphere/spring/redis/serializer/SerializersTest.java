@@ -2,7 +2,12 @@ package io.github.microsphere.spring.redis.serializer;
 
 import org.junit.Test;
 import org.springframework.data.geo.Point;
-import org.springframework.data.redis.connection.*;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisListCommands;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.connection.ReturnType;
+import org.springframework.data.redis.connection.SortParameters;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
@@ -10,8 +15,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.microsphere.spring.redis.serializer.Serializers.*;
-import static org.junit.Assert.*;
+import static io.github.microsphere.spring.redis.serializer.Serializers.defaultSerializer;
+import static io.github.microsphere.spring.redis.serializer.Serializers.getSerializer;
+import static io.github.microsphere.spring.redis.serializer.Serializers.stringSerializer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 /**
  * {@link Serializers} Test

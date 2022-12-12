@@ -17,7 +17,6 @@
 package io.github.microsphere.spring.redis.context;
 
 import io.github.microsphere.spring.redis.AbstractRedisCommandEventTest;
-import io.github.microsphere.spring.redis.AbstractRedisTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 

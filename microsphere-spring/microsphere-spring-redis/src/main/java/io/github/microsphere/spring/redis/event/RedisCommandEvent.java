@@ -57,6 +57,8 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  */
 public class RedisCommandEvent extends ApplicationEvent {
 
+    public static final byte VERSION_DEFAULT = -1;
+
     public static final byte VERSION_1 = 1;
 
     /**
@@ -102,7 +104,8 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     private transient RedisContext redisContext;
 
-    private transient @Nullable RedisMethodContext redisMethodContext;
+    private transient @Nullable
+    RedisMethodContext redisMethodContext;
 
     private transient ClassLoader classLoader;
 
