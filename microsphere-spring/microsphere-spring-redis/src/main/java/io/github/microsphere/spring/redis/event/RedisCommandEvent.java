@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+import static org.springframework.util.ClassUtils.resolveClassName;
+
 
 /**
  * {@link RedisCommands Redis command} event
@@ -65,7 +67,9 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     private static final String REDIS_COMMANDS_PACKAGE_NAME = "org.springframework.data.redis.connection.";
 
-    private static final ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
+    private static final int REDIS_COMMANDS_PACKAGE_NAME_LENGTH = REDIS_COMMANDS_PACKAGE_NAME.length();
+
+    private static final ClassLoader DEFAULT_CLASS_LOADER = ClassUtils.getDefaultClassLoader();
 
     /**
      * Command interface simple name, such as：
@@ -100,9 +104,11 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     private transient @Nullable RedisMethodContext redisMethodContext;
 
+    private transient ClassLoader classLoader;
+
     public RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
         super("default");
-        this.interfaceName = interfaceName;
+        this.interfaceName = resolveInterfaceName(interfaceName);
         this.methodName = methodName;
         this.parameterTypes = parameterTypes;
         this.parameterCount = parameterTypes.length;
@@ -135,17 +141,41 @@ public class RedisCommandEvent extends ApplicationEvent {
     private String resolveInterfaceName(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
         String className = declaringClass.getName();
-        if (className.startsWith(REDIS_COMMANDS_PACKAGE_NAME)) {
-            return className.substring(REDIS_COMMANDS_PACKAGE_NAME.length());
+        return resolveInterfaceName(className);
+    }
+
+    private String resolveInterfaceName(String className) {
+        int index = className.indexOf(REDIS_COMMANDS_PACKAGE_NAME);
+        if (index == 0) {
+            className = className.substring(REDIS_COMMANDS_PACKAGE_NAME_LENGTH);
         }
         return className;
     }
 
+    /**
+     * @return Command interface simple name, such as：
+     * <ul>
+     *     <li>"RedisStringCommands"</li>
+     *     <li>"RedisHashCommands"</li>
+     * </ul>
+     */
     public String getInterfaceName() {
-        if (interfaceName.contains(".")) {
-            return interfaceName;
+        return interfaceName;
+    }
+
+    /**
+     * @return Command interface name, such as：
+     * <ul>
+     *     <li>"org.springframework.data.redis.connection.RedisStringCommands"</li>
+     *     <li>"org.springframework.data.redis.connection.RedisHashCommands"</li>
+     * </ul>
+     */
+    public String getRawInterfaceName() {
+        String interfaceName = this.interfaceName;
+        if (interfaceName.indexOf('.') == -1) {
+            return REDIS_COMMANDS_PACKAGE_NAME + interfaceName;
         }
-        return REDIS_COMMANDS_PACKAGE_NAME + interfaceName;
+        return interfaceName;
     }
 
     public String getMethodName() {
@@ -181,8 +211,13 @@ public class RedisCommandEvent extends ApplicationEvent {
      * @return The parameter type
      */
     public Class<?> getParameterClass(int parameterIndex) {
-        String parameterType = getParameterType(parameterIndex);
-        return ClassUtils.resolveClassName(parameterType, classLoader);
+        if (redisMethodContext == null) {
+            String parameterType = getParameterType(parameterIndex);
+            ClassLoader classLoader = getClassLoader();
+            return resolveClassName(parameterType, classLoader);
+        } else {
+            return getParameterClasses()[parameterIndex];
+        }
     }
 
     /**
@@ -191,12 +226,17 @@ public class RedisCommandEvent extends ApplicationEvent {
      * @return All parameter Types
      */
     public Class<?>[] getParameterClasses() {
-        int parameterCount = getParameterCount();
-        Class<?>[] parameterClasses = new Class[parameterCount];
-        for (int i = 0; i < parameterCount; i++) {
-            parameterClasses[i] = getParameterClass(i);
+        RedisMethodContext redisMethodContext = this.redisMethodContext;
+        if (redisMethodContext == null) {
+            int parameterCount = getParameterCount();
+            Class<?>[] parameterClasses = new Class[parameterCount];
+            for (int i = 0; i < parameterCount; i++) {
+                parameterClasses[i] = getParameterClass(i);
+            }
+            return parameterClasses;
+        } else {
+            return redisMethodContext.getMethod().getParameterTypes();
         }
-        return parameterClasses;
     }
 
     /**
@@ -238,27 +278,33 @@ public class RedisCommandEvent extends ApplicationEvent {
      * @return Source Bean name
      */
     public String getSourceBeanName() {
-        return getRedisMethodContext().getSourceBeanName();
+        RedisMethodContext redisMethodContext = this.redisMethodContext;
+        return redisMethodContext == null ? null : redisMethodContext.getSourceBeanName();
     }
 
     public RedisContext getRedisContext() {
         RedisContext redisContext = this.redisContext;
         if (redisContext == null) {
-            return redisMethodContext.getRedisContext();
+            RedisMethodContext redisMethodContext = this.redisMethodContext;
+            if (redisMethodContext != null) {
+                return redisMethodContext.getRedisContext();
+            }
         }
         return redisContext;
-    }
-
-    public void setRedisContext(RedisContext redisContext) {
-        this.redisContext = redisContext;
     }
 
     public RedisMethodContext getRedisMethodContext() {
         return redisMethodContext;
     }
 
-    public void setRedisMethodContext(RedisMethodContext redisMethodContext) {
-        this.redisMethodContext = redisMethodContext;
+    public ClassLoader getClassLoader() {
+        ClassLoader classLoader = this.classLoader;
+        if (classLoader == null) {
+            RedisContext redisContext = getRedisContext();
+            classLoader = redisContext == null ? DEFAULT_CLASS_LOADER : redisContext.getClassLoader();
+            this.classLoader = classLoader;
+        }
+        return classLoader;
     }
 
     @Override

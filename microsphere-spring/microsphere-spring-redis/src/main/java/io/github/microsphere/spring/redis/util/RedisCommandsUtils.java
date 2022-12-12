@@ -91,7 +91,7 @@ public abstract class RedisCommandsUtils {
     }
 
     public static String buildCommandMethodId(RedisCommandEvent event) {
-        return buildCommandMethodId(event.getInterfaceName(), event.getMethodName(), event.getParameterTypes());
+        return buildCommandMethodId(event.getRawInterfaceName(), event.getMethodName(), event.getParameterTypes());
     }
 
     public static String buildCommandMethodId(String interfaceName, String methodName, Class<?>... parameterTypes) {

@@ -48,7 +48,7 @@ public class RedisCommandReplicator implements ApplicationListener<RedisCommandR
         RedisCommandEvent redisCommandEvent = event.getSourceEvent();
         Method method = findWriteCommandMethod(redisCommandEvent);
         if (method != null) {
-            String interfaceNme = redisCommandEvent.getInterfaceName();
+            String interfaceNme = redisCommandEvent.getRawInterfaceName();
             RedisConnection redisConnection = getRedisConnection();
             Object[] parameters = redisCommandEvent.getObjectParameters();
             Function<RedisConnection, Object> bindingFunction = getRedisCommandBindingFunction(interfaceNme);
