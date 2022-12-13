@@ -6,6 +6,9 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.core.ResolvableType.forType;
 
 /**
  * Abstract {@link RedisSerializer} Test
@@ -36,6 +39,15 @@ public abstract class AbstractSerializerTest<T> {
         } else {
             assertEquals(value, deserialized);
         }
+
+        Class<?> targetType = serializer.getTargetType();
+        Class<?> parameterType = forType(getClass()).getSuperType().getGeneric(0).resolve();
+        assertSame(targetType, parameterType);
+        assertTrue(serializer.canSerialize(parameterType));
+        assertTrue(serializer instanceof AbstractSerializer);
+
+        AbstractSerializer abstractSerializer = (AbstractSerializer) serializer;
+        assertSame(targetType, abstractSerializer.getParameterizedClass());
     }
 
     protected Object getTestData(T value) {

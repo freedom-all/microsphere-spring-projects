@@ -17,10 +17,14 @@
 package io.github.microsphere.spring.redis.metadata;
 
 import org.junit.Test;
-import org.springframework.data.redis.core.ValueOperations;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * {@link MethodMetadataRepository} Test
@@ -37,11 +41,35 @@ public class MethodMetadataRepositoryTest {
 
     @Test
     public void test() {
-        for (Method method : ValueOperations.class.getMethods()) {
-            for (int i = 0; i < method.getParameterCount(); i++) {
-                Parameter param = method.getParameters()[i];
-                System.out.println(param.getName());
+        Set<String> methodNames = new TreeSet<>();
+        Set<Type> types = new TreeSet<>(Comparator.comparing(Type::getTypeName));
+        for (Method method : MethodMetadataRepository.getWriteCommandMethods()) {
+            types.add(method.getDeclaringClass());
+            for (Type parameterType : method.getGenericParameterTypes()) {
+                types.addAll(findTypes(parameterType));
             }
+            methodNames.add(method.getName());
         }
+
+        types.forEach(type -> {
+            System.out.println(type.getTypeName());
+        });
+
+        methodNames.forEach(System.out::println);
+
+    }
+
+    private Set<Type> findTypes(Type type) {
+        Set<Type> types = new HashSet<>();
+        if (type instanceof ParameterizedType) {
+            ParameterizedType pType = (ParameterizedType) type;
+            types.add(pType.getRawType());
+            for (Type t : pType.getActualTypeArguments()) {
+                types.addAll(findTypes(t));
+            }
+        } else if (type instanceof Class) {
+            types.add(type);
+        }
+        return types;
     }
 }
