@@ -95,7 +95,7 @@ public class MethodMetadataRepository {
     }
 
     public static Method findWriteCommandMethod(RedisCommandEvent event) {
-        String interfaceNme = event.getRawInterfaceName();
+        String interfaceNme = event.getInterfaceName();
         String methodName = event.getMethodName();
         String[] parameterTypes = event.getParameterTypes();
         Method method = getWriteCommandMethod(interfaceNme, methodName, parameterTypes);

@@ -70,7 +70,7 @@ public class KafkaRedisReplicatorModuleInitializerTest extends AbstractRedisRepl
             Object value = valueSerializer.deserialize((byte[]) redisCommandEvent.getObjectParameter(1));
             data.put(key, value);
 
-            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", redisCommandEvent.getRawInterfaceName());
+            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", redisCommandEvent.getInterfaceName());
             assertEquals("set", redisCommandEvent.getMethodName());
             assertArrayEquals(new String[]{"[B", "[B"}, redisCommandEvent.getParameterTypes());
             assertEquals("default", redisCommandEvent.getSourceApplication());

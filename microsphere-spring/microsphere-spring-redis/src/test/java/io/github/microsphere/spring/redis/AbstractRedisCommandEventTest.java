@@ -66,8 +66,7 @@ public abstract class AbstractRedisCommandEventTest extends AbstractRedisTest {
             data.put(key, value);
 
             // assert interface name
-            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getRawInterfaceName());
-            assertEquals("RedisStringCommands", event.getInterfaceName());
+            assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getInterfaceName());
 
             // assert method name
             assertEquals("set", event.getMethodName());

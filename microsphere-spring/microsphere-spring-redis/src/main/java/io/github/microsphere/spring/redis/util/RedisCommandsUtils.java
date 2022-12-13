@@ -30,58 +30,80 @@ public abstract class RedisCommandsUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisCommandsUtils.class);
 
+    private static final String REDIS_COMMANDS_PACKAGE_NAME = "org.springframework.data.redis.connection.";
+
+    private static final int REDIS_COMMANDS_PACKAGE_NAME_LENGTH = REDIS_COMMANDS_PACKAGE_NAME.length();
+
     private static final ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
 
-    public static final String REDIS_GEO_COMMANDS = "RedisGeoCommands";
+    public static final String REDIS_GEO_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisGeoCommands";
 
-    public static final String REDIS_HASH_COMMANDS = "RedisHashCommands";
+    public static final String REDIS_HASH_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisHashCommands";
 
-    public static final String REDIS_HYPER_LOG_LOG_COMMANDS = "RedisHyperLogLogCommands";
+    public static final String REDIS_HYPER_LOG_LOG_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisHyperLogLogCommands";
 
-    public static final String REDIS_KEY_COMMANDS = "RedisKeyCommands";
+    public static final String REDIS_KEY_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisKeyCommands";
 
-    public static final String REDIS_LIST_COMMANDS = "RedisListCommands";
+    public static final String REDIS_LIST_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisListCommands";
 
-    public static final String REDIS_SET_COMMANDS = "RedisSetCommands";
+    public static final String REDIS_SET_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisSetCommands";
 
-    public static final String REDIS_SCRIPTING_COMMANDS = "RedisScriptingCommands";
+    public static final String REDIS_SCRIPTING_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisScriptingCommands";
 
-    public static final String REDIS_SERVER_COMMANDS = "RedisServerCommands";
+    public static final String REDIS_SERVER_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisServerCommands";
 
-    public static final String REDIS_STREAM_COMMANDS = "RedisStreamCommands";
+    public static final String REDIS_STREAM_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisStreamCommands";
 
-    public static final String REDIS_STRING_COMMANDS = "RedisStringCommands";
+    public static final String REDIS_STRING_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisStringCommands";
 
-    public static final String REDIS_ZSET_COMMANDS = "RedisZSetCommands";
+    public static final String REDIS_ZSET_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisZSetCommands";
 
-    public static final String REDIS_TX_COMMANDS = "RedisTxCommands";
+    public static final String REDIS_TX_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisTxCommands";
 
-    public static final String REDIS_PUB_SUB_COMMANDS = "RedisPubSubCommands";
+    public static final String REDIS_PUB_SUB_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisPubSubCommands";
 
-    public static final String REDIS_CONNECTION_COMMANDS = "RedisConnectionCommands";
+    public static final String REDIS_CONNECTION_COMMANDS_INTERFACE_NAME = "org.springframework.data.redis.connection.RedisConnectionCommands";
+
+    public static String resolveSimpleInterfaceName(String interfaceName) {
+        int index = interfaceName.indexOf(REDIS_COMMANDS_PACKAGE_NAME);
+        if (index == 0) {
+            return interfaceName.substring(REDIS_COMMANDS_PACKAGE_NAME_LENGTH);
+        } else {
+            return interfaceName;
+        }
+    }
+
+    public static String resolveInterfaceName(String interfaceName) {
+        int index = interfaceName.indexOf('.');
+        if (index == -1) {
+            return REDIS_COMMANDS_PACKAGE_NAME + interfaceName;
+        } else {
+            return interfaceName;
+        }
+    }
 
     public static Object getRedisCommands(RedisConnection redisConnection, String interfaceName) {
         switch (interfaceName) {
-            case REDIS_STRING_COMMANDS:
+            case REDIS_STRING_COMMANDS_INTERFACE_NAME:
                 return redisConnection.stringCommands();
-            case REDIS_HASH_COMMANDS:
+            case REDIS_HASH_COMMANDS_INTERFACE_NAME:
                 return redisConnection.hashCommands();
-            case REDIS_LIST_COMMANDS:
+            case REDIS_LIST_COMMANDS_INTERFACE_NAME:
                 return redisConnection.listCommands();
-            case REDIS_SET_COMMANDS:
+            case REDIS_SET_COMMANDS_INTERFACE_NAME:
                 return redisConnection.setCommands();
-            case REDIS_ZSET_COMMANDS:
+            case REDIS_ZSET_COMMANDS_INTERFACE_NAME:
                 return redisConnection.zSetCommands();
-            case REDIS_KEY_COMMANDS:
+            case REDIS_KEY_COMMANDS_INTERFACE_NAME:
                 return redisConnection.keyCommands();
-            case REDIS_SCRIPTING_COMMANDS:
+            case REDIS_SCRIPTING_COMMANDS_INTERFACE_NAME:
                 return redisConnection.scriptingCommands();
 
-            case REDIS_GEO_COMMANDS:
+            case REDIS_GEO_COMMANDS_INTERFACE_NAME:
                 return redisConnection.geoCommands();
-            case REDIS_SERVER_COMMANDS:
+            case REDIS_SERVER_COMMANDS_INTERFACE_NAME:
                 return redisConnection.serverCommands();
-            case REDIS_STREAM_COMMANDS:
+            case REDIS_STREAM_COMMANDS_INTERFACE_NAME:
                 // TODO The Redis Spring Data version needs to be upgraded
                 // return redisConnection.streamCommands();
             default:
@@ -91,7 +113,7 @@ public abstract class RedisCommandsUtils {
     }
 
     public static String buildCommandMethodId(RedisCommandEvent event) {
-        return buildCommandMethodId(event.getRawInterfaceName(), event.getMethodName(), event.getParameterTypes());
+        return buildCommandMethodId(event.getInterfaceName(), event.getMethodName(), event.getParameterTypes());
     }
 
     public static String buildCommandMethodId(String interfaceName, String methodName, Class<?>... parameterTypes) {

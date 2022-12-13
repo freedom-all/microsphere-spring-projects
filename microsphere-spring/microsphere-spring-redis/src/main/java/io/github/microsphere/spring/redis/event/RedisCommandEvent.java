@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+import static io.github.microsphere.spring.redis.serializer.RedisCommandEventSerializer.VERSION_1;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 
@@ -57,26 +58,19 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  */
 public class RedisCommandEvent extends ApplicationEvent {
 
-    public static final byte VERSION_DEFAULT = -1;
-
-    public static final byte VERSION_1 = 1;
-
     /**
      * Serialization Version
      */
     public static final byte SERIALIZATION_VERSION = VERSION_1;
 
-
-    private static final String REDIS_COMMANDS_PACKAGE_NAME = "org.springframework.data.redis.connection.";
-
-    private static final int REDIS_COMMANDS_PACKAGE_NAME_LENGTH = REDIS_COMMANDS_PACKAGE_NAME.length();
-
     private static final ClassLoader DEFAULT_CLASS_LOADER = ClassUtils.getDefaultClassLoader();
 
     /**
-     * Command interface simple name, such as：
-     * RedisStringCommands
-     * RedisHashCommands
+     * Command interface name, such as：
+     * <ul>
+     *     <li>"org.springframework.data.redis.connection.RedisStringCommands"</li>
+     *     <li>"org.springframework.data.redis.connection.RedisHashCommands"</li>
+     * </ul>
      */
     private final String interfaceName;
 
@@ -111,7 +105,7 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     public RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
         super("default");
-        this.interfaceName = resolveInterfaceName(interfaceName);
+        this.interfaceName = interfaceName;
         this.methodName = methodName;
         this.parameterTypes = parameterTypes;
         this.parameterCount = parameterTypes.length;
@@ -144,27 +138,9 @@ public class RedisCommandEvent extends ApplicationEvent {
     private String resolveInterfaceName(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
         String className = declaringClass.getName();
-        return resolveInterfaceName(className);
-    }
-
-    private String resolveInterfaceName(String className) {
-        int index = className.indexOf(REDIS_COMMANDS_PACKAGE_NAME);
-        if (index == 0) {
-            className = className.substring(REDIS_COMMANDS_PACKAGE_NAME_LENGTH);
-        }
         return className;
     }
 
-    /**
-     * @return Command interface simple name, such as：
-     * <ul>
-     *     <li>"RedisStringCommands"</li>
-     *     <li>"RedisHashCommands"</li>
-     * </ul>
-     */
-    public String getInterfaceName() {
-        return interfaceName;
-    }
 
     /**
      * @return Command interface name, such as：
@@ -173,11 +149,7 @@ public class RedisCommandEvent extends ApplicationEvent {
      *     <li>"org.springframework.data.redis.connection.RedisHashCommands"</li>
      * </ul>
      */
-    public String getRawInterfaceName() {
-        String interfaceName = this.interfaceName;
-        if (interfaceName.indexOf('.') == -1) {
-            return REDIS_COMMANDS_PACKAGE_NAME + interfaceName;
-        }
+    public String getInterfaceName() {
         return interfaceName;
     }
 
@@ -283,6 +255,11 @@ public class RedisCommandEvent extends ApplicationEvent {
     public String getSourceBeanName() {
         RedisMethodContext redisMethodContext = this.redisMethodContext;
         return redisMethodContext == null ? null : redisMethodContext.getSourceBeanName();
+    }
+
+    public byte getSerializationVersion() {
+        // TODO
+        return SERIALIZATION_VERSION;
     }
 
     public RedisContext getRedisContext() {
