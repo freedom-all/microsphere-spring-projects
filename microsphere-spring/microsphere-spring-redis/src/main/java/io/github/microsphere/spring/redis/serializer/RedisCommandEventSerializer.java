@@ -112,22 +112,8 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             }
 
             @Override
-            protected String readInterfaceName(InputStream inputStream) throws IOException {
-                return readString(inputStream);
-            }
-
-            @Override
             protected String readMethodName(InputStream inputStream) throws IOException {
                 return readString(inputStream);
-            }
-
-            @Override
-            protected String[] readParameterTypes(InputStream inputStream, int parameterCount) throws IOException {
-                String[] parameterTypes = new String[parameterCount];
-                for (int i = 0; i < parameterCount; i++) {
-                    parameterTypes[i] = readString(inputStream);
-                }
-                return parameterTypes;
             }
         };
 
@@ -227,6 +213,7 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
         }
 
         protected void writeType(String type, OutputStream outputStream) throws IOException {
+            throw new UnsupportedOperationException();
         }
 
         protected void writeString(String value, OutputStream outputStream) throws IOException {
