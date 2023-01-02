@@ -85,36 +85,10 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
         },
 
         V1(VERSION_1) {
-            @Override
-            protected void writeMethodName(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
-                writeString(redisCommandEvent.getMethodName(), outputStream);
-            }
-
-            protected void writeType(String type, OutputStream outputStream) throws IOException {
-                writeString(resolveSimpleInterfaceName(type), outputStream);
-            }
-
-            @Override
-            protected String readType(InputStream inputStream) throws IOException {
-                String type = readString(inputStream);
-                return resolveInterfaceName(type);
-            }
-
-            @Override
-            protected String readMethodName(InputStream inputStream) throws IOException {
-                return readString(inputStream);
-            }
         },
 
         V2(VERSION_2) {
-            @Override
-            protected void writeMethodName(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
-            }
 
-            @Override
-            protected String readMethodName(InputStream inputStream) throws IOException {
-                return readString(inputStream);
-            }
         };
 
         private final Charset asciiCharset = StandardCharsets.US_ASCII;
@@ -133,18 +107,10 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
         public byte[] serialize(RedisCommandEvent redisCommandEvent) throws SerializationException {
             FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream();
             try {
-                // write version
-                writeVersion(redisCommandEvent, outputStream);
-                // write interfaceName
-                writeInterfaceName(redisCommandEvent, outputStream);
-                // write methodName
-                writeMethodName(redisCommandEvent, outputStream);
-                // write parameter types;
-                writeParameterTypes(redisCommandEvent, outputStream);
-                // write parameters
-                writeParameters(redisCommandEvent, outputStream);
-                // write source application
-                writeSourceApplication(redisCommandEvent, outputStream);
+                // write metadata(version, byte-size, method, and so on)
+                writeMetadata(redisCommandEvent, outputStream);
+                // write data(parameters)
+                writeData(redisCommandEvent, outputStream);
             } catch (IOException e) {
                 throw new SerializationException("RedisCommandEvent serialization failed", e);
             } finally {
@@ -153,27 +119,25 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             return outputStream.toByteArray();
         }
 
-        @Override
-        public RedisCommandEvent deserialize(byte[] bytes) throws SerializationException {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes, 1, bytes.length);
-            RedisCommandEvent redisCommandEvent = null;
-            try {
-                // read interfaceName
-                String interfaceName = readInterfaceName(inputStream);
-                // read methodName
-                String methodName = readMethodName(inputStream);
-                // read parameter types
-                int parameterCount = inputStream.read();
-                String[] parameterTypes = readParameterTypes(inputStream, parameterCount);
-                // read parameters
-                byte[][] parameters = readParameters(inputStream, parameterCount);
-                // read source application
-                String sourceApplication = readSourceApplication(inputStream);
-                redisCommandEvent = new RedisCommandEvent(interfaceName, methodName, parameterTypes, parameters, sourceApplication);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return redisCommandEvent;
+        /**
+         * Write metadata:
+         * <ol>
+         *     <li>{@link #writeVersion(RedisCommandEvent, OutputStream)}</li>
+         *     <li>{@link #writeMethodMetadata(RedisCommandEvent, OutputStream)}</li>
+         *     <li>{@link #writeSourceApplication(RedisCommandEvent, OutputStream)}</li>
+         * </ol>
+         *
+         * @param redisCommandEvent {@link RedisCommandEvent}
+         * @param outputStream      {@link OutputStream}
+         * @throws IOException
+         */
+        protected void writeMetadata(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
+            // write version
+            writeVersion(redisCommandEvent, outputStream);
+            // Write method meta-data(e.g declaring class, method name, parameter types)
+            writeMethodMetadata(redisCommandEvent, outputStream);
+            // write source application
+            writeSourceApplication(redisCommandEvent, outputStream);
         }
 
         protected void writeVersion(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
@@ -181,11 +145,22 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             outputStream.write(version);
         }
 
+        protected void writeMethodMetadata(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
+            // write interfaceName
+            writeInterfaceName(redisCommandEvent, outputStream);
+            // write methodName
+            writeMethodName(redisCommandEvent, outputStream);
+            // write parameter types;
+            writeParameterTypes(redisCommandEvent, outputStream);
+        }
+
         protected void writeInterfaceName(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
-            writeType(redisCommandEvent.getInterfaceName(), outputStream);
+            String simpleName = resolveSimpleInterfaceName(redisCommandEvent.getInterfaceName());
+            writeString(simpleName, outputStream);
         }
 
         protected void writeMethodName(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
+            writeString(redisCommandEvent.getMethodName(), outputStream);
         }
 
         protected void writeParameterTypes(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
@@ -195,8 +170,24 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             outputStream.write(parameterCount);
             // write each parameter type
             for (String parameterType : parameterTypes) {
-                writeType(parameterType, outputStream);
+                writeString(parameterType, outputStream);
             }
+        }
+
+        protected void writeSourceApplication(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
+            writeString(redisCommandEvent.getSourceApplication(), outputStream);
+        }
+
+        /**
+         * Write data
+         *
+         * @param redisCommandEvent
+         * @param outputStream
+         * @throws IOException
+         */
+        private void writeData(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
+            // write parameters
+            writeParameters(redisCommandEvent, outputStream);
         }
 
         protected void writeParameters(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
@@ -206,14 +197,6 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
                 byte[] parameter = parameters[i];
                 writeBytes(parameter, outputStream);
             }
-        }
-
-        protected void writeSourceApplication(RedisCommandEvent redisCommandEvent, OutputStream outputStream) throws IOException {
-            writeString(redisCommandEvent.getSourceApplication(), outputStream);
-        }
-
-        protected void writeType(String type, OutputStream outputStream) throws IOException {
-            throw new UnsupportedOperationException();
         }
 
         protected void writeString(String value, OutputStream outputStream) throws IOException {
@@ -227,18 +210,65 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             outputStream.write(bytes);
         }
 
+
+        @Override
+        public RedisCommandEvent deserialize(byte[] bytes) throws SerializationException {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes, 1, bytes.length);
+
+            RedisCommandEvent.Builder builder = new RedisCommandEvent.Builder();
+
+            try {
+                // read metadata(version, byte-size, method, and so on)
+                readMetadata(inputStream, builder);
+                // read data
+                readData(inputStream, builder);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return builder.build();
+        }
+
+        protected void readMetadata(ByteArrayInputStream inputStream, RedisCommandEvent.Builder builder) throws IOException {
+
+            // read interfaceName
+            String interfaceName = readInterfaceName(inputStream);
+
+            // read methodName
+            String methodName = readMethodName(inputStream);
+
+            // read parameter types
+            int parameterCount = inputStream.read();
+            String[] parameterTypes = readParameterTypes(inputStream, parameterCount);
+
+            // read source application
+            String sourceApplication = readSourceApplication(inputStream);
+
+            builder.interfaceName(interfaceName)
+                    .methodName(methodName)
+                    .parameterTypes(parameterTypes)
+                    .sourceApplication(sourceApplication)
+            ;
+        }
+
+        protected void readData(ByteArrayInputStream inputStream, RedisCommandEvent.Builder builder) throws IOException {
+            // read parameters
+            byte[][] parameters = readParameters(inputStream, builder.getParameterCount());
+            builder.parameters(parameters);
+        }
+
         protected String readInterfaceName(InputStream inputStream) throws IOException {
-            return readType(inputStream);
+            String interfaceName = readString(inputStream);
+            return resolveInterfaceName(interfaceName);
         }
 
         protected String readMethodName(InputStream inputStream) throws IOException {
-            throw new UnsupportedOperationException();
+            return readString(inputStream);
         }
 
         protected String[] readParameterTypes(InputStream inputStream, int parameterCount) throws IOException {
             String[] parameterTypes = new String[parameterCount];
             for (int i = 0; i < parameterCount; i++) {
-                parameterTypes[i] = readType(inputStream);
+                parameterTypes[i] = readString(inputStream);
             }
             return parameterTypes;
         }
@@ -267,10 +297,6 @@ public class RedisCommandEventSerializer extends AbstractSerializer<RedisCommand
             byte[] bytes = new byte[length];
             inputStream.read(bytes, 0, length);
             return new String(bytes, asciiCharset);
-        }
-
-        protected String readType(InputStream inputStream) throws IOException {
-            throw new UnsupportedOperationException();
         }
 
         protected byte[] getBytes(String value) {

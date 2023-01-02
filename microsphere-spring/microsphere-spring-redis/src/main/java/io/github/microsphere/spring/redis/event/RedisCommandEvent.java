@@ -103,7 +103,7 @@ public class RedisCommandEvent extends ApplicationEvent {
 
     private transient ClassLoader classLoader;
 
-    public RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
+    protected RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
         super("default");
         this.interfaceName = interfaceName;
         this.methodName = methodName;
@@ -126,6 +126,74 @@ public class RedisCommandEvent extends ApplicationEvent {
         this.redisMethodContext = redisMethodContext;
         init(parameters, parameterCount);
     }
+
+    public static class Builder {
+
+        private String interfaceName;
+
+        private String methodName;
+
+        private String[] parameterTypes;
+
+        private byte[][] parameters;
+
+        private String sourceApplication;
+
+        public Builder interfaceName(String interfaceName) {
+            this.interfaceName = interfaceName;
+            return this;
+        }
+
+        public Builder methodName(String methodName) {
+            this.methodName = methodName;
+            return this;
+        }
+
+
+        public Builder parameterTypes(String... parameterTypes) {
+            this.parameterTypes = parameterTypes;
+            return this;
+        }
+
+        public Builder parameters(byte[][] parameters) {
+            this.parameters = parameters;
+            return this;
+        }
+
+        public Builder sourceApplication(String sourceApplication) {
+            this.sourceApplication = sourceApplication;
+            return this;
+        }
+
+        public String getInterfaceName() {
+            return interfaceName;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public int getParameterCount() {
+            return parameterTypes.length;
+        }
+
+        public String[] getParameterTypes() {
+            return parameterTypes;
+        }
+
+        public byte[][] getParameters() {
+            return parameters;
+        }
+
+        public String getSourceApplication() {
+            return sourceApplication;
+        }
+
+        public RedisCommandEvent build() {
+            return new RedisCommandEvent(interfaceName, methodName, parameterTypes, parameters, sourceApplication);
+        }
+    }
+
 
     private void init(Parameter[] parameters, int parameterCount) {
         for (int i = 0; i < parameterCount; i++) {

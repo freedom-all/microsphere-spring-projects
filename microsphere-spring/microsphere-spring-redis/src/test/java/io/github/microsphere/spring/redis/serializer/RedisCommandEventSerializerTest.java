@@ -39,6 +39,12 @@ public class RedisCommandEventSerializerTest extends AbstractSerializerTest<Redi
         String[] parameterTypes = new String[]{"[b", "[b"};
         byte[][] parameters = new byte[][]{"A".getBytes(), "B".getBytes()};
         String sourceApplication = "test";
-        return new RedisCommandEvent(interfaceName, methodName, parameterTypes, parameters, sourceApplication);
+        RedisCommandEvent.Builder builder = new RedisCommandEvent.Builder();
+        builder.interfaceName(interfaceName)
+                .methodName(methodName)
+                .parameterTypes(parameterTypes)
+                .parameters(parameters)
+                .sourceApplication(sourceApplication);
+        return builder.build();
     }
 }
