@@ -9,10 +9,10 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class SetOptionSerializerTest extends AbstractSerializerTest<Enum> {
+public class SetOptionSerializerTest extends AbstractSerializerTest<RedisStringCommands.SetOption> {
 
     @Override
-    protected RedisSerializer<Enum> getSerializer() {
+    protected RedisSerializer<RedisStringCommands.SetOption> getSerializer() {
         return new EnumSerializer(RedisStringCommands.SetOption.class);
     }
 

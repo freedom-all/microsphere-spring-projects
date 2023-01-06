@@ -44,10 +44,11 @@ public abstract class AbstractSerializerTest<T> {
         Class<?> parameterType = forType(getClass()).getSuperType().getGeneric(0).resolve();
         assertSame(targetType, parameterType);
         assertTrue(serializer.canSerialize(parameterType));
-        assertTrue(serializer instanceof AbstractSerializer);
 
-        AbstractSerializer abstractSerializer = (AbstractSerializer) serializer;
-        assertSame(targetType, abstractSerializer.getParameterizedClass());
+        if (serializer instanceof AbstractSerializer) {
+            AbstractSerializer abstractSerializer = (AbstractSerializer) serializer;
+            assertSame(targetType, abstractSerializer.getParameterizedClass());
+        }
     }
 
     protected Object getTestData(T value) {
