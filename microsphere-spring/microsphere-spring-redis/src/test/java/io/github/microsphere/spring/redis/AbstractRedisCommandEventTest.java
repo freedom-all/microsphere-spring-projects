@@ -59,10 +59,8 @@ public abstract class AbstractRedisCommandEventTest extends AbstractRedisTest {
         context.addApplicationListener((ApplicationListener<RedisCommandEvent>) event -> {
             RedisSerializer keySerializer = stringRedisTemplate.getKeySerializer();
             RedisSerializer valueSerializer = stringRedisTemplate.getValueSerializer();
-            byte[] parameter0 = event.getParameter(0);
-            byte[] parameter1 = event.getParameter(1);
-            Object key = keySerializer.deserialize(parameter0);
-            Object value = valueSerializer.deserialize(parameter1);
+            Object key = event.getArg(0);
+            Object value = event.getArg(1);
             data.put(key, value);
 
             // assert interface name
@@ -72,34 +70,17 @@ public abstract class AbstractRedisCommandEventTest extends AbstractRedisTest {
             assertEquals("set", event.getMethodName());
 
             // assert parameters
-            assertArrayEquals(new byte[][]{keySerializer.serialize(key), valueSerializer.serialize(value)}, event.getParameters());
-
-            // assert object parameters
-            assertArrayEquals(event.getObjectParameters(), event.getParameters());
-            assertEquals(event.getObjectParameter(0), parameter0);
-            assertEquals(event.getObjectParameter(1), parameter1);
+            assertArrayEquals(new Object[]{key, value}, event.getArgs());
 
             // assert parameter count
             assertEquals(2, event.getParameterCount());
 
             // assert parameter types
-            assertArrayEquals(new String[]{"[B", "[B"}, event.getParameterTypes());
-            assertArrayEquals(new Class[]{byte[].class, byte[].class}, event.getParameterClasses());
-            assertArrayEquals(new Class[]{byte[].class, byte[].class}, event.getParameterClasses());
-            assertSame(byte[].class, event.getParameterClass(0));
-            assertSame(byte[].class, event.getParameterClass(1));
+            assertArrayEquals(new Class[]{byte[].class, byte[].class}, event.getParameterTypes());
 
             // assert source application
-            assertEquals("default", event.getSourceApplication());
+            assertEquals("default", event.getApplicationName());
 
-            // assert ClassLoader
-            assertSame(context.getClassLoader(), event.getClassLoader());
-
-            // assert Redis Beans
-            assertNotNull(event.getRedisMethodContext());
-            assertSame(redisContext, event.getRedisContext());
-
-            assertSame(context, event.getRedisContext().getApplicationContext());
         });
 
         stringRedisTemplate.opsForValue().set("Key-1", "Value-1");

@@ -62,8 +62,8 @@ public abstract class Serializers {
         return getSerializer(type);
     }
 
-    public static <T> RedisSerializer<T> getSerializer(Type type) {
-        return type == null ? null : (RedisSerializer<T>) getSerializer(type.getTypeName());
+    public static <T> RedisSerializer<T> getSerializer(Class<?> type) {
+        return type == null ? null : (RedisSerializer<T>) getSerializer(type.getName());
     }
 
     public static RedisSerializer<?> getSerializer(String typeName) {
@@ -102,7 +102,11 @@ public abstract class Serializers {
     }
 
     public static byte[] serialize(Object object) {
-        RedisSerializer redisSerializer = getSerializer(object);
+        return serialize(object, object.getClass());
+    }
+
+    public static byte[] serialize(Object object, Class type) {
+        RedisSerializer redisSerializer = getSerializer(type);
         return redisSerializer.serialize(object);
     }
 

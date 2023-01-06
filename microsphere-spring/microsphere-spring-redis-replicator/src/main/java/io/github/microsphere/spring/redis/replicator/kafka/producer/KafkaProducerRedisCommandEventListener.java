@@ -144,7 +144,7 @@ public class KafkaProducerRedisCommandEventListener implements SmartApplicationL
      */
     private byte[] generateKafkaKey(RedisCommandEvent event) {
         // Almost all RedisCommands interface methods take the first argument as Key
-        return event.getParameter(0);
+        return (byte[]) event.getArg(0);
     }
 
     private Integer calcPartition(RedisCommandEvent event) {

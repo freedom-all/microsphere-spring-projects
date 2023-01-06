@@ -1,9 +1,6 @@
 package io.github.microsphere.spring.redis.event;
 
-import io.github.microsphere.spring.redis.context.RedisContext;
 import io.github.microsphere.spring.redis.interceptor.RedisMethodContext;
-import io.github.microsphere.spring.redis.metadata.Parameter;
-import io.github.microsphere.spring.redis.serializer.Serializers;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.data.redis.connection.RedisCommands;
 import org.springframework.data.redis.connection.RedisConnectionCommands;
@@ -19,16 +16,15 @@ import org.springframework.data.redis.connection.RedisSetCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.RedisTxCommands;
 import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-import static io.github.microsphere.spring.redis.serializer.RedisCommandEventSerializer.VERSION_1;
-import static org.springframework.util.ClassUtils.resolveClassName;
+import static io.github.microsphere.spring.redis.serializer.RedisCommandEventSerializer.VERSION_DEFAULT;
 
 
 /**
@@ -58,157 +54,102 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  */
 public class RedisCommandEvent extends ApplicationEvent {
 
-    /**
-     * Serialization Version
-     */
-    public static final byte SERIALIZATION_VERSION = VERSION_1;
+    private static final long serialVersionUID = -1L;
 
-    private static final ClassLoader DEFAULT_CLASS_LOADER = ClassUtils.getDefaultClassLoader();
+    private final transient String applicationName;
 
-    /**
-     * Command interface name, such as：
-     * <ul>
-     *     <li>"org.springframework.data.redis.connection.RedisStringCommands"</li>
-     *     <li>"org.springframework.data.redis.connection.RedisHashCommands"</li>
-     * </ul>
-     */
-    private final String interfaceName;
+    private final transient String sourceBeanName;
 
-    /**
-     * Command interface method name, for example, set method
-     */
-    private final String methodName;
+    private final transient Method method;
 
-    private transient final int parameterCount;
+    private final transient Object[] args;
 
-    /**
-     * Method parameter type list, such as: [{@link java.lang.String},{@link java.lang.Integer}]
-     */
-    private final String[] parameterTypes;
+    private transient String interfaceName;
 
-    /**
-     * List of method parameter objects
-     */
-    private final byte[][] parameters;
+    private transient Class<?>[] parameterTypes;
 
-    /**
-     * Event source Application name
-     */
-    private final String sourceApplication;
+    private transient int parameterCount = -1;
 
-    private transient RedisContext redisContext;
+    private transient byte serializationVersion = VERSION_DEFAULT;
 
-    private transient @Nullable
-    RedisMethodContext redisMethodContext;
-
-    private transient ClassLoader classLoader;
-
-    protected RedisCommandEvent(String interfaceName, String methodName, String[] parameterTypes, byte[][] parameters, String sourceApplication) {
-        super("default");
-        this.interfaceName = interfaceName;
-        this.methodName = methodName;
-        this.parameterTypes = parameterTypes;
-        this.parameterCount = parameterTypes.length;
-        this.parameters = parameters;
-        this.sourceApplication = sourceApplication;
+    protected RedisCommandEvent(Object source, String applicationName, String sourceBeanName, Method method, Object... args) {
+        super(source);
+        this.applicationName = applicationName;
+        this.sourceBeanName = sourceBeanName;
+        this.method = method;
+        this.args = args;
     }
 
-    public RedisCommandEvent(RedisMethodContext redisMethodContext) {
-        super(redisMethodContext);
-        Method method = redisMethodContext.getMethod();
-        this.interfaceName = resolveInterfaceName(method);
-        this.methodName = method.getName();
-        Parameter[] parameters = redisMethodContext.getParameters();
-        this.parameterCount = parameters.length;
-        this.parameterTypes = new String[parameterCount];
-        this.parameters = new byte[parameterCount][];
-        this.sourceApplication = redisMethodContext.getApplicationName();
-        this.redisMethodContext = redisMethodContext;
-        init(parameters, parameterCount);
+    public RedisCommandEvent(@NonNull RedisMethodContext redisMethodContext) {
+        this(redisMethodContext, redisMethodContext.getApplicationName(), redisMethodContext.getSourceBeanName(), redisMethodContext.getMethod(), redisMethodContext.getArgs());
     }
 
     public static class Builder {
 
-        private String interfaceName;
+        private final Object source;
 
-        private String methodName;
+        private String applicationName;
 
-        private String[] parameterTypes;
+        private String sourceBeanName;
 
-        private byte[][] parameters;
+        private Method method;
 
-        private String sourceApplication;
+        private Object[] args;
 
-        public Builder interfaceName(String interfaceName) {
-            this.interfaceName = interfaceName;
+        private byte serializationVersion = VERSION_DEFAULT;
+
+        protected Builder(Object source) {
+            this.source = source;
+        }
+
+        public static Builder source(Object source) {
+            return new Builder(source);
+        }
+
+        public Builder applicationName(String applicationName) {
+            this.applicationName = applicationName;
             return this;
         }
 
-        public Builder methodName(String methodName) {
-            this.methodName = methodName;
+        public Builder sourceBeanName(String sourceBeanName) {
+            this.sourceBeanName = sourceBeanName;
             return this;
         }
 
-
-        public Builder parameterTypes(String... parameterTypes) {
-            this.parameterTypes = parameterTypes;
+        public Builder method(Method method) {
+            this.method = method;
             return this;
         }
 
-        public Builder parameters(byte[][] parameters) {
-            this.parameters = parameters;
+        public Builder args(Object... args) {
+            this.args = args;
             return this;
         }
 
-        public Builder sourceApplication(String sourceApplication) {
-            this.sourceApplication = sourceApplication;
+        public Builder serializationVersion(byte serializationVersion) {
+            this.serializationVersion = serializationVersion;
             return this;
         }
 
-        public String getInterfaceName() {
-            return interfaceName;
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-
-        public int getParameterCount() {
-            return parameterTypes.length;
-        }
-
-        public String[] getParameterTypes() {
-            return parameterTypes;
-        }
-
-        public byte[][] getParameters() {
-            return parameters;
-        }
-
-        public String getSourceApplication() {
-            return sourceApplication;
+        public Method getMethod() {
+            return method;
         }
 
         public RedisCommandEvent build() {
-            return new RedisCommandEvent(interfaceName, methodName, parameterTypes, parameters, sourceApplication);
+            RedisCommandEvent redisCommandEvent = new RedisCommandEvent(source, applicationName, sourceBeanName, method, args);
+            redisCommandEvent.setSerializationVersion(serializationVersion);
+            return redisCommandEvent;
         }
     }
 
-
-    private void init(Parameter[] parameters, int parameterCount) {
-        for (int i = 0; i < parameterCount; i++) {
-            Parameter parameter = parameters[i];
-            this.parameterTypes[i] = parameter.getParameterType();
-            this.parameters[i] = parameter.getRawValue();
-        }
+    /**
+     * Command method
+     *
+     * @return
+     */
+    public @NonNull Method getMethod() {
+        return method;
     }
-
-    private String resolveInterfaceName(Method method) {
-        Class<?> declaringClass = method.getDeclaringClass();
-        String className = declaringClass.getName();
-        return className;
-    }
-
 
     /**
      * @return Command interface name, such as：
@@ -218,101 +159,55 @@ public class RedisCommandEvent extends ApplicationEvent {
      * </ul>
      */
     public String getInterfaceName() {
+        String interfaceName = this.interfaceName;
+        if (interfaceName == null) {
+            interfaceName = resolveInterfaceName(this.method);
+            this.interfaceName = interfaceName;
+        }
         return interfaceName;
     }
 
-    public String getMethodName() {
-        return methodName;
+    private String resolveInterfaceName(Method method) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        String className = declaringClass.getName();
+        return className;
     }
 
-    public String[] getParameterTypes() {
+    public String getMethodName() {
+        return method.getName();
+    }
+
+    public Class<?>[] getParameterTypes() {
+        Class<?>[] parameterTypes = this.parameterTypes;
+        if (parameterTypes == null) {
+            parameterTypes = method.getParameterTypes();
+            this.parameterTypes = parameterTypes;
+        }
         return parameterTypes;
     }
 
-    public byte[][] getParameters() {
-        return parameters;
-    }
-
-    public byte[] getParameter(int parameterIndex) {
-        return parameters[parameterIndex];
-    }
-
-    /**
-     * Gets the parameter type (String) of the specified index.
-     *
-     * @param parameterIndex Parameter array index
-     * @return Parameter type (String)
-     */
-    public String getParameterType(int parameterIndex) {
-        return parameterTypes[parameterIndex];
-    }
-
-    /**
-     * Gets the parameter type of the specified index
-     *
-     * @param parameterIndex Parameter array index
-     * @return The parameter type
-     */
-    public Class<?> getParameterClass(int parameterIndex) {
-        if (redisMethodContext == null) {
-            String parameterType = getParameterType(parameterIndex);
-            ClassLoader classLoader = getClassLoader();
-            return resolveClassName(parameterType, classLoader);
-        } else {
-            return getParameterClasses()[parameterIndex];
-        }
-    }
-
-    /**
-     * Gets all parameter types
-     *
-     * @return All parameter Types
-     */
-    public Class<?>[] getParameterClasses() {
-        RedisMethodContext redisMethodContext = this.redisMethodContext;
-        if (redisMethodContext == null) {
-            int parameterCount = getParameterCount();
-            Class<?>[] parameterClasses = new Class[parameterCount];
-            for (int i = 0; i < parameterCount; i++) {
-                parameterClasses[i] = getParameterClass(i);
-            }
-            return parameterClasses;
-        } else {
-            return redisMethodContext.getMethod().getParameterTypes();
-        }
-    }
-
-    /**
-     * Gets a list of method parameters (object type, not byte[])
-     *
-     * @return non-null
-     */
-    public Object[] getObjectParameters() {
-        int length = getParameterCount();
-        Object[] objectParameters = new Object[length];
-        for (int i = 0; i < length; i++) {
-            Object objectParameter = getObjectParameter(i);
-            objectParameters[i] = objectParameter;
-        }
-        return objectParameters;
-    }
-
-    public Object getObjectParameter(int parameterIndex) {
-        byte[] parameter = parameters[parameterIndex];
-        String parameterType = getParameterType(parameterIndex);
-        Object objectParameter = Serializers.deserialize(parameter, parameterType);
-        return objectParameter;
-    }
-
     public int getParameterCount() {
-        return parameterTypes.length;
+        int parameterCount = this.parameterCount;
+        if (parameterCount == -1) {
+            parameterCount = method.getParameterCount();
+            this.parameterCount = parameterCount;
+        }
+        return parameterCount;
+    }
+
+    public @Nullable Object[] getArgs() {
+        return this.args;
+    }
+
+    public @Nullable Object getArg(int index) {
+        return this.args[index];
     }
 
     /**
      * @return Event source Application name
      */
-    public String getSourceApplication() {
-        return sourceApplication;
+    public @NonNull String getApplicationName() {
+        return applicationName;
     }
 
     /**
@@ -320,68 +215,38 @@ public class RedisCommandEvent extends ApplicationEvent {
      *
      * @return Source Bean name
      */
-    public String getSourceBeanName() {
-        RedisMethodContext redisMethodContext = this.redisMethodContext;
-        return redisMethodContext == null ? null : redisMethodContext.getSourceBeanName();
+    public @Nullable String getSourceBeanName() {
+        return this.sourceBeanName;
+    }
+
+    public void setSerializationVersion(byte serializationVersion) {
+        this.serializationVersion = serializationVersion;
     }
 
     public byte getSerializationVersion() {
-        // TODO
-        return SERIALIZATION_VERSION;
-    }
-
-    public RedisContext getRedisContext() {
-        RedisContext redisContext = this.redisContext;
-        if (redisContext == null) {
-            RedisMethodContext redisMethodContext = this.redisMethodContext;
-            if (redisMethodContext != null) {
-                return redisMethodContext.getRedisContext();
-            }
-        }
-        return redisContext;
-    }
-
-    public RedisMethodContext getRedisMethodContext() {
-        return redisMethodContext;
-    }
-
-    public ClassLoader getClassLoader() {
-        ClassLoader classLoader = this.classLoader;
-        if (classLoader == null) {
-            RedisContext redisContext = getRedisContext();
-            classLoader = redisContext == null ? DEFAULT_CLASS_LOADER : redisContext.getClassLoader();
-            this.classLoader = classLoader;
-        }
-        return classLoader;
+        return serializationVersion;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         RedisCommandEvent that = (RedisCommandEvent) o;
-
-        if (!Objects.equals(interfaceName, that.interfaceName)) return false;
-        if (!Objects.equals(methodName, that.methodName)) return false;
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(parameterTypes, that.parameterTypes)) return false;
-        if (!Arrays.deepEquals(parameters, that.parameters)) return false;
-        return Objects.equals(sourceApplication, that.sourceApplication);
+        return Objects.equals(applicationName, that.applicationName) &&
+                Objects.equals(sourceBeanName, that.sourceBeanName) &&
+                Objects.equals(method, that.method) &&
+                Arrays.deepEquals(args, that.args);
     }
 
     @Override
     public int hashCode() {
-        int result = interfaceName != null ? interfaceName.hashCode() : 0;
-        result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(parameterTypes);
-        result = 31 * result + Arrays.deepHashCode(parameters);
-        result = 31 * result + (sourceApplication != null ? sourceApplication.hashCode() : 0);
+        int result = Objects.hash(applicationName, sourceBeanName, method);
+        result = 31 * result + Arrays.hashCode(args);
         return result;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RedisCommandEvent.class.getSimpleName() + "[", "]").add("interfaceName='" + interfaceName + "'").add("methodName='" + methodName + "'").add("parameterCount=" + parameterCount).add("parameterTypes=" + Arrays.toString(parameterTypes)).add("parameters=" + Arrays.toString(parameters)).add("sourceApplication='" + sourceApplication + "'").toString();
+        return new StringJoiner(", ", RedisCommandEvent.class.getSimpleName() + "[", "]").add("applicationName='" + applicationName + "'").add("sourceBeanName='" + sourceBeanName + "'").add("method=" + method).add("args=" + Arrays.toString(args)).toString();
     }
 }

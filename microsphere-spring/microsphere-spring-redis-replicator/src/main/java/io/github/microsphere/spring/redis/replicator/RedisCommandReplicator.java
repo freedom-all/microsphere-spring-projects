@@ -50,11 +50,11 @@ public class RedisCommandReplicator implements ApplicationListener<RedisCommandR
         if (method != null) {
             String interfaceNme = redisCommandEvent.getInterfaceName();
             RedisConnection redisConnection = getRedisConnection();
-            Object[] parameters = redisCommandEvent.getObjectParameters();
+            Object[] args = redisCommandEvent.getArgs();
             Function<RedisConnection, Object> bindingFunction = getRedisCommandBindingFunction(interfaceNme);
             Object redisCommandObject = bindingFunction.apply(redisConnection);
             // TODO: Native method implementation
-            ReflectionUtils.invokeMethod(method, redisCommandObject, parameters);
+            ReflectionUtils.invokeMethod(method, redisCommandObject, args);
         }
     }
 

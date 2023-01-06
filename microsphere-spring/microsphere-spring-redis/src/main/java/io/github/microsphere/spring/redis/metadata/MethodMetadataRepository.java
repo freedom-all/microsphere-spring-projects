@@ -38,6 +38,8 @@ import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildCo
 import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildParameterMetadata;
 import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED;
 import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED_PROPERTY_NAME;
+import static org.springframework.util.ClassUtils.forName;
+import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
  * Redis Method Metadata Repository
@@ -95,9 +97,10 @@ public class MethodMetadataRepository {
     }
 
     public static Method findWriteCommandMethod(RedisCommandEvent event) {
-        String interfaceNme = event.getInterfaceName();
-        String methodName = event.getMethodName();
-        String[] parameterTypes = event.getParameterTypes();
+        return event.getMethod();
+    }
+
+    public static Method findWriteCommandMethod(String interfaceNme, String methodName, String[] parameterTypes) {
         Method method = getWriteCommandMethod(interfaceNme, methodName, parameterTypes);
         if (method == null) {
             logger.warn("Redis event publishers and consumers have different apis. Please update consumer microsphere-spring-redis artifacts in time!");
@@ -107,13 +110,30 @@ public class MethodMetadataRepository {
                 logger.warn("The current Redis consumer cannot find Redis command interface: {}. Please confirm whether the spring-data artifacts API is compatible.", interfaceNme);
                 return null;
             }
-            method = ReflectionUtils.findMethod(interfaceClass, methodName, event.getParameterClasses());
+            Class[] parameterClasses = loadParameterClasses(parameterTypes);
+            method = ReflectionUtils.findMethod(interfaceClass, methodName, parameterClasses);
             if (method == null) {
                 logger.warn("Current Redis consumer Redis command interface (class name: {}) in the method ({}), command method search end!", interfaceNme, buildCommandMethodId(interfaceNme, methodName, parameterTypes));
                 return null;
             }
         }
         return method;
+    }
+
+    private static Class[] loadParameterClasses(String[] parameterTypes) {
+        int parameterCount = parameterTypes.length;
+        Class[] parameterClasses = new Class[parameterCount];
+        for (int i = 0; i < parameterCount; i++) {
+            String parameterType = parameterTypes[i];
+            Class parameterClass = null;
+            try {
+                parameterClass = forName(parameterType, null);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            parameterClasses[i] = parameterClass;
+        }
+        return parameterClasses;
     }
 
     public static Method getWriteCommandMethod(String interfaceName, String methodName, String... parameterTypes) {

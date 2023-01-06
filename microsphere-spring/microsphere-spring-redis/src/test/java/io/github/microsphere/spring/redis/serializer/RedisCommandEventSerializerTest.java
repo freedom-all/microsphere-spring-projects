@@ -19,6 +19,10 @@ package io.github.microsphere.spring.redis.serializer;
 import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.lang.reflect.Method;
+
+import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.findWriteCommandMethod;
+
 /**
  * {@link RedisCommandEventSerializer} Test
  *
@@ -36,15 +40,13 @@ public class RedisCommandEventSerializerTest extends AbstractSerializerTest<Redi
     protected RedisCommandEvent getValue() {
         String interfaceName = "org.springframework.data.redis.connection.RedisStringCommands";
         String methodName = "set";
-        String[] parameterTypes = new String[]{"[b", "[b"};
-        byte[][] parameters = new byte[][]{"A".getBytes(), "B".getBytes()};
-        String sourceApplication = "test";
-        RedisCommandEvent.Builder builder = new RedisCommandEvent.Builder();
-        builder.interfaceName(interfaceName)
-                .methodName(methodName)
-                .parameterTypes(parameterTypes)
-                .parameters(parameters)
-                .sourceApplication(sourceApplication);
+        String[] parameterTypes = new String[]{"[B", "[B"};
+        Method method = findWriteCommandMethod(interfaceName, methodName, parameterTypes);
+        String applicationName = "test";
+        RedisCommandEvent.Builder builder = RedisCommandEvent.Builder.source("test")
+                .applicationName(applicationName)
+                .method(method)
+                .args("A".getBytes(), "B".getBytes());
         return builder.build();
     }
 }
