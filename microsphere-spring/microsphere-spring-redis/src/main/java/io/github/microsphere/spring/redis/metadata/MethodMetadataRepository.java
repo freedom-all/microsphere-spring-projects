@@ -4,6 +4,9 @@ import io.github.microsphere.spring.redis.event.RedisCommandEvent;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisCommands;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -24,7 +27,9 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.connection.SortParameters;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.util.ReflectionUtils;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,8 +43,9 @@ import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildCo
 import static io.github.microsphere.spring.redis.util.RedisCommandsUtils.buildParameterMetadata;
 import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED;
 import static io.github.microsphere.spring.redis.util.RedisConstants.FAIL_FAST_ENABLED_PROPERTY_NAME;
+import static org.springframework.core.io.support.ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX;
 import static org.springframework.util.ClassUtils.forName;
-import static org.springframework.util.ClassUtils.resolveClassName;
+import static org.springframework.util.ReflectionUtils.findMethod;
 
 /**
  * Redis Method Metadata Repository
@@ -71,6 +77,8 @@ public class MethodMetadataRepository {
      */
     static final Map<String, Method> writeCommandMethodsCache = new HashMap<>();
 
+    static RedisMetadata redisMetadata;
+
     static {
         init();
     }
@@ -82,10 +90,35 @@ public class MethodMetadataRepository {
         if (initialized) {
             return;
         }
+        initRedisMetadata();
         initRedisMethodsAccessible();
         initRedisCommandsInterfaces();
         initWriteCommandMethods();
         initialized = true;
+    }
+
+    private static void initRedisMetadata() {
+        redisMetadata = loadRedisMetadata();
+    }
+
+    private static RedisMetadata loadRedisMetadata() {
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        RedisMetadata redisMetadata = new RedisMetadata();
+        try {
+            Resource[] resources = resolver.getResources(CLASSPATH_ALL_URL_PREFIX + "/META-INF/redis-metadata.yaml");
+            for (Resource resource : resources) {
+                redisMetadata.merge(loadRedisMetadata(resource));
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+        return redisMetadata;
+    }
+
+    private static RedisMetadata loadRedisMetadata(Resource resource) throws IOException {
+        Yaml yaml = new Yaml();
+        RedisMetadata redisMetadata = yaml.loadAs(resource.getInputStream(), RedisMetadata.class);
+        return redisMetadata;
     }
 
     public static boolean isWriteCommandMethod(Method method) {
@@ -111,7 +144,7 @@ public class MethodMetadataRepository {
                 return null;
             }
             Class[] parameterClasses = loadParameterClasses(parameterTypes);
-            method = ReflectionUtils.findMethod(interfaceClass, methodName, parameterClasses);
+            method = findMethod(interfaceClass, methodName, parameterClasses);
             if (method == null) {
                 logger.warn("Current Redis consumer Redis command interface (class name: {}) in the method ({}), command method search end!", interfaceNme, buildCommandMethodId(interfaceNme, methodName, parameterTypes));
                 return null;
@@ -125,15 +158,20 @@ public class MethodMetadataRepository {
         Class[] parameterClasses = new Class[parameterCount];
         for (int i = 0; i < parameterCount; i++) {
             String parameterType = parameterTypes[i];
-            Class parameterClass = null;
-            try {
-                parameterClass = forName(parameterType, null);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            Class parameterClass = loadClass(parameterType);
             parameterClasses[i] = parameterClass;
         }
         return parameterClasses;
+    }
+
+    private static Class loadClass(String className) {
+        Class type = null;
+        try {
+            type = forName(className, null);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return type;
     }
 
     public static Method getWriteCommandMethod(String interfaceName, String methodName, String... parameterTypes) {
@@ -226,7 +264,7 @@ public class MethodMetadataRepository {
      */
     private static void initWriteCommandMethods() {
 
-        // TODO: Support for Configuration
+        loadWriteCommandMethods();
 
         // Initialize {@link RedisKeyCommands} write command method
         initRedisKeyCommandsWriteCommandMethods();
@@ -255,6 +293,19 @@ public class MethodMetadataRepository {
         // Initialize {@link RedisHyperLogLogCommands}
         initRedisHyperLogLogCommandsWriteCommandMethods();
 
+    }
+
+    private static void loadWriteCommandMethods() {
+        RedisMetadata redisMetadata = MethodMetadataRepository.redisMetadata;
+        for (MethodMetadata methodMetadata : redisMetadata.getMethods()) {
+            if (methodMetadata.isWrite()) {
+                String interfaceName = methodMetadata.getInterfaceName();
+                Class<?> declaredClass = loadClass(interfaceName);
+                String methodName = methodMetadata.getMethodName();
+                Class[] parameterTypes = loadParameterClasses(methodMetadata.getParameterTypes());
+                initWriteCommandMethod(declaredClass, methodName, parameterTypes);
+            }
+        }
     }
 
     /**
@@ -818,13 +869,14 @@ public class MethodMetadataRepository {
     private static void initWriteCommandMethod(Class<?> declaredClass, String methodName, Class<?>... parameterTypes) {
         try {
             logger.debug("Initializes the write command method[Declared Class: {} , Method: {}, Parameter types: {}]...", declaredClass.getName(), methodName, Arrays.toString(parameterTypes));
-            Method method = declaredClass.getMethod(methodName, parameterTypes);
+            Method method = findMethod(declaredClass, methodName, parameterTypes);
             // Reduced Method runtime checks
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            initWriteCommandMethodMethod(method, parameterTypes);
-            initWriteCommandMethodCache(declaredClass, method, parameterTypes);
+            if (initWriteCommandMethodMethod(method, parameterTypes)) {
+                initWriteCommandMethodCache(declaredClass, method, parameterTypes);
+            }
         } catch (Throwable e) {
             logger.error("Unable to initialize write command method[Declared Class: {}, Method: {}, Parameter types: {}], Reason: {}", declaredClass.getName(), methodName, Arrays.toString(parameterTypes), e.getMessage());
             if (FAIL_FAST_ENABLED) {
@@ -834,13 +886,14 @@ public class MethodMetadataRepository {
         }
     }
 
-    private static void initWriteCommandMethodMethod(Method method, Class<?>[] parameterTypes) {
+    private static boolean initWriteCommandMethodMethod(Method method, Class<?>[] parameterTypes) {
         if (writeCommandMethodsMetadata.containsKey(method)) {
-            throw new IllegalArgumentException("Repeat the initialization write command method: " + method);
+            return false;
         }
         List<ParameterMetadata> parameterMetadataList = buildParameterMetadata(method, parameterTypes);
         writeCommandMethodsMetadata.put(method, parameterMetadataList);
         logger.debug("Initializing write command method metadata information successfully, Method: {}, parameter Write Command Method metadata information: {}", method.getName(), parameterMetadataList);
+        return true;
     }
 
     private static void initWriteCommandMethodCache(Class<?> declaredClass, Method method, Class<?>[] parameterTypes) {
@@ -851,6 +904,5 @@ public class MethodMetadataRepository {
             logger.warn("write command method[id: {}, Method: {}] is cached", id, method);
         }
     }
-
 
 }

@@ -16,7 +16,12 @@
  */
 package io.github.microsphere.spring.redis.metadata;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.redis.connection.RedisCommands;
+import org.yaml.snakeyaml.Yaml;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -24,6 +29,7 @@ import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 
 /**
@@ -37,6 +43,60 @@ public class MethodMetadataRepositoryTest {
     @Test
     public void testInit() {
         MethodMetadataRepository.init();
+    }
+
+    @Test
+    public void testTypes() {
+        Set<Type> types = new TreeSet<>(Comparator.comparing(Type::getTypeName));
+
+        for (Method method : MethodMetadataRepository.getWriteCommandMethods()) {
+            Type returnType = method.getGenericReturnType();
+            types.addAll(findTypes(returnType));
+            for (Type parameterType : method.getGenericParameterTypes()) {
+                types.addAll(findTypes(parameterType));
+            }
+        }
+
+        types.forEach(type -> {
+            if (type instanceof Class) {
+                System.out.println(((Class) type).getName());
+            }
+        });
+    }
+
+    @Test
+    public void testWriteMethods() throws Throwable {
+        Resource resource = new ClassPathResource("/META-INF/redis-metadata.yaml");
+
+        Yaml yaml = new Yaml();
+
+        RedisMetadata redisMetadata = yaml.loadAs(resource.getInputStream(), RedisMetadata.class);
+
+        System.out.println(redisMetadata);
+    }
+
+    @Test
+    public void testMethods() {
+        for (Class interfaceClass : ClassUtils.getAllInterfaces(RedisCommands.class)) {
+            for (Method method : interfaceClass.getMethods()) {
+                String interfaceName = interfaceClass.getName();
+                String methodName = method.getName();
+                String parameterTypes = getParameterTypes(method);
+                System.out.println("- interfaceName: " + interfaceName);
+                System.out.println("  methodName: " + methodName);
+                System.out.println("  parameterTypes: " + parameterTypes);
+            }
+        }
+    }
+
+    private String getParameterTypes(Method method) {
+        StringJoiner parameterTypesBuilder = new StringJoiner(",", "[", "]");
+        int parameterCount = method.getParameterCount();
+        Class[] parameterClasses = method.getParameterTypes();
+        for (int i = 0; i < parameterCount; i++) {
+            parameterTypesBuilder.add("'" + parameterClasses[i].getName() + "'");
+        }
+        return parameterTypesBuilder.toString();
     }
 
     @Test
