@@ -28,6 +28,8 @@ import java.util.StringJoiner;
  */
 public class MethodMetadata {
 
+    private short index;
+
     private String interfaceName;
 
     private String methodName;
@@ -35,6 +37,14 @@ public class MethodMetadata {
     private String[] parameterTypes;
 
     private boolean write;
+
+    public short getIndex() {
+        return index;
+    }
+
+    public void setIndex(short index) {
+        this.index = index;
+    }
 
     public String getInterfaceName() {
         return interfaceName;
@@ -73,15 +83,16 @@ public class MethodMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetadata that = (MethodMetadata) o;
-        return write == that.write &&
-                Objects.equals(methodName, that.methodName) &&
+        return index == that.index &&
+                write == that.write &&
                 Objects.equals(interfaceName, that.interfaceName) &&
+                Objects.equals(methodName, that.methodName) &&
                 Arrays.equals(parameterTypes, that.parameterTypes);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(interfaceName, methodName, write);
+        int result = Objects.hash(index, interfaceName, methodName, write);
         result = 31 * result + Arrays.hashCode(parameterTypes);
         return result;
     }
@@ -89,6 +100,7 @@ public class MethodMetadata {
     @Override
     public String toString() {
         return new StringJoiner(", ", MethodMetadata.class.getSimpleName() + "[", "]")
+                .add("id=" + index)
                 .add("interfaceName='" + interfaceName + "'")
                 .add("methodName='" + methodName + "'")
                 .add("parameterTypes=" + Arrays.toString(parameterTypes))

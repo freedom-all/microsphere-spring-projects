@@ -13,8 +13,8 @@ import java.lang.reflect.Method;
 import java.util.function.Function;
 
 import static io.github.microsphere.spring.redis.beans.Wrapper.tryUnwrap;
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.findWriteCommandMethod;
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getRedisCommandBindingFunction;
+import static io.github.microsphere.spring.redis.metadata.RedisMetadataRepository.findWriteCommandMethod;
+import static io.github.microsphere.spring.redis.metadata.RedisMetadataRepository.getRedisCommandBindingFunction;
 
 
 /**

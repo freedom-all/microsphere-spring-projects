@@ -21,7 +21,9 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.lang.reflect.Method;
 
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.findWriteCommandMethod;
+import static io.github.microsphere.spring.redis.metadata.RedisMetadataRepository.findWriteCommandMethod;
+import static io.github.microsphere.spring.redis.serializer.RedisCommandEventSerializer.VERSION_V1;
+
 
 /**
  * {@link RedisCommandEventSerializer} Test
@@ -46,7 +48,8 @@ public class RedisCommandEventSerializerTest extends AbstractSerializerTest<Redi
         RedisCommandEvent.Builder builder = RedisCommandEvent.Builder.source("test")
                 .applicationName(applicationName)
                 .method(method)
-                .args("A".getBytes(), "B".getBytes());
+                .args("A".getBytes(), "B".getBytes())
+                .serializationVersion(VERSION_V1);
         return builder.build();
     }
 }

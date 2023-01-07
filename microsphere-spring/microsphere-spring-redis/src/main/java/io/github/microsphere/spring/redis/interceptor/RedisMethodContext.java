@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.isWriteCommandMethod;
+import static io.github.microsphere.spring.redis.metadata.RedisMetadataRepository.isWriteCommandMethod;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 

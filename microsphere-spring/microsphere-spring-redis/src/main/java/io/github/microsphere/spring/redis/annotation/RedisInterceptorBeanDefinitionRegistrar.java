@@ -20,7 +20,6 @@ import io.github.microsphere.spring.redis.beans.RedisConnectionFactoryWrapperBea
 import io.github.microsphere.spring.redis.beans.RedisTemplateWrapperBeanPostProcessor;
 import io.github.microsphere.spring.redis.beans.WrapperProcessors;
 import io.github.microsphere.spring.redis.interceptor.EventPublishingRedisCommandInterceptor;
-import io.github.microsphere.spring.redis.metadata.MethodMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -79,7 +78,6 @@ public class RedisInterceptorBeanDefinitionRegistrar implements ImportBeanDefini
         registerWrapperProcessors(registry);
 
         if (exposedCommandEvent) {
-            MethodMetadataRepository.init();
             registerEventPublishingRedisCommendInterceptor(registry);
         }
     }

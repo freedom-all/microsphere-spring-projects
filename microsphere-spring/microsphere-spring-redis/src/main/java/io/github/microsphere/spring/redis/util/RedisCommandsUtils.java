@@ -17,8 +17,9 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiConsumer;
 
-import static io.github.microsphere.spring.redis.metadata.MethodMetadataRepository.getWriteParameterMetadataList;
+import static io.github.microsphere.spring.redis.metadata.RedisMetadataRepository.getWriteParameterMetadataList;
 import static java.util.Collections.unmodifiableList;
+import static org.springframework.util.ClassUtils.forName;
 
 /**
  * {@link RedisCommands Redis Command} Utilities Class
@@ -113,7 +114,14 @@ public abstract class RedisCommandsUtils {
     }
 
     public static String buildCommandMethodId(RedisCommandEvent event) {
-        return buildCommandMethodId(event.getInterfaceName(), event.getMethodName(), event.getParameterTypes());
+        return buildCommandMethodId(event.getMethod());
+    }
+
+    public static String buildCommandMethodId(Method redisCommandMethod) {
+        String interfaceName = redisCommandMethod.getDeclaringClass().getName();
+        String methodName = redisCommandMethod.getName();
+        Class<?>[] parameterTypes = redisCommandMethod.getParameterTypes();
+        return buildCommandMethodId(interfaceName, methodName, parameterTypes);
     }
 
     public static String buildCommandMethodId(String interfaceName, String methodName, Class<?>... parameterTypes) {
@@ -203,6 +211,27 @@ public abstract class RedisCommandsUtils {
             Serializers.getSerializer(parameterType);
         }
         return unmodifiableList(parameterMetadataList);
+    }
+
+    public static Class[] loadParameterClasses(String... parameterTypes) {
+        int parameterCount = parameterTypes.length;
+        Class[] parameterClasses = new Class[parameterCount];
+        for (int i = 0; i < parameterCount; i++) {
+            String parameterType = parameterTypes[i];
+            Class parameterClass = loadClass(parameterType);
+            parameterClasses[i] = parameterClass;
+        }
+        return parameterClasses;
+    }
+
+    private static Class loadClass(String className) {
+        Class type = null;
+        try {
+            type = forName(className, null);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return type;
     }
 
 }

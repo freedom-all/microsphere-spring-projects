@@ -53,6 +53,7 @@ import static org.springframework.util.ReflectionUtils.findMethod;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
+@Deprecated
 public class MethodMetadataRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodMetadataRepository.class);

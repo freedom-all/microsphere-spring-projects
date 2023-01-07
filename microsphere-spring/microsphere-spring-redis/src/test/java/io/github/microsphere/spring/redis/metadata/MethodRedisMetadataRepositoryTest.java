@@ -28,9 +28,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeSet;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@link MethodMetadataRepository} Test
@@ -38,7 +41,7 @@ import java.util.TreeSet;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class MethodMetadataRepositoryTest {
+public class MethodRedisMetadataRepositoryTest {
 
     @Test
     public void testInit() {
@@ -72,7 +75,12 @@ public class MethodMetadataRepositoryTest {
 
         RedisMetadata redisMetadata = yaml.loadAs(resource.getInputStream(), RedisMetadata.class);
 
-        System.out.println(redisMetadata);
+        List<MethodMetadata> methods = redisMetadata.getMethods();
+        int size = methods.size();
+        for (int i = 0; i < size; i++) {
+            MethodMetadata methodMetadata = methods.get(i);
+            assertEquals(methodMetadata.getIndex(), i + 1);
+        }
     }
 
     @Test
@@ -97,26 +105,6 @@ public class MethodMetadataRepositoryTest {
             parameterTypesBuilder.add("'" + parameterClasses[i].getName() + "'");
         }
         return parameterTypesBuilder.toString();
-    }
-
-    @Test
-    public void test() {
-        Set<String> methodNames = new TreeSet<>();
-        Set<Type> types = new TreeSet<>(Comparator.comparing(Type::getTypeName));
-        for (Method method : MethodMetadataRepository.getWriteCommandMethods()) {
-            types.add(method.getDeclaringClass());
-            for (Type parameterType : method.getGenericParameterTypes()) {
-                types.addAll(findTypes(parameterType));
-            }
-            methodNames.add(method.getName());
-        }
-
-        types.forEach(type -> {
-            System.out.println(type.getTypeName());
-        });
-
-        methodNames.forEach(System.out::println);
-
     }
 
     private Set<Type> findTypes(Type type) {
