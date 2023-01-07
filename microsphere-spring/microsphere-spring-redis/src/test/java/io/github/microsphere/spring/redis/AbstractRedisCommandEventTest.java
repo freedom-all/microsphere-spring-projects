@@ -31,8 +31,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 
 /**
  * Abstract {@link RedisCommandEvent} Test
@@ -61,7 +59,7 @@ public abstract class AbstractRedisCommandEventTest extends AbstractRedisTest {
             RedisSerializer valueSerializer = stringRedisTemplate.getValueSerializer();
             Object key = event.getArg(0);
             Object value = event.getArg(1);
-            data.put(key, value);
+            data.put(keySerializer.deserialize((byte[]) key), valueSerializer.deserialize((byte[]) value));
 
             // assert interface name
             assertEquals("org.springframework.data.redis.connection.RedisStringCommands", event.getInterfaceName());
