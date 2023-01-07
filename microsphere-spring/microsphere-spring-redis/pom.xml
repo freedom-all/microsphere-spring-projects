@@ -67,11 +67,9 @@
         </dependency>
 
         <!-- Yaml -->
-
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->
