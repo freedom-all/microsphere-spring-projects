@@ -10,11 +10,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>microsphere-spring-boot-starter</artifactId>
+    <artifactId>microsphere-core-spring-boot-starter</artifactId>
 
-    <name>Microsphere Spring Projects :: Spring Boot :: Starter</name>
+    <name>Microsphere Spring Projects :: Spring Boot :: Core Starter</name>
     <description>Microsphere Spring Boot Starter</description>
-
 
     <dependencies>
         <!-- Microsphere Dependencies -->
@@ -38,12 +37,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Apache Commons Dependencies -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <!-- Testing Dependencies -->
