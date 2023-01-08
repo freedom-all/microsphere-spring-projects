@@ -13,7 +13,7 @@
     <artifactId>microsphere-core-spring-boot-starter</artifactId>
 
     <name>Microsphere Spring Projects :: Spring Boot :: Core Starter</name>
-    <description>Microsphere Spring Boot Starter</description>
+    <description>Microsphere Spring Boot Core Starter</description>
 
     <dependencies>
         <!-- Microsphere Dependencies -->
