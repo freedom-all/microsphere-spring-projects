@@ -151,7 +151,7 @@ public class ResolvingArtifactsCollisionClassLoadingListener extends SpringAppli
     private void resolveArtifactsCollision(URLClassLoader currentClassLoader, Set<URL> artifactCollisionResources) throws Throwable {
 
         URLClassPath urlClassPath = (URLClassPath) ucpField.get(currentClassLoader);
-        // Remove collisioning loaders
+        // Remove collision loaders
         ArrayList<Object> loaders = (ArrayList<Object>) loadersFields.get(urlClassPath);
         Iterator<Object> iterator = loaders.iterator();
         while (iterator.hasNext()) {
