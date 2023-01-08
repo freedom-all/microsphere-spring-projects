@@ -22,6 +22,7 @@
         <module>microsphere-spring-boot-parent</module>
         <module>microsphere-spring-boot-dependencies</module>
         <module>microsphere-core-spring-boot-starter</module>
+        <module>microsphere-logging-spring-boot-starter</module>
     </modules>
 
 </project>
