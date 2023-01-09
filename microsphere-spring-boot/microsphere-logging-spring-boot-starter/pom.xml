@@ -10,7 +10,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>io.github.microsphere-projects</groupId>
     <artifactId>microsphere-logging-spring-boot-starter</artifactId>
+    <version>${revision}</version>
 
     <name>Microsphere Spring Projects :: Spring Boot :: Logging Starter</name>
     <description>Microsphere Spring Boot Logging Starter</description>
