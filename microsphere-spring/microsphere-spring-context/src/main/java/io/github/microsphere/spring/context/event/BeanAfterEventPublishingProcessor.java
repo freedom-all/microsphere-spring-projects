@@ -18,6 +18,7 @@ package io.github.microsphere.spring.context.event;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 
@@ -29,9 +30,6 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
  */
 public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private static final String BEAN_NAME = "beanAfterEventPublishingProcessor";
-    private static final Class<BeanAfterEventPublishingProcessor> BEAN_CLASS = BeanAfterEventPublishingProcessor.class;
-
     /**
      * {@link BeanBeforeEventPublishingProcessor} Initializer that
      * is not a general propose Spring Bean initializes {@link BeanBeforeEventPublishingProcessor}
@@ -39,12 +37,12 @@ public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPos
     static class Initializer {
 
         public Initializer(ConfigurableListableBeanFactory beanFactory) {
-            BeanEventListeners beanEventListeners = BeanEventListeners.getBean(beanFactory);
-            beanFactory.addBeanPostProcessor(new BeanAfterEventPublishingProcessor(beanEventListeners));
-            fireBeanDefinitionReady(beanFactory, beanEventListeners);
+            beanFactory.addBeanPostProcessor(new BeanAfterEventPublishingProcessor(beanFactory));
+            fireBeanDefinitionReady(beanFactory);
         }
 
-        private void fireBeanDefinitionReady(ConfigurableListableBeanFactory beanFactory, BeanEventListeners beanEventListeners) {
+        private void fireBeanDefinitionReady(ConfigurableListableBeanFactory beanFactory) {
+            BeanEventListeners beanEventListeners = BeanEventListeners.getBean(beanFactory);
             String[] beanNames = beanFactory.getBeanDefinitionNames();
             for (String beanName : beanNames) {
                 BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
@@ -55,8 +53,8 @@ public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPos
 
     private final BeanEventListeners beanEventListeners;
 
-    public BeanAfterEventPublishingProcessor(BeanEventListeners beanEventListeners) {
-        this.beanEventListeners = beanEventListeners;
+    public BeanAfterEventPublishingProcessor(ConfigurableBeanFactory beanFactory) {
+        this.beanEventListeners = BeanEventListeners.getBean(beanFactory);
     }
 
     @Override

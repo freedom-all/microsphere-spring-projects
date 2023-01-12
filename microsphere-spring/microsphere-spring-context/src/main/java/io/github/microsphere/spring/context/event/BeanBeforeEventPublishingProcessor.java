@@ -44,8 +44,7 @@ import java.util.function.Function;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-        BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
+public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
 
     private static final Function<BeanFactory, InstantiationStrategy> instantiationStrategyResolver = beanFactory -> {
         InstantiationStrategy instantiationStrategy = null;
@@ -60,8 +59,6 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
     };
 
     private BeanDefinitionRegistry registry;
-
-    private ConfigurableListableBeanFactory beanFactory;
 
     private InstantiationStrategy instantiationStrategyDelegate;
 
@@ -97,7 +94,6 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
         registerBeanEventListeners(beanFactory);
         decorateInstantiationStrategy(beanFactory);
         beanFactory.addBeanPostProcessor(this);
