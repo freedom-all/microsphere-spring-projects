@@ -34,7 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(classes = {
         ApplicationAutoConfigurationTest.class,
         ApplicationAutoConfigurationTest.LoggingBeanEventListener.class},
-        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 public class ApplicationAutoConfigurationTest {
 
