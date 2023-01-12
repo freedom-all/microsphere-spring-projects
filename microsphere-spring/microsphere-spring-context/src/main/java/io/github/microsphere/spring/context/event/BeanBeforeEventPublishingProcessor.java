@@ -44,7 +44,8 @@ import java.util.function.Function;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
+class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
+        BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
 
     private static final Function<BeanFactory, InstantiationStrategy> instantiationStrategyResolver = beanFactory -> {
         InstantiationStrategy instantiationStrategy = null;

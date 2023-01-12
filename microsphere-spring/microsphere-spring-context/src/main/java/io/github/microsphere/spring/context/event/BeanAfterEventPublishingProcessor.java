@@ -28,7 +28,7 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
+class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
 
     /**
      * {@link BeanBeforeEventPublishingProcessor} Initializer that
