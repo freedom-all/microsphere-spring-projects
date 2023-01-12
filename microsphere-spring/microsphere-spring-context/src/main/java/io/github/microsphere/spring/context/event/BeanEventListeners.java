@@ -17,11 +17,18 @@
 package io.github.microsphere.spring.context.event;
 
 import org.springframework.beans.PropertyValues;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
  * The composite {@link BeanEventListener}
@@ -31,10 +38,13 @@ import java.util.function.Consumer;
  */
 class BeanEventListeners {
 
-    private final ObjectProvider<BeanEventListener> listeners;
+    private static final String BEAN_NAME = "beanEventListeners";
 
-    public BeanEventListeners(ConfigurableApplicationContext context) {
-        this.listeners = context.getBeanProvider(BeanEventListener.class);
+    private final List<BeanEventListener> listeners;
+
+    public BeanEventListeners(ConfigurableListableBeanFactory beanFactory) {
+        this.listeners = new ArrayList<>(beanFactory.getBeansOfType(BeanEventListener.class).values());
+        AnnotationAwareOrderComparator.sort(listeners);
     }
 
     public void onBeanDefinitionReady(BeanDefinition beanDefinition, String beanName) {
@@ -66,10 +76,16 @@ class BeanEventListeners {
     }
 
     private void iterate(Consumer<BeanEventListener> listenerConsumer) {
-        try {
-            listeners.orderedStream().forEach(listenerConsumer);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-        }
+        listeners.forEach(listenerConsumer);
+    }
+
+    public void registerBean(BeanDefinitionRegistry registry) {
+        BeanDefinitionBuilder beanDefinitionBuilder = rootBeanDefinition(BeanEventListeners.class, () -> this);
+        beanDefinitionBuilder.setPrimary(true);
+        registry.registerBeanDefinition(BEAN_NAME, beanDefinitionBuilder.getBeanDefinition());
+    }
+
+    public static BeanEventListeners getBean(BeanFactory beanFactory) {
+        return beanFactory.getBean(BEAN_NAME, BeanEventListeners.class);
     }
 }

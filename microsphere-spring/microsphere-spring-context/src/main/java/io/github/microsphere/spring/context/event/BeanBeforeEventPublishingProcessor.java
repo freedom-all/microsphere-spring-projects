@@ -16,32 +16,27 @@
  */
 package io.github.microsphere.spring.context.event;
 
-import org.springframework.beans.BeanWrapper;
+import io.github.microsphere.spring.util.BeanRegistrar;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.PropertyEditorRegistrar;
-import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.InstantiationStrategy;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.PriorityOrdered;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
-
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
  * Bean Before-Event Publishing Processor
@@ -50,8 +45,7 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @since 1.0.0
  */
 public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-        ApplicationContextInitializer<ConfigurableApplicationContext>, BeanDefinitionRegistryPostProcessor,
-        InstantiationStrategy, PropertyEditorRegistrar, PriorityOrdered {
+        BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
 
     private static final Function<BeanFactory, InstantiationStrategy> instantiationStrategyResolver = beanFactory -> {
         InstantiationStrategy instantiationStrategy = null;
@@ -65,8 +59,6 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
         return instantiationStrategy;
     };
 
-    private ConfigurableApplicationContext context;
-
     private BeanDefinitionRegistry registry;
 
     private ConfigurableListableBeanFactory beanFactory;
@@ -76,31 +68,44 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
     private BeanEventListeners beanEventListeners;
 
     @Override
-    public void initialize(ConfigurableApplicationContext context) {
-        this.context = context;
-        // Add Self
-        context.addBeanFactoryPostProcessor(this);
-    }
-
-    @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         this.registry = registry;
-        registerBeanEventListeners(registry);
+        prepareBeanDefinitions(registry);
+    }
+
+    private void prepareBeanDefinitions(BeanDefinitionRegistry registry) {
+        String[] beanNames = registry.getBeanDefinitionNames();
+        int length = beanNames.length;
+        List<BeanDefinitionHolder> beanDefinitionHolders = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            String beanName = beanNames[i];
+            // add current bean definition with name into holders that will be registered again
+            BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
+            beanDefinitionHolders.add(new BeanDefinitionHolder(beanDefinition, beanName));
+            // remove current bean definition
+            registry.removeBeanDefinition(beanName);
+        }
+
+        // register BeanAfterEventPublishingProcessor.Installer ensuring it's the first bean definition
+        BeanRegistrar.registerBeanDefinition(registry, BeanAfterEventPublishingProcessor.Initializer.class);
+
+        // re-register previous bean definitions
+        beanDefinitionHolders.forEach(beanDefinitionHolder -> {
+            BeanDefinitionReaderUtils.registerBeanDefinition(beanDefinitionHolder, registry);
+        });
     }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
+        registerBeanEventListeners(beanFactory);
         decorateInstantiationStrategy(beanFactory);
         beanFactory.addBeanPostProcessor(this);
-        beanFactory.addPropertyEditorRegistrar(this);
     }
 
-    private void registerBeanEventListeners(BeanDefinitionRegistry registry) {
+    private void registerBeanEventListeners(ConfigurableListableBeanFactory context) {
         BeanEventListeners beanEventListeners = new BeanEventListeners(context);
-        BeanDefinitionBuilder beanDefinitionBuilder = rootBeanDefinition(BeanEventListeners.class, () -> beanEventListeners);
-        String beanName = "beanEventListeners";
-        registry.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
+        beanEventListeners.registerBean(registry);
         this.beanEventListeners = beanEventListeners;
     }
 
@@ -120,11 +125,7 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        if (!BeanFactoryPostProcessor.class.isAssignableFrom(beanClass)
-                && !BeanPostProcessor.class.isAssignableFrom(beanClass)
-        ) {
-            this.beanEventListeners.onBeforeInstantiation(beanClass, beanName);
-        }
+        this.beanEventListeners.onBeforeInstantiation(beanClass, beanName);
         return null;
     }
 
@@ -149,15 +150,6 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
         return bean;
     }
 
-    @Override
-    public void registerCustomEditors(PropertyEditorRegistry registry) {
-        if (registry instanceof BeanWrapper) {
-            BeanWrapper beanWrapper = (BeanWrapper) registry;
-            Class<?> beanClass = beanWrapper.getWrappedClass();
-            Object bean = beanWrapper.getWrappedInstance();
-        }
-    }
-
     public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
         this.beanEventListeners.onPropertyValuesReady(pvs, bean, beanName);
         return null;
@@ -167,11 +159,6 @@ public class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPo
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         this.beanEventListeners.onBeforeInitialization(bean, beanName);
         return bean;
-    }
-
-    @Override
-    public int getOrder() {
-        return HIGHEST_PRECEDENCE;
     }
 
 }

@@ -18,15 +18,8 @@ package io.github.microsphere.spring.context.event;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
  * Bean After-Event Publishing Processor
@@ -34,41 +27,36 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-        ApplicationContextInitializer<ConfigurableApplicationContext>, BeanFactoryPostProcessor {
+public class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
 
     private static final String BEAN_NAME = "beanAfterEventPublishingProcessor";
     private static final Class<BeanAfterEventPublishingProcessor> BEAN_CLASS = BeanAfterEventPublishingProcessor.class;
 
-    private BeanEventListeners beanEventListeners;
+    /**
+     * {@link BeanBeforeEventPublishingProcessor} Initializer that
+     * is not a general propose Spring Bean initializes {@link BeanBeforeEventPublishingProcessor}
+     */
+    static class Initializer {
 
-    @Override
-    public void initialize(ConfigurableApplicationContext context) {
-        registerSelfAsBean(context);
-    }
+        public Initializer(ConfigurableListableBeanFactory beanFactory) {
+            BeanEventListeners beanEventListeners = BeanEventListeners.getBean(beanFactory);
+            beanFactory.addBeanPostProcessor(new BeanAfterEventPublishingProcessor(beanEventListeners));
+            fireBeanDefinitionReady(beanFactory, beanEventListeners);
+        }
 
-    private void registerSelfAsBean(ConfigurableApplicationContext context) {
-        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-        if (beanFactory instanceof BeanDefinitionRegistry) {
-            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-            BeanDefinitionBuilder beanDefinitionBuilder = rootBeanDefinition(BEAN_CLASS, () -> this);
-            registry.registerBeanDefinition(BEAN_NAME, beanDefinitionBuilder.getBeanDefinition());
+        private void fireBeanDefinitionReady(ConfigurableListableBeanFactory beanFactory, BeanEventListeners beanEventListeners) {
+            String[] beanNames = beanFactory.getBeanDefinitionNames();
+            for (String beanName : beanNames) {
+                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+                beanEventListeners.onBeanDefinitionReady(beanDefinition, beanName);
+            }
         }
     }
 
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        this.beanEventListeners = getBeanEventListeners(beanFactory);
-        beanFactory.addBeanPostProcessor(this);
-        String[] beanNames = beanFactory.getBeanDefinitionNames();
-        for (String beanName : beanNames) {
-            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-            this.beanEventListeners.onBeanDefinitionReady(beanDefinition, beanName);
-        }
-    }
+    private final BeanEventListeners beanEventListeners;
 
-    private BeanEventListeners getBeanEventListeners(ConfigurableListableBeanFactory beanFactory) {
-        return beanFactory.getBean(BeanEventListeners.class);
+    public BeanAfterEventPublishingProcessor(BeanEventListeners beanEventListeners) {
+        this.beanEventListeners = beanEventListeners;
     }
 
     @Override

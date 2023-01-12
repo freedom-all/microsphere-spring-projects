@@ -16,7 +16,6 @@
  */
 package io.github.microsphere.spring.context.event;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,16 +32,15 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {
-        BeanEventListenerTest.class,
-        BeanEventListenerTest.LoggingBeanEventListener.class
+        BeanEventPublishingInitializerTest.class,
+        BeanEventPublishingInitializerTest.LoggingBeanEventListener.class
 },
         initializers = {
-                BeanBeforeEventPublishingProcessor.class,
-                BeanAfterEventPublishingProcessor.class
+                BeanEventPublishingInitializer.class
         })
-public class BeanEventListenerTest {
+public class BeanEventPublishingInitializerTest {
 
-    @Test
+    @org.junit.Test
     public void test() {
 
     }
