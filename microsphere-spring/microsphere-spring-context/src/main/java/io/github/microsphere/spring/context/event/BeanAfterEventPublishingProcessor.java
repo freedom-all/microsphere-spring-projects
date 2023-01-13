@@ -16,8 +16,6 @@
  */
 package io.github.microsphere.spring.context.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -43,8 +41,6 @@ import java.util.function.BiConsumer;
  * @since 1.0.0
  */
 class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements SmartApplicationListener {
-
-    private static final Logger logger = LoggerFactory.getLogger(BeanAfterEventPublishingProcessor.class);
 
     private static final Class<?> DISPOSABLE_BEAN_ADAPTER_CLASS = ClassUtils.resolveClassName("org.springframework.beans.factory.support.DisposableBeanAdapter", null);
 

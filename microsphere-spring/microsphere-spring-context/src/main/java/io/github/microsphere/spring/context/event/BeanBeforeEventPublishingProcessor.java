@@ -17,6 +17,8 @@
 package io.github.microsphere.spring.context.event;
 
 import io.github.microsphere.spring.util.BeanRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
