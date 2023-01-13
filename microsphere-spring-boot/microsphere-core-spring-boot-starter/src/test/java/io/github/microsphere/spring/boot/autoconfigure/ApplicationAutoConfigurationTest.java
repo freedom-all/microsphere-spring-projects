@@ -59,7 +59,7 @@ public class ApplicationAutoConfigurationTest {
 
         @Override
         public void instantiated(String beanName, Object bean) {
-            logger.info("v - bean name : {} , instance : {}", beanName, bean);
+            logger.info("instantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
