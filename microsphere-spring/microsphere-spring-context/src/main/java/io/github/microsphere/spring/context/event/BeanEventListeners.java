@@ -47,36 +47,44 @@ class BeanEventListeners {
         AnnotationAwareOrderComparator.sort(listeners);
     }
 
-    public void beanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
-        iterate(listener -> listener.beanDefinitionReady(beanName, beanDefinition));
+    public void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
+        iterate(listener -> listener.onBeanDefinitionReady(beanName, beanDefinition));
     }
 
-    public void beforeInstantiate(String beanName, Class<?> beanClass) {
-        iterate(listener -> listener.beforeInstantiate(beanName, beanClass));
+    public void beforeBeanInstantiate(String beanName, Class<?> beanClass) {
+        iterate(listener -> listener.beforeBeanInstantiate(beanName, beanClass));
     }
 
-    public void instantiated(String beanName, Object bean) {
-        iterate(listener -> listener.instantiated(beanName, bean));
+    public void beanInstantiated(String beanName, Object bean) {
+        iterate(listener -> listener.beanInstantiated(beanName, bean));
     }
 
-    public void afterInstantiated(String beanName, Object bean) {
-        iterate(listener -> listener.afterInstantiated(beanName, bean));
+    public void afterBeanInstantiated(String beanName, Object bean) {
+        iterate(listener -> listener.afterBeanInstantiated(beanName, bean));
     }
 
-    public void propertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
-        iterate(listener -> listener.propertyValuesReady(beanName, bean, pvs));
+    public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+        iterate(listener -> listener.onPropertyValuesReady(beanName, bean, pvs));
     }
 
-    public void beforeInitialize(String beanName, Object bean) {
-        iterate(listener -> listener.beforeInitialize(beanName, bean));
+    public void beforeBeanInitialize(String beanName, Object bean) {
+        iterate(listener -> listener.beforeBeanInitialize(beanName, bean));
     }
 
-    public void afterInitialize(String beanName, Object bean) {
-        iterate(listener -> listener.afterInitialized(beanName, bean));
+    public void afterBeanInitialized(String beanName, Object bean) {
+        iterate(listener -> listener.afterBeanInitialized(beanName, bean));
     }
 
-    public void beforeDestroy(String beanName, Object bean) {
-        iterate(listener -> listener.beforeDestroy(beanName, bean));
+    public void onBeanReady(String beanName, Object bean) {
+        iterate(listener -> listener.onBeanReady(beanName, bean));
+    }
+
+    public void beforeBeanDestroy(String beanName, Object bean) {
+        iterate(listener -> listener.beforeBeanDestroy(beanName, bean));
+    }
+
+    public void afterBeanDestroy(String beanName, Object bean) {
+        iterate(listener -> listener.afterBeanDestroy(beanName, bean));
     }
 
     private void iterate(Consumer<BeanEventListener> listenerConsumer) {

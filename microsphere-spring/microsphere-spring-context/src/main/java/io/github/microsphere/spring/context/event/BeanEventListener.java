@@ -29,20 +29,23 @@ import java.util.EventListener;
  */
 public interface BeanEventListener extends EventListener {
 
-    void beanDefinitionReady(String beanName, BeanDefinition beanDefinition);
+    void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition);
 
-    void beforeInstantiate(String beanName, Class<?> beanClass);
+    void beforeBeanInstantiate(String beanName, Class<?> beanClass);
 
-    void instantiated(String beanName, Object bean);
+    void beanInstantiated(String beanName, Object bean);
 
-    void afterInstantiated(String beanName, Object bean);
+    void afterBeanInstantiated(String beanName, Object bean);
 
-    void propertyValuesReady(String beanName, Object bean, PropertyValues pvs);
+    void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs);
 
-    void beforeInitialize(String beanName, Object bean);
+    void beforeBeanInitialize(String beanName, Object bean);
 
-    void afterInitialized(String beanName, Object bean);
+    void afterBeanInitialized(String beanName, Object bean);
 
-    void beforeDestroy(String beanName, Object bean);
+    void onBeanReady(String beanName, Object bean);
 
+    void beforeBeanDestroy(String beanName, Object bean);
+
+    void afterBeanDestroy(String beanName, Object bean);
 }

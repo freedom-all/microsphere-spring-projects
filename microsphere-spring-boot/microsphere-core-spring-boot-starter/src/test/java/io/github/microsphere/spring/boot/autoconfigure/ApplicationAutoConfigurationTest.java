@@ -48,43 +48,53 @@ public class ApplicationAutoConfigurationTest {
         private static final Logger logger = LoggerFactory.getLogger(LoggingBeanEventListener.class);
 
         @Override
-        public void beanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
+        public void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
             logger.info("beanDefinitionReady - bean name : {} , definition : {}", beanName, beanDefinition);
         }
 
         @Override
-        public void beforeInstantiate(String beanName, Class<?> beanClass) {
+        public void beforeBeanInstantiate(String beanName, Class<?> beanClass) {
             logger.info("beforeInstantiate - bean name : {} , class : {}", beanName, beanClass);
         }
 
         @Override
-        public void instantiated(String beanName, Object bean) {
+        public void beanInstantiated(String beanName, Object bean) {
             logger.info("instantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void afterInstantiated(String beanName, Object bean) {
+        public void afterBeanInstantiated(String beanName, Object bean) {
             logger.info("afterInstantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void propertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+        public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
             logger.info("propertyValuesReady - bean name : {} , instance : {} , PropertyValues : {}", beanName, bean, pvs);
         }
 
         @Override
-        public void beforeInitialize(String beanName, Object bean) {
+        public void beforeBeanInitialize(String beanName, Object bean) {
             logger.info("beforeInitialize - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void afterInitialized(String beanName, Object bean) {
-            logger.info("afterInitialized - bean name : {} , instance : {}", beanName, bean);
+        public void afterBeanInitialized(String beanName, Object bean) {
+            logger.info("onInitialized - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void beforeDestroy(String beanName, Object bean) {
+        public void onBeanReady(String beanName, Object bean) {
+            logger.info("onBeanReady - bean name : {} , instance : {}", beanName, bean);
+        }
+
+        @Override
+        public void beforeBeanDestroy(String beanName, Object bean) {
             logger.info("beforeDestroy - bean name : {} , instance : {}", beanName, bean);
+        }
+
+        @Override
+        public void afterBeanDestroy(String beanName, Object bean) {
+            logger.info("afterDestroy - bean name : {} , instance : {}", beanName, bean);
         }
     }
 }

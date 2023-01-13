@@ -16,11 +16,25 @@
  */
 package io.github.microsphere.spring.context.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.SmartApplicationListener;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
 
 /**
  * Bean After-Event Publishing Processor
@@ -28,7 +42,95 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter {
+class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements SmartApplicationListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(BeanAfterEventPublishingProcessor.class);
+
+    private static final Class<?> DISPOSABLE_BEAN_ADAPTER_CLASS = ClassUtils.resolveClassName("org.springframework.beans.factory.support.DisposableBeanAdapter", null);
+
+    private final ConfigurableApplicationContext context;
+
+    private final BeanEventListeners beanEventListeners;
+
+    public BeanAfterEventPublishingProcessor(ConfigurableApplicationContext context) {
+        this.context = context;
+        this.beanEventListeners = BeanEventListeners.getBean(context);
+    }
+
+    @Override
+    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        this.beanEventListeners.afterBeanInstantiated(beanName, bean);
+        return true;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        this.beanEventListeners.afterBeanInitialized(beanName, bean);
+        return bean;
+    }
+
+    @Override
+    public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
+        return ContextRefreshedEvent.class.isAssignableFrom(eventType) || ContextClosedEvent.class.isAssignableFrom(eventType);
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (!Objects.equals(context, event.getSource())) {
+            return;
+        }
+        if (event instanceof ContextRefreshedEvent) {
+            onContextRefreshedEvent((ContextRefreshedEvent) event);
+        } else if (event instanceof ContextClosedEvent) {
+            onContextClosedEvent((ContextClosedEvent) event);
+        }
+    }
+
+    private void onContextRefreshedEvent(ContextRefreshedEvent event) {
+        fireBeansReadyEvent();
+    }
+
+    private void fireBeansReadyEvent() {
+        ConfigurableListableBeanFactory beanFactory = this.context.getBeanFactory();
+        Map<String, Object> beansMap = beanFactory.getBeansOfType(Object.class, true, false);
+        for (Map.Entry<String, Object> beanEntry : beansMap.entrySet()) {
+            String beanName = beanEntry.getKey();
+            Object bean = beanEntry.getValue();
+            fireBeanReadyEvent(beanName, bean);
+        }
+    }
+
+    private void fireBeanReadyEvent(String beanName, Object bean) {
+        this.beanEventListeners.onBeanReady(beanName, bean);
+    }
+
+    private void onContextClosedEvent(ContextClosedEvent event) {
+        decorateDisposableBeans();
+    }
+
+    private void decorateDisposableBeans() {
+        ConfigurableListableBeanFactory beanFactory = this.context.getBeanFactory();
+        if (beanFactory instanceof DefaultSingletonBeanRegistry) {
+            ReflectionUtils.doWithFields(DefaultSingletonBeanRegistry.class, field -> {
+                field.setAccessible(true);
+                Map<String, Object> disposableBeans = (Map<String, Object>) field.get(beanFactory);
+                for (Map.Entry<String, Object> entry : disposableBeans.entrySet()) {
+                    String beanName = entry.getKey();
+                    Object adapterBean = entry.getValue();
+                    if (isDisposableBeanAdapter(adapterBean)) {
+                        DisposableBean delegate = (DisposableBean) adapterBean;
+                        DecoratingDisposableBean decoratingDisposableBean = new DecoratingDisposableBean(beanName, delegate, this.beanEventListeners::afterBeanDestroy);
+                        entry.setValue(decoratingDisposableBean);
+                    }
+                }
+            }, field -> "disposableBeans".equals(field.getName()) && Map.class.isAssignableFrom(field.getType()));
+        }
+    }
+
+    private boolean isDisposableBeanAdapter(Object bean) {
+        return DISPOSABLE_BEAN_ADAPTER_CLASS.equals(bean.getClass()) && bean instanceof DisposableBean;
+    }
+
 
     /**
      * {@link BeanBeforeEventPublishingProcessor} Initializer that
@@ -36,36 +138,46 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
      */
     static class Initializer {
 
-        public Initializer(ConfigurableListableBeanFactory beanFactory) {
-            beanFactory.addBeanPostProcessor(new BeanAfterEventPublishingProcessor(beanFactory));
-            fireBeanDefinitionReady(beanFactory);
+        public Initializer(ConfigurableApplicationContext context) {
+            BeanAfterEventPublishingProcessor processor = new BeanAfterEventPublishingProcessor(context);
+            ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+            beanFactory.addBeanPostProcessor(processor);
+            context.addApplicationListener(processor);
+            fireBeanDefinitionReadyEvent(beanFactory);
         }
 
-        private void fireBeanDefinitionReady(ConfigurableListableBeanFactory beanFactory) {
+        private void fireBeanDefinitionReadyEvent(ConfigurableListableBeanFactory beanFactory) {
             BeanEventListeners beanEventListeners = BeanEventListeners.getBean(beanFactory);
             String[] beanNames = beanFactory.getBeanDefinitionNames();
             for (String beanName : beanNames) {
                 BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-                beanEventListeners.beanDefinitionReady(beanName, beanDefinition);
+                beanEventListeners.onBeanDefinitionReady(beanName, beanDefinition);
             }
         }
     }
 
-    private final BeanEventListeners beanEventListeners;
+    private static class DecoratingDisposableBean implements DisposableBean {
 
-    public BeanAfterEventPublishingProcessor(ConfigurableBeanFactory beanFactory) {
-        this.beanEventListeners = BeanEventListeners.getBean(beanFactory);
-    }
+        private final String beanName;
 
-    @Override
-    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.afterInstantiated(beanName, bean);
-        return true;
-    }
+        private final DisposableBean delegate;
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.afterInitialize(beanName, bean);
-        return bean;
+        private final BiConsumer<String, Object> destroyedCallback;
+
+        DecoratingDisposableBean(String beanName, DisposableBean delegate, BiConsumer<String, Object> destroyedCallback) {
+            this.beanName = beanName;
+            this.delegate = delegate;
+            this.destroyedCallback = destroyedCallback;
+        }
+
+        @Override
+        public void destroy() throws Exception {
+            this.delegate.destroy();
+            ReflectionUtils.doWithFields(DISPOSABLE_BEAN_ADAPTER_CLASS, field -> {
+                field.setAccessible(true);
+                Object bean = field.get(this.delegate);
+                this.destroyedCallback.accept(this.beanName, bean);
+            }, field -> "bean".equals(field.getName()) && Object.class.equals(field.getType()));
+        }
     }
 }
