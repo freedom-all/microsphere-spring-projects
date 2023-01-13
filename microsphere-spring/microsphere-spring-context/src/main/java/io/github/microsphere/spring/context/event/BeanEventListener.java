@@ -35,13 +35,13 @@ public interface BeanEventListener extends EventListener {
 
     void onInstantiating(String beanName, Object bean);
 
-    void onInstantiated(String beanName, Object bean);
+    void onAfterInstantiation(String beanName, Object bean);
 
     void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs);
 
     void onBeforeInitialization(String beanName, Object bean);
 
-    void onInitialized(String beanName, Object bean);
+    void onAfterInitialization(String beanName, Object bean);
 
     void onBeforeDestruction(String beanName, Object bean);
 

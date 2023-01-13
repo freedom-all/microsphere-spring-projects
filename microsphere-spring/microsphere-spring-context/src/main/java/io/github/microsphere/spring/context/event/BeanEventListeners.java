@@ -59,8 +59,8 @@ class BeanEventListeners {
         iterate(listener -> listener.onInstantiating(beanName, bean));
     }
 
-    public void onBeanInstantiated(String beanName, Object bean) {
-        iterate(listener -> listener.onInstantiated(beanName, bean));
+    public void onAfterInstantiation(String beanName, Object bean) {
+        iterate(listener -> listener.onAfterInstantiation(beanName, bean));
     }
 
     public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
@@ -71,8 +71,8 @@ class BeanEventListeners {
         iterate(listener -> listener.onBeforeInitialization(beanName, bean));
     }
 
-    public void onInitialized(String beanName, Object bean) {
-        iterate(listener -> listener.onInitialized(beanName, bean));
+    public void onAfterInitialization(String beanName, Object bean) {
+        iterate(listener -> listener.onAfterInitialization(beanName, bean));
     }
 
     public void onBeforeDestruction(String beanName, Object bean) {

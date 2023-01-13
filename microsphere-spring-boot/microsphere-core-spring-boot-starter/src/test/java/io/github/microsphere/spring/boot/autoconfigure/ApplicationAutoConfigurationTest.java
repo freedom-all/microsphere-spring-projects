@@ -63,7 +63,7 @@ public class ApplicationAutoConfigurationTest {
         }
 
         @Override
-        public void onInstantiated(String beanName, Object bean) {
+        public void onAfterInstantiation(String beanName, Object bean) {
             logger.info("onInstantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
@@ -78,7 +78,7 @@ public class ApplicationAutoConfigurationTest {
         }
 
         @Override
-        public void onInitialized(String beanName, Object bean) {
+        public void onAfterInitialization(String beanName, Object bean) {
             logger.info("onInitialized - bean name : {} , instance : {}", beanName, bean);
         }
 

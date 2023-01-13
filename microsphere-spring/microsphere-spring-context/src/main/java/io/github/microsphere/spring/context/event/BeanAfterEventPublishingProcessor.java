@@ -59,13 +59,13 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
 
     @Override
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onBeanInstantiated(beanName, bean);
+        this.beanEventListeners.onAfterInstantiation(beanName, bean);
         return true;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onInitialized(beanName, bean);
+        this.beanEventListeners.onAfterInitialization(beanName, bean);
         return bean;
     }
 }
