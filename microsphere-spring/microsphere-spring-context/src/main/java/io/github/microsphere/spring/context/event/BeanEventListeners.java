@@ -36,7 +36,7 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-class BeanEventListeners {
+class BeanEventListeners implements BeanEventListener {
 
     private static final String BEAN_NAME = "beanEventListeners";
 
