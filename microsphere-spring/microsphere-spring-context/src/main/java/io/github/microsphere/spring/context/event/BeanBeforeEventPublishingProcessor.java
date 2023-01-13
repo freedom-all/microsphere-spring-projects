@@ -37,7 +37,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Bean Before-Event Publishing Processor
@@ -47,18 +46,6 @@ import java.util.function.Function;
  */
 class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
         BeanDefinitionRegistryPostProcessor, DestructionAwareBeanPostProcessor, InstantiationStrategy {
-
-    private static final Function<BeanFactory, InstantiationStrategy> instantiationStrategyResolver = beanFactory -> {
-        InstantiationStrategy instantiationStrategy = null;
-        try {
-            Method method = AbstractAutowireCapableBeanFactory.class.getDeclaredMethod("getInstantiationStrategy");
-            method.setAccessible(true);
-            instantiationStrategy = (InstantiationStrategy) method.invoke(beanFactory);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return instantiationStrategy;
-    };
 
     private BeanDefinitionRegistry registry;
 
@@ -118,7 +105,15 @@ class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProce
     }
 
     private InstantiationStrategy getInstantiationStrategyDelegate(ConfigurableListableBeanFactory beanFactory) {
-        return instantiationStrategyResolver.apply(beanFactory);
+        InstantiationStrategy instantiationStrategy = null;
+        try {
+            Method method = AbstractAutowireCapableBeanFactory.class.getDeclaredMethod("getInstantiationStrategy");
+            method.setAccessible(true);
+            instantiationStrategy = (InstantiationStrategy) method.invoke(beanFactory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return instantiationStrategy;
     }
 
     @Override
