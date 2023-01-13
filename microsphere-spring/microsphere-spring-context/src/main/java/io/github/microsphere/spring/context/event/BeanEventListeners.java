@@ -47,42 +47,52 @@ class BeanEventListeners implements BeanEventListener {
         AnnotationAwareOrderComparator.sort(listeners);
     }
 
+    @Override
     public void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
         iterate(listener -> listener.onBeanDefinitionReady(beanName, beanDefinition));
     }
 
+    @Override
     public void onBeforeBeanInstantiate(String beanName, Class<?> beanClass) {
         iterate(listener -> listener.onBeforeBeanInstantiate(beanName, beanClass));
     }
 
+    @Override
     public void onBeanInstantiating(String beanName, Object bean) {
         iterate(listener -> listener.onBeanInstantiating(beanName, bean));
     }
 
+    @Override
     public void onAfterBeanInstantiated(String beanName, Object bean) {
         iterate(listener -> listener.onAfterBeanInstantiated(beanName, bean));
     }
 
+    @Override
     public void onBeanPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
         iterate(listener -> listener.onBeanPropertyValuesReady(beanName, bean, pvs));
     }
 
+    @Override
     public void onBeforeBeanInitialize(String beanName, Object bean) {
         iterate(listener -> listener.onBeforeBeanInitialize(beanName, bean));
     }
 
+    @Override
     public void onAfterBeanInitialized(String beanName, Object bean) {
         iterate(listener -> listener.onAfterBeanInitialized(beanName, bean));
     }
 
+    @Override
     public void onBeanReady(String beanName, Object bean) {
         iterate(listener -> listener.onBeanReady(beanName, bean));
     }
 
+    @Override
     public void onBeforeBeanDestroy(String beanName, Object bean) {
         iterate(listener -> listener.onBeforeBeanDestroy(beanName, bean));
     }
 
+    @Override
     public void onAfterBeanDestroy(String beanName, Object bean) {
         iterate(listener -> listener.onAfterBeanDestroy(beanName, bean));
     }
