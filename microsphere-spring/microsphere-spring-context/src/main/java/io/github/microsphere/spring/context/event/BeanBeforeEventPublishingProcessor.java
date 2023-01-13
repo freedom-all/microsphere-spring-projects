@@ -23,6 +23,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -45,7 +46,7 @@ import java.util.function.Function;
  * @since 1.0.0
  */
 class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProcessorAdapter implements
-        BeanDefinitionRegistryPostProcessor, InstantiationStrategy {
+        BeanDefinitionRegistryPostProcessor, DestructionAwareBeanPostProcessor, InstantiationStrategy {
 
     private static final Function<BeanFactory, InstantiationStrategy> instantiationStrategyResolver = beanFactory -> {
         InstantiationStrategy instantiationStrategy = null;
@@ -122,40 +123,44 @@ class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProce
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        this.beanEventListeners.onBeforeInstantiation(beanClass, beanName);
+        this.beanEventListeners.onBeforeInstantiation(beanName, beanClass);
         return null;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner);
-        this.beanEventListeners.onInstantiating(bean, beanName);
+        this.beanEventListeners.onInstantiating(beanName, bean);
         return bean;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner, Constructor<?> ctor, Object... args) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner, ctor, args);
-        this.beanEventListeners.onInstantiating(bean, beanName);
+        this.beanEventListeners.onInstantiating(beanName, bean);
         return bean;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner, Object factoryBean, Method factoryMethod, Object... args) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner, factoryBean, factoryMethod, args);
-        this.beanEventListeners.onInstantiating(bean, beanName);
+        this.beanEventListeners.onInstantiating(beanName, bean);
         return bean;
     }
 
     public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onPropertyValuesReady(pvs, bean, beanName);
+        this.beanEventListeners.onPropertyValuesReady(beanName, bean, pvs);
         return null;
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onBeforeInitialization(bean, beanName);
+        this.beanEventListeners.onBeforeInitialization(beanName, bean);
         return bean;
     }
 
+    @Override
+    public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
+        this.beanEventListeners.onBeforeDestruction(beanName, bean);
+    }
 }
