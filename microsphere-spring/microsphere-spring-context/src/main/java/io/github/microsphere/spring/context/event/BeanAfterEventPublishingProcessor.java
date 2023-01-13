@@ -46,7 +46,7 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
             String[] beanNames = beanFactory.getBeanDefinitionNames();
             for (String beanName : beanNames) {
                 BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-                beanEventListeners.onBeanDefinitionReady(beanName, beanDefinition);
+                beanEventListeners.beanDefinitionReady(beanName, beanDefinition);
             }
         }
     }
@@ -59,13 +59,13 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
 
     @Override
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onAfterInstantiation(beanName, bean);
+        this.beanEventListeners.afterInstantiated(beanName, bean);
         return true;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onAfterInitialization(beanName, bean);
+        this.beanEventListeners.afterInitialize(beanName, bean);
         return bean;
     }
 }

@@ -123,44 +123,44 @@ class BeanBeforeEventPublishingProcessor extends InstantiationAwareBeanPostProce
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        this.beanEventListeners.onBeforeInstantiation(beanName, beanClass);
+        this.beanEventListeners.beforeInstantiate(beanName, beanClass);
         return null;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner);
-        this.beanEventListeners.onInstantiating(beanName, bean);
+        this.beanEventListeners.instantiated(beanName, bean);
         return bean;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner, Constructor<?> ctor, Object... args) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner, ctor, args);
-        this.beanEventListeners.onInstantiating(beanName, bean);
+        this.beanEventListeners.instantiated(beanName, bean);
         return bean;
     }
 
     @Override
     public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner, Object factoryBean, Method factoryMethod, Object... args) throws BeansException {
         Object bean = instantiationStrategyDelegate.instantiate(bd, beanName, owner, factoryBean, factoryMethod, args);
-        this.beanEventListeners.onInstantiating(beanName, bean);
+        this.beanEventListeners.instantiated(beanName, bean);
         return bean;
     }
 
     public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onPropertyValuesReady(beanName, bean, pvs);
+        this.beanEventListeners.propertyValuesReady(beanName, bean, pvs);
         return null;
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onBeforeInitialization(beanName, bean);
+        this.beanEventListeners.beforeInitialize(beanName, bean);
         return bean;
     }
 
     @Override
     public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.onBeforeDestruction(beanName, bean);
+        this.beanEventListeners.beforeDestroy(beanName, bean);
     }
 }

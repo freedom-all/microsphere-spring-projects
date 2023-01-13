@@ -50,43 +50,43 @@ public class BeanEventPublishingInitializerTest {
         private static final Logger logger = LoggerFactory.getLogger(LoggingBeanEventListener.class);
 
         @Override
-        public void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
-            logger.info("onBeanDefinitionReady - bean name : {} , definition : {}", beanName, beanDefinition);
+        public void beanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
+            logger.info("beanDefinitionReady - bean name : {} , definition : {}", beanName, beanDefinition);
         }
 
         @Override
-        public void onBeforeInstantiation(String beanName, Class<?> beanClass) {
-            logger.info("onBeforeInstantiation - bean name : {} , class : {}", beanName, beanClass);
+        public void beforeInstantiate(String beanName, Class<?> beanClass) {
+            logger.info("beforeInstantiate - bean name : {} , class : {}", beanName, beanClass);
         }
 
         @Override
-        public void onInstantiating(String beanName, Object bean) {
-            logger.info("onInstantiating - bean name : {} , instance : {}", beanName, bean);
+        public void instantiated(String beanName, Object bean) {
+            logger.info("instantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void onAfterInstantiation(String beanName, Object bean) {
-            logger.info("onInstantiated - bean name : {} , instance : {}", beanName, bean);
+        public void afterInstantiated(String beanName, Object bean) {
+            logger.info("afterInstantiated - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
-            logger.info("onPropertyValuesReady - bean name : {} , instance : {} , PropertyValues : {}", beanName, bean, pvs);
+        public void propertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+            logger.info("propertyValuesReady - bean name : {} , instance : {} , PropertyValues : {}", beanName, bean, pvs);
         }
 
         @Override
-        public void onBeforeInitialization(String beanName, Object bean) {
-            logger.info("onBeforeInitialization - bean name : {} , instance : {}", beanName, bean);
+        public void beforeInitialize(String beanName, Object bean) {
+            logger.info("beforeInitialize - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void onAfterInitialization(String beanName, Object bean) {
+        public void afterInitialized(String beanName, Object bean) {
             logger.info("onInitialized - bean name : {} , instance : {}", beanName, bean);
         }
 
         @Override
-        public void onBeforeDestruction(String beanName, Object bean) {
-            logger.info("onPreDestroy - bean name : {} , instance : {}", beanName, bean);
+        public void beforeDestroy(String beanName, Object bean) {
+            logger.info("beforeDestroy - bean name : {} , instance : {}", beanName, bean);
         }
     }
 }

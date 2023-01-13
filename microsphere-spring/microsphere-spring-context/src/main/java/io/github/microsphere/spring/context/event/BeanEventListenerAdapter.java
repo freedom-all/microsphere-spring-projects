@@ -19,30 +19,43 @@ package io.github.microsphere.spring.context.event;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 
-import java.util.EventListener;
-
 /**
- * Bean {@link EventListener}
+ * {@link BeanEventListener} Adapter
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface BeanEventListener extends EventListener {
+public class BeanEventListenerAdapter implements BeanEventListener {
 
-    void beanDefinitionReady(String beanName, BeanDefinition beanDefinition);
+    @Override
+    public void beanDefinitionReady(String beanName, BeanDefinition beanDefinition) {
+    }
 
-    void beforeInstantiate(String beanName, Class<?> beanClass);
+    @Override
+    public void beforeInstantiate(String beanName, Class<?> beanClass) {
+    }
 
-    void instantiated(String beanName, Object bean);
+    @Override
+    public void instantiated(String beanName, Object bean) {
+    }
 
-    void afterInstantiated(String beanName, Object bean);
+    @Override
+    public void afterInstantiated(String beanName, Object bean) {
+    }
 
-    void propertyValuesReady(String beanName, Object bean, PropertyValues pvs);
+    @Override
+    public void propertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+    }
 
-    void beforeInitialize(String beanName, Object bean);
+    @Override
+    public void beforeInitialize(String beanName, Object bean) {
+    }
 
-    void afterInitialized(String beanName, Object bean);
+    @Override
+    public void afterInitialized(String beanName, Object bean) {
+    }
 
-    void beforeDestroy(String beanName, Object bean);
-
+    @Override
+    public void beforeDestroy(String beanName, Object bean) {
+    }
 }
