@@ -150,7 +150,7 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
             BeanEventListeners beanEventListeners = BeanEventListeners.getBean(beanFactory);
             String[] beanNames = beanFactory.getBeanDefinitionNames();
             for (String beanName : beanNames) {
-                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+                BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
                 beanEventListeners.onBeanDefinitionReady(beanName, beanDefinition);
             }
         }
