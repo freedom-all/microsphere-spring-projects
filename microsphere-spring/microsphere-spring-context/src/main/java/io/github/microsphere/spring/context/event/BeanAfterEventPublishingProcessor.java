@@ -59,13 +59,13 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
 
     @Override
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.afterBeanInstantiated(beanName, bean);
+        this.beanEventListeners.onAfterBeanInstantiated(beanName, bean);
         return true;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        this.beanEventListeners.afterBeanInitialized(beanName, bean);
+        this.beanEventListeners.onAfterBeanInitialized(beanName, bean);
         return bean;
     }
 
@@ -119,7 +119,7 @@ class BeanAfterEventPublishingProcessor extends InstantiationAwareBeanPostProces
                     Object adapterBean = entry.getValue();
                     if (isDisposableBeanAdapter(adapterBean)) {
                         DisposableBean delegate = (DisposableBean) adapterBean;
-                        DecoratingDisposableBean decoratingDisposableBean = new DecoratingDisposableBean(beanName, delegate, this.beanEventListeners::afterBeanDestroy);
+                        DecoratingDisposableBean decoratingDisposableBean = new DecoratingDisposableBean(beanName, delegate, this.beanEventListeners::onAfterBeanDestroy);
                         entry.setValue(decoratingDisposableBean);
                     }
                 }

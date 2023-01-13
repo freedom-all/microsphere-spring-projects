@@ -31,21 +31,21 @@ public interface BeanEventListener extends EventListener {
 
     void onBeanDefinitionReady(String beanName, BeanDefinition beanDefinition);
 
-    void beforeBeanInstantiate(String beanName, Class<?> beanClass);
+    void onBeforeBeanInstantiate(String beanName, Class<?> beanClass);
 
-    void beanInstantiated(String beanName, Object bean);
+    void onBeanInstantiating(String beanName, Object bean);
 
-    void afterBeanInstantiated(String beanName, Object bean);
+    void onAfterBeanInstantiated(String beanName, Object bean);
 
-    void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs);
+    void onBeanPropertyValuesReady(String beanName, Object bean, PropertyValues pvs);
 
-    void beforeBeanInitialize(String beanName, Object bean);
+    void onBeforeBeanInitialize(String beanName, Object bean);
 
-    void afterBeanInitialized(String beanName, Object bean);
+    void onAfterBeanInitialized(String beanName, Object bean);
 
     void onBeanReady(String beanName, Object bean);
 
-    void beforeBeanDestroy(String beanName, Object bean);
+    void onBeforeBeanDestroy(String beanName, Object bean);
 
-    void afterBeanDestroy(String beanName, Object bean);
+    void onAfterBeanDestroy(String beanName, Object bean);
 }

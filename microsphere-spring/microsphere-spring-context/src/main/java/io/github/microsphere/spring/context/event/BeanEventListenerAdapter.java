@@ -32,27 +32,27 @@ public class BeanEventListenerAdapter implements BeanEventListener {
     }
 
     @Override
-    public void beforeBeanInstantiate(String beanName, Class<?> beanClass) {
+    public void onBeforeBeanInstantiate(String beanName, Class<?> beanClass) {
     }
 
     @Override
-    public void beanInstantiated(String beanName, Object bean) {
+    public void onBeanInstantiating(String beanName, Object bean) {
     }
 
     @Override
-    public void afterBeanInstantiated(String beanName, Object bean) {
+    public void onAfterBeanInstantiated(String beanName, Object bean) {
     }
 
     @Override
-    public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+    public void onBeanPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
     }
 
     @Override
-    public void beforeBeanInitialize(String beanName, Object bean) {
+    public void onBeforeBeanInitialize(String beanName, Object bean) {
     }
 
     @Override
-    public void afterBeanInitialized(String beanName, Object bean) {
+    public void onAfterBeanInitialized(String beanName, Object bean) {
     }
 
     @Override
@@ -60,10 +60,10 @@ public class BeanEventListenerAdapter implements BeanEventListener {
     }
 
     @Override
-    public void beforeBeanDestroy(String beanName, Object bean) {
+    public void onBeforeBeanDestroy(String beanName, Object bean) {
     }
 
     @Override
-    public void afterBeanDestroy(String beanName, Object bean) {
+    public void onAfterBeanDestroy(String beanName, Object bean) {
     }
 }

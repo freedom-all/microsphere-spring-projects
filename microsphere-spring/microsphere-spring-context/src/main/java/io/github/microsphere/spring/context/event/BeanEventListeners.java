@@ -51,40 +51,40 @@ class BeanEventListeners {
         iterate(listener -> listener.onBeanDefinitionReady(beanName, beanDefinition));
     }
 
-    public void beforeBeanInstantiate(String beanName, Class<?> beanClass) {
-        iterate(listener -> listener.beforeBeanInstantiate(beanName, beanClass));
+    public void onBeforeBeanInstantiate(String beanName, Class<?> beanClass) {
+        iterate(listener -> listener.onBeforeBeanInstantiate(beanName, beanClass));
     }
 
-    public void beanInstantiated(String beanName, Object bean) {
-        iterate(listener -> listener.beanInstantiated(beanName, bean));
+    public void onBeanInstantiating(String beanName, Object bean) {
+        iterate(listener -> listener.onBeanInstantiating(beanName, bean));
     }
 
-    public void afterBeanInstantiated(String beanName, Object bean) {
-        iterate(listener -> listener.afterBeanInstantiated(beanName, bean));
+    public void onAfterBeanInstantiated(String beanName, Object bean) {
+        iterate(listener -> listener.onAfterBeanInstantiated(beanName, bean));
     }
 
-    public void onPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
-        iterate(listener -> listener.onPropertyValuesReady(beanName, bean, pvs));
+    public void onBeanPropertyValuesReady(String beanName, Object bean, PropertyValues pvs) {
+        iterate(listener -> listener.onBeanPropertyValuesReady(beanName, bean, pvs));
     }
 
-    public void beforeBeanInitialize(String beanName, Object bean) {
-        iterate(listener -> listener.beforeBeanInitialize(beanName, bean));
+    public void onBeforeBeanInitialize(String beanName, Object bean) {
+        iterate(listener -> listener.onBeforeBeanInitialize(beanName, bean));
     }
 
-    public void afterBeanInitialized(String beanName, Object bean) {
-        iterate(listener -> listener.afterBeanInitialized(beanName, bean));
+    public void onAfterBeanInitialized(String beanName, Object bean) {
+        iterate(listener -> listener.onAfterBeanInitialized(beanName, bean));
     }
 
     public void onBeanReady(String beanName, Object bean) {
         iterate(listener -> listener.onBeanReady(beanName, bean));
     }
 
-    public void beforeBeanDestroy(String beanName, Object bean) {
-        iterate(listener -> listener.beforeBeanDestroy(beanName, bean));
+    public void onBeforeBeanDestroy(String beanName, Object bean) {
+        iterate(listener -> listener.onBeforeBeanDestroy(beanName, bean));
     }
 
-    public void afterBeanDestroy(String beanName, Object bean) {
-        iterate(listener -> listener.afterBeanDestroy(beanName, bean));
+    public void onAfterBeanDestroy(String beanName, Object bean) {
+        iterate(listener -> listener.onAfterBeanDestroy(beanName, bean));
     }
 
     private void iterate(Consumer<BeanEventListener> listenerConsumer) {
