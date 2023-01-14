@@ -19,6 +19,13 @@
     <description>Microsphere Spring Context</description>
 
     <dependencies>
+
+        <!-- MicroSphere-commons-->
+        <dependency>
+            <groupId>io.github.microsphere-projects</groupId>
+            <artifactId>microsphere-commons-core</artifactId>
+        </dependency>
+
         <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>
