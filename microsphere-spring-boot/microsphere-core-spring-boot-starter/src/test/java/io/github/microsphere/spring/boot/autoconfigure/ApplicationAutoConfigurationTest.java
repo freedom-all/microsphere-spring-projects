@@ -17,6 +17,7 @@
 package io.github.microsphere.spring.boot.autoconfigure;
 
 import io.github.microsphere.spring.context.event.BeanEventListener;
+import io.github.microsphere.spring.context.event.BeanTimeStatistics;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +34,16 @@ import org.springframework.boot.test.context.SpringBootTest;
  */
 @SpringBootTest(classes = {
         ApplicationAutoConfigurationTest.class,
-        ApplicationAutoConfigurationTest.LoggingBeanEventListener.class},
+        ApplicationAutoConfigurationTest.LoggingBeanEventListener.class,
+        BeanTimeStatistics.class
+},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 public class ApplicationAutoConfigurationTest {
 
+
     @Test
     public void test() {
-
     }
 
     static class LoggingBeanEventListener implements BeanEventListener {
