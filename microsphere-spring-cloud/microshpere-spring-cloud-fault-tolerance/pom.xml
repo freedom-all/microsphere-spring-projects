@@ -18,4 +18,8 @@
     <name>Microsphere Spring Projects :: Spring Cloud :: Fault Tolerance</name>
     <description>Microsphere Spring Cloud Fault Tolerance</description>
 
+    <modules>
+        <module>microshpere-spring-cloud-fault-tolerance-common</module>
+    </modules>
+
 </project>
