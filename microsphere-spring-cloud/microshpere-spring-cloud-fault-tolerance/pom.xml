@@ -10,7 +10,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>microsphere-spring-cloud-starter-actuator</artifactId>
+    <groupId>io.github.microsphere-projects</groupId>
+    <artifactId>microshpere-spring-cloud-fault-tolerance</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
 
+    <name>Microsphere Spring Projects :: Spring Cloud :: Fault Tolerance</name>
+    <description>Microsphere Spring Cloud Fault Tolerance</description>
 
 </project>
