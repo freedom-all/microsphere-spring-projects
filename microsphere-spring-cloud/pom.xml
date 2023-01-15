@@ -22,6 +22,7 @@
         <module>microsphere-spring-cloud-parent</module>
         <module>microsphere-spring-cloud-dependencies</module>
         <module>microshpere-spring-cloud-starter-fault-tolerance</module>
+        <module>microsphere-spring-cloud-starter-actuator</module>
     </modules>
 
 </project>
