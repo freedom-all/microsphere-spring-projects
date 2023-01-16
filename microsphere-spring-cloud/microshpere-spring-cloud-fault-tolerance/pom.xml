@@ -20,6 +20,7 @@
 
     <modules>
         <module>microshpere-spring-cloud-fault-tolerance-common</module>
+        <module>microshpere-spring-cloud-starter-fault-tolerance-tomcat</module>
     </modules>
 
 </project>
