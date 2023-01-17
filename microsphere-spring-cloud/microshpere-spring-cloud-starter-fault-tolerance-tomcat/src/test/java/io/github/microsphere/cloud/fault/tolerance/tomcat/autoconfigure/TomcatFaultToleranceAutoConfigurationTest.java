@@ -67,7 +67,7 @@ public class TomcatFaultToleranceAutoConfigurationTest {
         // default
         assertEquals(10, protocol.getMinSpareThreads());
         // changed
-        environmentManager.setProperty("server.tomcat.threads.minSpare", "20");
+        environmentManager.setProperty("server.tomcat.threads.min-spare", "20");
         assertEquals(20, protocol.getMinSpareThreads());
     }
 
