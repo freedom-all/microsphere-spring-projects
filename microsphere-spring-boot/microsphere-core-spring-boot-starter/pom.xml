@@ -21,7 +21,7 @@
         <!-- Microsphere Dependencies -->
         <dependency>
             <groupId>io.github.microsphere-projects</groupId>
-            <artifactId>microsphere-commons-core</artifactId>
+            <artifactId>microsphere-core</artifactId>
         </dependency>
 
         <dependency>

@@ -19,7 +19,7 @@
     <description>Microsphere Spring Parent</description>
 
     <properties>
-        <microsphere-commons.version>${revision}</microsphere-commons.version>
+        <microsphere.version>${revision}</microsphere.version>
         <sqlite-jdbc.version>3.36.0.3</sqlite-jdbc.version>
         <embedded-redis.version>0.6</embedded-redis.version>
     </properties>
@@ -38,8 +38,8 @@
             <!-- Microshpere Commons Dependencies -->
             <dependency>
                 <groupId>io.github.microsphere-projects</groupId>
-                <artifactId>microsphere-commons-dependencies</artifactId>
-                <version>${microsphere-commons.version}</version>
+                <artifactId>microsphere-dependencies</artifactId>
+                <version>${microsphere.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

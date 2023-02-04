@@ -16,7 +16,7 @@
  */
 package io.github.microsphere.spring.context.event;
 
-import io.github.microsphere.commons.util.StopWatch;
+import io.github.microsphere.util.StopWatch;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 

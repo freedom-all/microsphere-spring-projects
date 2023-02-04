@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.github.microsphere.commons.util.Configurer.configure;
+import static io.github.microsphere.util.Configurer.configure;
 import static io.github.microsphere.spring.boot.util.ConfigurationPropertyUtils.bind;
 import static io.github.microsphere.spring.util.EnvironmentUtils.getProperties;
 

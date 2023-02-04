@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.boot.diagnostics;
 
-import io.github.microsphere.commons.classloading.ArtifactCollisionResourceDetector;
+import io.github.microsphere.classloading.ArtifactCollisionResourceDetector;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationListener;

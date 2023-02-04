@@ -23,7 +23,7 @@
         <!-- MicroSphere-commons-->
         <dependency>
             <groupId>io.github.microsphere-projects</groupId>
-            <artifactId>microsphere-commons-core</artifactId>
+            <artifactId>microsphere-core</artifactId>
         </dependency>
 
         <!-- Spring Framework -->

@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.boot.classloading;
 
-import io.github.microsphere.commons.classloading.ArtifactCollisionResourceDetector;
+import io.github.microsphere.classloading.ArtifactCollisionResourceDetector;
 import io.github.microsphere.spring.boot.listener.SpringApplicationRunListenerAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;

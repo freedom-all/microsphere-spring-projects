@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.boot.report;
 
-import io.github.microsphere.commons.text.FormatUtils;
+import io.github.microsphere.text.FormatUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;

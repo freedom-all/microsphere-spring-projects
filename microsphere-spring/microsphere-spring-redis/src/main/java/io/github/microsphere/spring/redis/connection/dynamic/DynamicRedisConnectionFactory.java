@@ -1,6 +1,6 @@
 package io.github.microsphere.spring.redis.connection.dynamic;
 
-import io.github.microsphere.commons.text.FormatUtils;
+import io.github.microsphere.text.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;

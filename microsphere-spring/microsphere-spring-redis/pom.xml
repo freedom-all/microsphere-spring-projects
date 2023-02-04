@@ -34,7 +34,7 @@
         <!-- Microsphere Commons Core -->
         <dependency>
             <groupId>io.github.microsphere-projects</groupId>
-            <artifactId>microsphere-commons-core</artifactId>
+            <artifactId>microsphere-core</artifactId>
         </dependency>
 
         <!-- Microshpere Context -->
