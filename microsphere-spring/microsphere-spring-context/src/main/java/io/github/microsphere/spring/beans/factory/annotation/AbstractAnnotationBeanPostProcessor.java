@@ -152,7 +152,6 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
      * Annotation type
      *
      * @return non-null
-     * @deprecated 2.7.3, uses {@link #getAnnotationTypes()}
      */
     @Deprecated
     public final Class<? extends Annotation> getAnnotationType() {
